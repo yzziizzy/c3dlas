@@ -34,18 +34,18 @@ float vScalarTriple(Vector* a, Vector* b, Vector* c); // scalar triple product: 
 
 
 
-void mIdent(Matrix* m);
+void mIdent(Matrix* m); // set m to the identity matrix
 void mFastMul(Matrix* a, Matrix* b, Matrix* out); // a and b cannot also be out. mostly internal use.
 void mMul(Matrix* a, Matrix* out); // makes a copy of out before multiplying over it
-void mTransv(Vector* v, Matrix* out);
-void mTrans3f(float x, float y, float z, Matrix* out);
+void mTransv(Vector* v, Matrix* out); // translation
+void mTrans3f(float x, float y, float z, Matrix* out); // translation
 void mScalev(Vector* v, Matrix* out);
 void mScale3f(float x, float y, float z, Matrix* out);
-void mRotv(Vector* v, float theta, Matrix* out);
-void mRot3f(float x, float y, float z, float theta, Matrix* out);
-void mRotX(float theta, Matrix* out);
-void mRotY(float theta, Matrix* out);
-void mRotZ(float theta, Matrix* out);
+void mRotv(Vector* v, float theta, Matrix* out); // rotate about a vector
+void mRot3f(float x, float y, float z, float theta, Matrix* out); // rotate about a vector
+void mRotX(float theta, Matrix* out); // 
+void mRotY(float theta, Matrix* out); // rotate about axes
+void mRotZ(float theta, Matrix* out); //
 
 
 
