@@ -60,8 +60,32 @@ float vScalarTriple(Vector* a, Vector* b, Vector* c) { // a . (b x c)
 }
 
 
+// matrix-vector operations
+
+
+// multiply a vector by a matrix
+void vMatrixMul(Vector* in, Matrix* m, Vector* out) {
+	vMatrixMulf(in->x, in->y, in->z, m, out);
+}
+
+void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out) { 
+	int i;
+	Vector4 v;
+	
+	for(i = 0; i < 16; i += 4)
+		v.v[i] = x * m->m[i+0] + y * m->m[i+1] + z * m->m[i+2] + 1 * m->m[i+3];
+	
+	out->x = v.x / v.w;
+	out->y = v.y / v.w;
+	out->z = v.z / v.w;
+}
+
+
 
 // matrix operations
+
+
+
 
 
 
@@ -74,6 +98,7 @@ const Matrix IDENT_MATRIX = { { 1, 0, 0, 0,
 void mIdent(Matrix* m) {
 	*m = IDENT_MATRIX;
 }
+
 
 
 void mFastMul(Matrix* a, Matrix* b, Matrix* out) {

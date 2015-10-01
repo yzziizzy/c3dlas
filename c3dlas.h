@@ -6,6 +6,13 @@ typedef struct {
 	float x,y,z;
 } Vector;
 
+typedef struct {
+	union {
+		struct { float x,y,z,w; };
+		float v[4];
+	};
+} Vector4;
+
 
 
 
@@ -31,7 +38,8 @@ void  vUnit(Vector* v, Vector* out); // normalise the vector, alternate name
 void  vCross(Vector* a, Vector* b, Vector* out); // cross product: out = a x b
 float vScalarTriple(Vector* a, Vector* b, Vector* c); // scalar triple product: a . (b x c)
 
-
+void vMatrixMul(Vector* in, Matrix* m, Vector* out); // multiply a vector by a matrix
+void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out); // multiply a vector by a matrix
 
 
 void mIdent(Matrix* m); // set m to the identity matrix
