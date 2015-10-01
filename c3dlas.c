@@ -274,6 +274,43 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 	mMul(&m, out);
 }
 
+// analgous to gluLookAt
+// https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
+void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out) {
+	
+	Vector f, upn, s, u, sn;
+	Matrix m, m2;
+	
+	vSub(center, eye, &f);
+	vNorm(&f, &f);
+	
+	vNorm(up, &upn);
+	
+	vCross(&f, &upn, &s);
+	vNorm(&s, &sn);
+	
+	vCross(&sn, &f, &u);
+	
+	m.m[0] = s.x;
+	m.m[1] = u.x;
+	m.m[2] = -f.x;
+	m.m[3] = 0;
 
+	m.m[4] = s.y;
+	m.m[5] = u.y;
+	m.m[6] = -f.y;
+	m.m[7] = 0;
+	
+	m.m[8] = s.z;
+	m.m[9] = u.z;
+	m.m[10] = -f.z;
+	m.m[11] = 0;
+	
+	m.m[12] = 0;
+	m.m[13] = 0;
+	m.m[14] = 0;
+	m.m[15] = 1;
 
-
+	mTrans3f(-eye->x, -eye->y, -eye->z, &m2);
+	mFastMul(&m, &m2, out);
+}

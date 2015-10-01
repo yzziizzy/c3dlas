@@ -1,4 +1,7 @@
 
+#ifndef __c3dlas_h__
+#define __c3dlas_h__
+
 
 #define F_PI ((float)3.1415926535897932384626433832795028841971693993751)
 #define D_PI ((double)3.1415926535897932384626433832795028841971693993751)
@@ -85,8 +88,10 @@ void mPerspective(double fov, float aspect, float near, float far, Matrix* out);
 // same div/0 warnings. 
 void mOrtho(float left, float right, float top, float bottom, float near, float far, Matrix* out);
 
+// analgous to gluLookAt
+// https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
+void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out);
 
 
 
-
-
+#endif // __c3dlas_h__
