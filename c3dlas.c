@@ -241,7 +241,7 @@ void mPerspective(double fov, float aspect, float near, float far, Matrix* out) 
 	double f;
 	
 	m = IDENT_MATRIX;
-	f = 1.0 / tan(fov / 2);
+	f = 1.0 / tan(fov * DEG2RAD / 2);
 	
 	m.m[0] = f / aspect;
 	m.m[5] = f;
