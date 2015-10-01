@@ -48,7 +48,20 @@ void mRotY(float theta, Matrix* out); // rotate about axes
 void mRotZ(float theta, Matrix* out); //
 
 
+// analogous to glFrustum
+// no div/0 checking here for right == left etc. just don't be an idiot.
+void mFrustum(float left, float right, float top, float bottom, float near, float far, Matrix* out);
 
+// analogous to gluPerspective
+// same div/0 warnings apply. if you get an FP exception you deserve it. 
+// use a double for fov; the precision matters often.
+// https://www.opengl.org/archives/resources/faq/technical/transformations.htm
+// https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
+void mPerspective(double fov, float aspect, float near, float far, Matrix* out);
+
+// orthographic projection. use this for a "2D" look.
+// same div/0 warnings. 
+void mOrtho(float left, float right, float top, float bottom, float near, float far, Matrix* out);
 
 
 

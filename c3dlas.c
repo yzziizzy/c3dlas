@@ -100,7 +100,7 @@ void mMul(Matrix* a, Matrix* out) {
 
 
 
-void mTransv(Vec3f* v, Matrix* out) {
+void mTransv(Vector* v, Matrix* out) {
 	mTrans3f(v->x, v->y, v->z, out);
 }
 
@@ -117,7 +117,7 @@ void mTrans3f(float x, float y, float z, Matrix* out) {
 
 
 
-void mScalev(Vec3f* v, Matrix* out) {
+void mScalev(Vector* v, Matrix* out) {
 	mTrans3f(v->x, v->y, v->z, out);
 }
 
@@ -134,7 +134,7 @@ void mScale3f(float x, float y, float z, Matrix* out) {
 
 
 
-void mRotv(Vec3f* v, float theta, Matrix* out) {
+void mRotv(Vector* v, float theta, Matrix* out) {
 	mRot3f(v->x, v->y, v->z, theta, out);
 }
 
@@ -183,6 +183,72 @@ void mRotY(float theta, Matrix* out) {
 void mRotZ(float theta, Matrix* out) {
 	mRot3f(0,0,1, theta, out);
 }
+
+// analogous to glFrustum
+// no div/0 checking here for right == left etc. just don't be an idiot.
+void mFrustum(float left, float right, float top, float bottom, float near, float far, Matrix* out) {
+	
+	Matrix m;
+	
+	m = IDENT_MATRIX;
+	
+	m.m[0] = (2 * near) / (right - left);
+	m.m[5] = (2 * near) / (top - bottom);
+	m.m[8] = (right + left) / (right - left);
+	m.m[9] = (top + bottom) / (top - bottom);
+	m.m[10] = -(far + near) / (far - near);
+	m.m[11] = -1;
+	m.m[14] = (-2 * far * near) / (far - near);
+	m.m[15] = 0;
+	
+	mMul(&m, out);
+}
+
+
+// analogous to gluPerspective
+// same div/0 warnings apply. if you get an FP exception you deserve it. 
+// use a double for fov; the precision matters often.
+// https://www.opengl.org/archives/resources/faq/technical/transformations.htm
+// https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
+void mPerspective(double fov, float aspect, float near, float far, Matrix* out) {
+	
+	Matrix m;
+	double f;
+	
+	m = IDENT_MATRIX;
+	f = 1.0 / tan(fov / 2);
+	
+	m.m[0] = f / aspect;
+	m.m[5] = f;
+	m.m[10] = (far + near) / (near - far);
+	m.m[11] = -1;
+	m.m[14] = (2 * far * near) / (near - far);
+	m.m[15] = 1;
+	
+	mMul(&m, out);
+}
+
+
+
+
+// orthographic projection. use this for a "2D" look.
+void mOrtho(float left, float right, float top, float bottom, float near, float far, Matrix* out) {
+	
+	Matrix m;
+	
+	m = IDENT_MATRIX;
+	
+	m.m[0] = 2 / (right - left);
+	m.m[5] = 2 / (top - bottom);
+	m.m[10] = -2 / (far - near);
+	m.m[12] = -(right + left) / (right - left);
+	m.m[13] = -(top + bottom) / (top - bottom);		
+	m.m[14] = -(far + near) / (far - near);
+	m.m[15] = 1;
+	
+	mMul(&m, out);
+}
+
 
 
 
