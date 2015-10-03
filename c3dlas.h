@@ -19,6 +19,8 @@
 
 
 
+
+
 typedef struct {
 	float x,y,z;
 } Vector;
@@ -37,6 +39,12 @@ typedef struct {
 	float m[16];
 } Matrix;
 
+
+typedef struct MatrixStack {
+	short size;
+	short top;
+	Matrix* stack;
+} MatrixStack;
 
 
 extern const Matrix IDENT_MATRIX;
@@ -60,6 +68,7 @@ void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out); // multiply
 
 
 void mIdent(Matrix* m); // set m to the identity matrix
+void mCopy(Matrix* in, Matrix* out); 
 void mFastMul(Matrix* a, Matrix* b, Matrix* out); // a and b cannot also be out. mostly internal use.
 void mMul(Matrix* a, Matrix* out); // makes a copy of out before multiplying over it
 void mTransv(Vector* v, Matrix* out); // translation
@@ -92,6 +101,33 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
 void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out);
 
+
+
+
+// matrix stack functions
+
+// make sure you allocate enough. when it's out, it's out. no surprise mallocs later on. (yet)
+void msAlloc(int size, MatrixStack* ms);
+void msFree(MatrixStack* ms);
+
+int msPush(Matrix* m, MatrixStack* ms);
+void msPop(MatrixStack* ms);
+Matrix* msGetTop(MatrixStack* ms);
+
+// these are all wrappers around the functions listed above
+void msIdent(MatrixStack* ms); // set to the identity matrix
+void msCopy(Matrix* in, MatrixStack* ms); 
+void msMul(Matrix* a, MatrixStack* ms); // makes a copy of out before multiplying over it
+void msTransv(Vector* v, MatrixStack* ms); // translation
+void msTrans3f(float x, float y, float z, MatrixStack* ms); // translation
+void msScalev(Vector* v, MatrixStack* ms);
+void msScale3f(float x, float y, float z, MatrixStack* ms);
+void msRotv(Vector* v, float theta, MatrixStack* ms); // rotate about a vector
+void msRot3f(float x, float y, float z, float theta, MatrixStack* ms); // rotate about a vector
+void msFrustum(float left, float right, float top, float bottom, float near, float far, MatrixStack* ms);
+void msPerspective(double fov, float aspect, float near, float far, MatrixStack* ms);
+void msOrtho(float left, float right, float top, float bottom, float near, float far, MatrixStack* ms);
+void msLookAt(Vector* eye, Vector* center, Vector* up, MatrixStack* ms);
 
 
 #endif // __c3dlas_h__

@@ -1,7 +1,8 @@
 
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include "c3dlas.h"
-#include "string.h"
-#include "math.h"
 
 
 
@@ -99,6 +100,9 @@ void mIdent(Matrix* m) {
 	*m = IDENT_MATRIX;
 }
 
+void mCopy(Matrix* in, Matrix* out) { 
+	memcpy(in->m, out->m, sizeof(out->m));
+}
 
 
 void mFastMul(Matrix* a, Matrix* b, Matrix* out) {
@@ -118,7 +122,7 @@ void mFastMul(Matrix* a, Matrix* b, Matrix* out) {
 void mMul(Matrix* a, Matrix* out) {
 	Matrix b;
 	
-	memcpy(b.m, out->m, sizeof(out->m));
+	mCopy(&b, out);
 	
 	mFastMul(a, &b, out);
 }
@@ -313,4 +317,101 @@ void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out) {
 
 	mTrans3f(-eye->x, -eye->y, -eye->z, &m2);
 	mFastMul(&m, &m2, out);
+}
+
+
+
+
+
+// make sure you allocate enough. when it's out, it's out. no surprise mallocs later on. (yet)
+void msAlloc(int size, MatrixStack* ms) {
+	
+	ms->stack = (Matrix*)malloc(size * sizeof(Matrix));
+	
+	ms->size = size;
+	ms->top = 0;
+};
+	
+void msFree(MatrixStack* ms) {
+	free(ms->stack);
+	ms->stack = NULL;
+}
+
+// push a new matrix on the stack. if m is null, push an identity matrix
+int msPush(Matrix* m, MatrixStack* ms) {
+	if(ms->top == ms->size - 1) return 1;
+	
+	ms->top++;
+	
+	if(m) {
+		mCopy(m, &ms->stack[ms->top]);
+	}
+	else {
+		mIdent(&ms->stack[ms->top]);
+	}
+	
+	return 0;
+}
+
+void msPop(MatrixStack* ms) {
+	if(ms->top == 0) return;
+	ms->top--;
+}
+
+
+Matrix* msGetTop(MatrixStack* ms) {
+	return &ms->stack[ms->top];
+}
+
+
+void msIdent(MatrixStack* ms) {
+	mIdent(msGetTop(ms));
+}
+
+void msCopy(Matrix* in, MatrixStack* ms) {
+	mCopy(in, msGetTop(ms));
+}
+
+void msMul(Matrix* a, MatrixStack* ms) { // makes a copy of out before multiplying over it
+	mMul(a, msGetTop(ms));
+}
+
+void msTransv(Vector* v, MatrixStack* ms) { // translation
+	mTransv(v, msGetTop(ms));
+}
+
+void msTrans3f(float x, float y, float z, MatrixStack* ms) { // translation
+	mTrans3f(x, y, z, msGetTop(ms));
+}
+
+void msScalev(Vector* v, MatrixStack* ms) {
+	mScalev(v, msGetTop(ms));
+}
+
+void msScale3f(float x, float y, float z, MatrixStack* ms) {
+	mScale3f(x, y, z, msGetTop(ms));
+}
+
+void msRotv(Vector* v, float theta, MatrixStack* ms) { // rotate about a vector
+	mRotv(v, theta, msGetTop(ms));
+}
+
+void msRot3f(float x, float y, float z, float theta, MatrixStack* ms) { // rotate about a vector
+	mRot3f(x, y, z, theta, msGetTop(ms));
+}
+
+void msFrustum(float left, float right, float top, float bottom, float near, float far, MatrixStack* ms) { 
+	mFrustum(left, right, top, bottom, near, far, msGetTop(ms));
+}
+
+void msPerspective(double fov, float aspect, float near, float far, MatrixStack* ms) {
+	mPerspective(fov, aspect, near, far, msGetTop(ms));
+}
+
+void msOrtho(float left, float right, float top, float bottom, float near, float far, MatrixStack* ms) {
+	mOrtho(left, right, top, bottom, near, far, msGetTop(ms));
+}
+
+void msLookAt(Vector* eye, Vector* center, Vector* up, MatrixStack* ms) {
+	mLookAt(eye, center, up, msGetTop(ms));
 }

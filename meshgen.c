@@ -65,7 +65,7 @@ void mgGenFlatPatch(short width, short height, IndexedPatch* out) {
 
 float* genNoisef(short width, short height, float min, float max) {
 	
-	int len;
+	int len, i;
 	float* out, range;
 	
 	len = width * height;
