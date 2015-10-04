@@ -415,3 +415,21 @@ void msOrtho(float left, float right, float top, float bottom, float near, float
 void msLookAt(Vector* eye, Vector* center, Vector* up, MatrixStack* ms) {
 	mLookAt(eye, center, up, msGetTop(ms));
 }
+
+
+
+void evalBezier(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out) {
+	out.x = evalBezier1D(e1.x, e2.x, c1.x, c2.x, t);
+	out.y = evalBezier1D(e1.y, e2.y, c1.y, c2.y, t);
+	out.z = evalBezier1D(e1.z, e2.z, c1.z, c2.z, t);
+}
+
+float evalBezier1D(float e1, float e2, float c1, float c2, float t) {
+	float mt, mt2, t2;
+	mt = 1 - t;
+	mt2 = mt * mt;
+	t2 = t * t;
+	return (mt2 * mt * e1) + (3 * mt2 * t * c1) + (3 * t2 * mt * c2) + (t2 * t * e2);
+}
+
+

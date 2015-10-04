@@ -130,4 +130,7 @@ void msOrtho(float left, float right, float top, float bottom, float near, float
 void msLookAt(Vector* eye, Vector* center, Vector* up, MatrixStack* ms);
 
 
+void evalBezier(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out);
+float evalBezier1D(float e1, float e2, float c1, float c2, float t);
+
 #endif // __c3dlas_h__
