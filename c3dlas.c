@@ -433,3 +433,33 @@ float evalBezier1D(float e1, float e2, float c1, float c2, float t) {
 }
 
 
+
+void evalBezierTangent(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out) {
+	out.x = evalBezier1D_dt(e1.x, e2.x, c1.x, c2.x, t);
+	out.y = evalBezier1D_dt(e1.y, e2.y, c1.y, c2.y, t);
+	out.z = evalBezier1D_dt(e1.z, e2.z, c1.z, c2.z, t);
+}
+
+float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t) {
+	float mt, mt2, t2;
+	mt = 1 - t;
+	mt2 = mt * mt;
+	t2 = t * t;
+	
+	return (3 * mt2 * (c1 - e1)) + (6 * mt * t * (c2 - c1)) + (3 * t2 * (e2 - c2));
+}
+
+
+	
+float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t) {
+	return (6 * (1 - t) * (c2 - c1 - c1 + e1)) + (6 * t * (e2 - c2 - c2 - c1));
+}
+
+void evalBezierNorm(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out) {
+	out.x = evalBezier1D_ddt(e1.x, e2.x, c1.x, c2.x, t);
+	out.y = evalBezier1D_ddt(e1.y, e2.y, c1.y, c2.y, t);
+	out.z = evalBezier1D_ddt(e1.z, e2.z, c1.z, c2.z, t);
+}
+
+	
+	
