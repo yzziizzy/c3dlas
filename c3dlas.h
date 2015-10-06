@@ -132,7 +132,7 @@ void msLookAt(Vector* eye, Vector* center, Vector* up, MatrixStack* ms);
 
 void evalBezier(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out);
 void evalBezierTangent(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out); // tangent vector; not normalized 
-void evalBezierNorm(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out); // normal vector
+void evalBezierNorm(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out); // normal vector; not normalized
 float evalBezier1D(float e1, float e2, float c1, float c2, float t);
 float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t); // first derivative with respect to t
 float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t); // second derivative with respect to t
