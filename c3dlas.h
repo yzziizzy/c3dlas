@@ -19,6 +19,9 @@
 
 
 
+typedef struct {
+	float x,y;
+} Vector2;
 
 
 typedef struct {
