@@ -419,9 +419,9 @@ void msLookAt(Vector* eye, Vector* center, Vector* up, MatrixStack* ms) {
 
 
 void evalBezier(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out) {
-	out.x = evalBezier1D(e1.x, e2.x, c1.x, c2.x, t);
-	out.y = evalBezier1D(e1.y, e2.y, c1.y, c2.y, t);
-	out.z = evalBezier1D(e1.z, e2.z, c1.z, c2.z, t);
+	out->x = evalBezier1D(e1->x, e2->x, c1->x, c2->x, t);
+	out->y = evalBezier1D(e1->y, e2->y, c1->y, c2->y, t);
+	out->z = evalBezier1D(e1->z, e2->z, c1->z, c2->z, t);
 }
 
 float evalBezier1D(float e1, float e2, float c1, float c2, float t) {
@@ -435,9 +435,9 @@ float evalBezier1D(float e1, float e2, float c1, float c2, float t) {
 
 
 void evalBezierTangent(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out) {
-	out.x = evalBezier1D_dt(e1.x, e2.x, c1.x, c2.x, t);
-	out.y = evalBezier1D_dt(e1.y, e2.y, c1.y, c2.y, t);
-	out.z = evalBezier1D_dt(e1.z, e2.z, c1.z, c2.z, t);
+	out->x = evalBezier1D_dt(e1->x, e2->x, c1->x, c2->x, t);
+	out->y = evalBezier1D_dt(e1->y, e2->y, c1->y, c2->y, t);
+	out->z = evalBezier1D_dt(e1->z, e2->z, c1->z, c2->z, t);
 }
 
 float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t) {
@@ -456,9 +456,9 @@ float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t) {
 }
 
 void evalBezierNorm(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out) {
-	out.x = evalBezier1D_ddt(e1.x, e2.x, c1.x, c2.x, t);
-	out.y = evalBezier1D_ddt(e1.y, e2.y, c1.y, c2.y, t);
-	out.z = evalBezier1D_ddt(e1.z, e2.z, c1.z, c2.z, t);
+	out->x = evalBezier1D_ddt(e1->x, e2->x, c1->x, c2->x, t);
+	out->y = evalBezier1D_ddt(e1->y, e2->y, c1->y, c2->y, t);
+	out->z = evalBezier1D_ddt(e1->z, e2->z, c1->z, c2->z, t);
 }
 
 	
