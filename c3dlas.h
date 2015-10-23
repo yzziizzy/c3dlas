@@ -23,7 +23,6 @@ typedef struct {
 	float x,y;
 } Vector2;
 
-
 typedef struct {
 	float x,y,z;
 } Vector;
@@ -48,6 +47,18 @@ typedef struct MatrixStack {
 	short top;
 	Matrix* stack;
 } MatrixStack;
+
+
+// axis-aligned bounding box
+typedef struct AABB {
+	Vector min;
+	Vector max;
+} AABB;
+
+typedef struct AABB2 {
+	Vector min;
+	Vector max;
+} AABB2;
 
 
 extern const Matrix IDENT_MATRIX;
@@ -140,4 +151,25 @@ float evalBezier1D(float e1, float e2, float c1, float c2, float t);
 float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t); // first derivative with respect to t
 float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t); // second derivative with respect to t
 
+///// bounding box functions
+
+// 3D versions
+int boxDisjoint(const AABB* a, const AABB* b);
+int boxOverlaps(const AABB* a, const AABB* b);
+int boxContainsPoint(const AABB* b, const Vector* p);
+
+void boxCenter(const AABB* b, Vector* out); // calcuates the center of the box
+
+// 2D versions
+int boxDisjoint2(const AABB2* a, const AABB2* b);
+int boxOverlaps2(const AABB2* a, const AABB2* b);
+int boxContainsPoint2(const AABB2* b, const Vector2* p);
+
+void boxCenter2(const AABB2* b, Vector2* out); // calcuates the center of the box
+
+
+
+
+
 #endif // __c3dlas_h__
+

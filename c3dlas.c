@@ -461,5 +461,64 @@ void evalBezierNorm(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vec
 	out->z = evalBezier1D_ddt(e1->z, e2->z, c1->z, c2->z, t);
 }
 
-	
-	
+
+
+
+///// bounding box functions
+
+
+// 3D versions
+
+int boxDisjoint(const AABB* a, const AABB* b) {
+
+	return a->max.x < b->min.x || b->max.x < a->min.x
+		|| a->max.y < b->min.y || b->max.y < a->min.y
+		|| a->max.z < b->min.z || b->max.z < a->min.z;
+}
+
+int boxOverlaps(const AABB* a, const AABB* b) {
+	return !boxDisjoint(a, b);
+}
+
+
+
+int boxContainsPoint(const AABB* b, const Vector* p) {
+	return b->min.x <= p->x && b->max.x >= p->x
+		&& b->min.y <= p->y && b->max.y >= p->y
+		&& b->min.z <= p->z && b->max.z >= p->z;
+}
+
+
+void boxCenter(const AABB* b, Vector* out) {
+	out->x = (b->max.x + b->min.x) / 2;
+	out->y = (b->max.y + b->min.y) / 2;
+	out->z = (b->max.z + b->min.z) / 2;
+}
+
+
+
+// 2D versions
+
+int boxDisjoint2(const AABB2* a, const AABB2* b) {
+
+	return a->max.x < b->min.x || b->max.x < a->min.x
+		|| a->max.y < b->min.y || b->max.y < a->min.y;
+}
+
+int boxOverlaps2(const AABB2* a, const AABB2* b) {
+	return !boxDisjoint2(a, b);
+}
+
+
+
+int boxContainsPoint2(const AABB2* b, const Vector2* p) {
+	return b->min.x <= p->x && b->max.x >= p->x
+		&& b->min.y <= p->y && b->max.y >= p->y;
+}
+
+
+void boxCenter2(const AABB2* b, Vector2* out) {
+	out->x = (b->max.x + b->min.x) / 2;
+	out->y = (b->max.y + b->min.y) / 2;
+}
+
