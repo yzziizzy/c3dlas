@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <limits.h>
+
 #include "c3dlas.h"
 
 
@@ -43,7 +45,11 @@ void vNorm(Vector* v, Vector* out) {
 
 void vUnit(Vector* v, Vector* out) {
 	float n;
-	n = (float)1.0 / sqrt((float)((v->x * v->x) + (v->y * v->y) + (v->z * v->z)));
+	n = (v->x * v->x) + (v->y * v->y) + (v->z * v->z)));
+	
+	if(n >= 1.0f - FLT_EPSILON || n >= 1.0f + FLT_EPSILON) return; // very exact here
+	
+	n = 1.0f / sqrtf(n);
 	out->x = v->x * n;
 	out->y = v->y * n;
 	out->z = v->z * n;
@@ -522,3 +528,10 @@ void boxCenter2(const AABB2* b, Vector2* out) {
 	out->y = (b->max.y + b->min.y) / 2;
 }
 
+
+
+void boxRayIntersect(const AABB* b, const Vector* r) {
+	
+	
+	
+}
