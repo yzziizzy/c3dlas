@@ -35,6 +35,12 @@ typedef struct {
 } Vector4;
 
 
+typedef struct {
+	Vector o; // origin
+	Vector d; // normalized direction
+	Vector id; // inverse normalized direction
+} Ray;
+
 
 
 typedef struct {
@@ -70,6 +76,7 @@ extern const Matrix IDENT_MATRIX;
 void  vAdd(Vector* a, Vector* b, Vector* out); // add two vectors
 void  vSub(Vector* from, Vector* what, Vector* diff); // diff = from - what
 void  vScale(Vector* v, float scalar, Vector* out); // scalar muliplication 
+void  vInverse(Vector* v, Vector* out); // inverse
 float vMag(Vector* v); // return the magnitude
 float vDot(Vector* a, Vector* b); // dot product
 void  vNorm(Vector* v, Vector* out); // normalize the vector
@@ -158,16 +165,25 @@ int boxDisjoint(const AABB* a, const AABB* b);
 int boxOverlaps(const AABB* a, const AABB* b);
 int boxContainsPoint(const AABB* b, const Vector* p);
 
-void boxCenter(const AABB* b, Vector* out); // calcuates the center of the box
+void boxCenter(const AABB* b, Vector* out); // calculates the center of the box
+void boxSize(const AABB* b, Vector* out); // calculates the size of the box
+
+
+void makeRay(Vector* origin, Vector* direction, Ray* out);
+int boxRayIntersectFast(const AABB* b, const Ray* r);
+int boxRayIntersect(const AABB* b, const Ray* r, Vector* ipoint, float* idist);
+
 
 // 2D versions
 int boxDisjoint2(const AABB2* a, const AABB2* b);
 int boxOverlaps2(const AABB2* a, const AABB2* b);
 int boxContainsPoint2(const AABB2* b, const Vector2* p);
 
+
+
 void boxCenter2(const AABB2* b, Vector2* out); // calcuates the center of the box
-
-
+void boxSize2(const AABB2* b, Vector2* out); // calculates the size of the box
+void boxQuadrant2(const AABB2* in, char ix, char iy, AABB2* out);
 
 
 

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <limits.h>
+#include <float.h>
 
 #include "c3dlas.h"
 
@@ -30,6 +30,13 @@ void vScale(Vector* v, float scalar, Vector* out) {
 	out->z = v->z * scalar;
 }
 
+void vInverse(Vector* v, Vector* out) {
+	// yeah yeah yeah shut up. in games, pesky details are just annoying. this function does what you mean rather than sucking Gauss and Euclid.
+	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
+	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
+	out->z = v->z == 0.0f ? FLT_MAX : 1.0f / v->z;
+}
+
 float vMag(Vector* v) {
 	return sqrt((float)((v->x * v->x) + (v->y * v->y) + (v->z * v->z)));
 }
@@ -45,7 +52,7 @@ void vNorm(Vector* v, Vector* out) {
 
 void vUnit(Vector* v, Vector* out) {
 	float n;
-	n = (v->x * v->x) + (v->y * v->y) + (v->z * v->z)));
+	n = (v->x * v->x) + (v->y * v->y) + (v->z * v->z);
 	
 	if(n >= 1.0f - FLT_EPSILON || n >= 1.0f + FLT_EPSILON) return; // very exact here
 	
@@ -501,6 +508,12 @@ void boxCenter(const AABB* b, Vector* out) {
 	out->z = (b->max.z + b->min.z) / 2;
 }
 
+void boxSize(const AABB* b, Vector* out) {
+	out->x = b->max.x - b->min.x;
+	out->y = b->max.y - b->min.y;
+	out->z = b->max.z - b->min.z;
+}
+
 
 
 // 2D versions
@@ -528,10 +541,95 @@ void boxCenter2(const AABB2* b, Vector2* out) {
 	out->y = (b->max.y + b->min.y) / 2;
 }
 
-
-
-void boxRayIntersect(const AABB* b, const Vector* r) {
-	
-	
-	
+void boxSize2(const AABB2* b, Vector2* out) {
+	out->x = b->max.x - b->min.x;
+	out->y = b->max.y - b->min.y;
 }
+
+void boxQuadrant2(const AABB2* in, char ix, char iy, AABB2* out) {
+	Vector2 sz, c;
+	
+	boxCenter2(in, &c);
+	boxSize2(in, &sz);
+	sz.x *= .5;
+	sz.y *= .5;
+	
+	out->min.x = c.x - (ix ? 0.0f : sz.x);
+	out->min.y = c.y - (iy ? 0.0f : sz.y);
+	out->max.x = c.x + (ix ? sz.x : 0.0f);
+	out->max.y = c.y + (iy ? sz.y : 0.0f);
+}
+
+
+
+void makeRay(Vector* origin, Vector* direction, Ray* out) {
+	
+	out->o.x = origin->x;
+	out->o.y = origin->y;
+	out->o.z = origin->z;
+	
+	vNorm(direction, &out->d);
+	vInverse(&out->d, &out->id);
+}
+
+// this version has no branching, but only answers yes or no. 
+// algorithm explanation here. hopefully my extrapolation into 3 dimensions is correct.
+// http://tavianator.com/fast-branchless-raybounding-box-intersections/
+int boxRayIntersectFast(const AABB* b, const Ray* r) {
+	Vector t1, t2;
+	float tmin, tmax;
+	
+	t1.x = (b->min.x - r->o.x) * r->id.x;
+	t2.x = (b->max.x - r->o.x) * r->id.x;
+	tmin = fmin(t1.x, t2.x);
+	tmax = fmax(t1.x, t2.x);
+	
+	t1.y = (b->min.y - r->o.y) * r->id.y;
+	t2.y = (b->max.y - r->o.y) * r->id.y;
+	tmin = fmax(tmin, fmin(t1.y, t2.y));
+	tmax = fmin(tmax, fmax(t1.y, t2.y));
+	
+	t1.z = (b->min.z - r->o.z) * r->id.z;
+	t2.z = (b->max.z - r->o.z) * r->id.z;
+	tmin = fmax(tmin, fmin(t1.z, t2.z));
+	tmax = fmin(tmax, fmax(t1.z, t2.z));
+
+	return tmax >= tmin;
+}
+
+
+// this version gives the point of intersection as well as distance
+// algorithm explanation here. hopefully my extrapolation into 3 dimensions is correct.
+// http://tavianator.com/fast-branchless-raybounding-box-intersections/
+int boxRayIntersect(const AABB* b, const Ray* r, Vector* ipoint, float* idist) {
+	Vector t1, t2;
+	float tmin, tmax;
+	
+	t1.x = (b->min.x - r->o.x) * r->id.x;
+	t2.x = (b->max.x - r->o.x) * r->id.x;
+	tmin = fmin(t1.x, t2.x);
+	tmax = fmax(t1.x, t2.x);
+	
+	t1.y = (b->min.y - r->o.y) * r->id.y;
+	t2.y = (b->max.y - r->o.y) * r->id.y;
+	tmin = fmax(tmin, fmin(t1.y, t2.y));
+	tmax = fmin(tmax, fmax(t1.y, t2.y));
+	
+	t1.z = (b->min.z - r->o.z) * r->id.z;
+	t2.z = (b->max.z - r->o.z) * r->id.z;
+	tmin = fmax(tmin, fmin(t1.z, t2.z));
+	tmax = fmin(tmax, fmax(t1.z, t2.z));
+	
+	if(tmax < tmin) return 0;
+	
+	if(idist) *idist = tmin;
+	
+	if(ipoint) {
+		ipoint->x = r->o.x + (r->d.x * tmin);
+		ipoint->y = r->o.y + (r->d.y * tmin);
+		ipoint->z = r->o.z + (r->d.z * tmin);
+	}
+	
+	return 1;
+}
+
