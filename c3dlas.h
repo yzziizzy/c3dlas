@@ -131,7 +131,7 @@ void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out);
 void msAlloc(int size, MatrixStack* ms);
 void msFree(MatrixStack* ms);
 
-int msPush(Matrix* m, MatrixStack* ms);
+int msPush(MatrixStack* ms); 
 void msPop(MatrixStack* ms);
 Matrix* msGetTop(MatrixStack* ms);
 

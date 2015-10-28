@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <float.h>
@@ -351,17 +352,15 @@ void msFree(MatrixStack* ms) {
 }
 
 // push a new matrix on the stack. if m is null, push an identity matrix
-int msPush(Matrix* m, MatrixStack* ms) {
-	if(ms->top == ms->size - 1) return 1;
+int msPush(MatrixStack* ms) {
+	if(ms->top == ms->size - 1) {
+		fprintf(stderr, "Matrix Stack overflowed.\n");
+		return 1;
+	}
 	
 	ms->top++;
 	
-	if(m) {
-		mCopy(m, &ms->stack[ms->top]);
-	}
-	else {
-		mIdent(&ms->stack[ms->top]);
-	}
+	mCopy(&ms->stack[ms->top - 1], &ms->stack[ms->top]);
 	
 	return 0;
 }
