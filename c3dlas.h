@@ -122,6 +122,7 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
 void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out);
 
+void mPrint(Matrix* m, FILE* f);
 
 
 
@@ -134,6 +135,8 @@ void msFree(MatrixStack* ms);
 int msPush(MatrixStack* ms); 
 void msPop(MatrixStack* ms);
 Matrix* msGetTop(MatrixStack* ms);
+
+void msPrintAll(MatrixStack* ms, FILE* f);
 
 // these are all wrappers around the functions listed above
 void msIdent(MatrixStack* ms); // set to the identity matrix

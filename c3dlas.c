@@ -334,6 +334,18 @@ void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out) {
 }
 
 
+void mPrint(Matrix* m, FILE* f) {
+	int r, c;
+	
+	if(!f) f = stdout;
+	
+	for(r = 0; r < 4; r++) {
+		fprintf(f, "% .3e % .3e % .3e % .3e\n", m->m[r*4], m->m[r*4+1], m->m[r*4+2], m->m[r*4+3]);
+	}
+	
+	fprintf(f, "\n");
+}
+
 
 
 
@@ -360,7 +372,7 @@ int msPush(MatrixStack* ms) {
 	
 	ms->top++;
 	
-	mCopy(&ms->stack[ms->top - 1], &ms->stack[ms->top]);
+	mCopy(&ms->stack[ms->top], &ms->stack[ms->top - 1]);
 	
 	return 0;
 }
@@ -373,6 +385,19 @@ void msPop(MatrixStack* ms) {
 
 Matrix* msGetTop(MatrixStack* ms) {
 	return &ms->stack[ms->top];
+}
+
+void msPrintAll(MatrixStack* ms, FILE* f) {
+	int i;
+	
+	if(!f) f = stdout;
+	
+	for(i = 0; i <= ms->top; i++) {
+		fprintf(f, "--%3d--------------------------\n", i);
+		mPrint(&ms->stack[i], f);
+	}
+	
+	fprintf(f, "-------------------------------\n");
 }
 
 
