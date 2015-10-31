@@ -75,6 +75,27 @@ float vScalarTriple(Vector* a, Vector* b, Vector* c) { // a . (b x c)
 }
 
 
+// feeding a zero vector into this will cause div/0 and you will deserve it
+void  vProject(Vector* what, Vector* onto, Vector* out) { // slower; onto may not be normalized
+	float wdo = vDot(what, onto);
+	float odo = vDot(onto, onto);
+	vScale(onto, wdo / odo, out);
+}
+
+void  vProjectNorm(Vector* what, Vector* onto, Vector* out) { // faster; onto must be normalized
+	float wdo = vDot(what, onto);
+	vScale(onto, wdo, out);
+}
+
+// plane-vector operations
+
+// distance from point to plane
+float pvDist(Plane* p, Vector* v) {
+	return vDot(v, &p->n) + p->d;
+}
+
+
+
 // matrix-vector operations
 
 
@@ -84,11 +105,12 @@ void vMatrixMul(Vector* in, Matrix* m, Vector* out) {
 }
 
 void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out) { 
-	int i;
 	Vector4 v;
-	
-	for(i = 0; i < 16; i += 4)
-		v.v[i] = x * m->m[i+0] + y * m->m[i+1] + z * m->m[i+2] + 1 * m->m[i+3];
+
+	v.x = x * m->m[0+0] + y * m->m[0+1] + z * m->m[0+2] + 1 * m->m[0+3];
+	v.y = x * m->m[4+0] + y * m->m[4+1] + z * m->m[4+2] + 1 * m->m[4+3];
+	v.z = x * m->m[8+0] + y * m->m[8+1] + z * m->m[8+2] + 1 * m->m[8+3];
+	v.w = x * m->m[12+0] + y * m->m[12+1] + z * m->m[12+2] + 1 * m->m[12+3];
 	
 	out->x = v.x / v.w;
 	out->y = v.y / v.w;
@@ -226,6 +248,104 @@ void mRotY(float theta, Matrix* out) {
 void mRotZ(float theta, Matrix* out) {
 	mRot3f(0,0,1, theta, out);
 }
+
+
+void mTranspose(Matrix* in, Matrix* out) {
+	Matrix t;
+	int i;
+
+	for(i = 0; i < 4; i++) {
+		t.m[i]      = in->m[i * 4];
+		t.m[i + 4]  = in->m[(i * 4) + 1];
+		t.m[i + 8]  = in->m[(i * 4) + 2];
+		t.m[i + 12] = in->m[(i * 4) + 3];
+	}
+	
+	mCopy(&t, out);
+}
+
+void mTransposeFast(Matrix* in, Matrix* out) {
+	int i;
+	for(i = 0; i < 4; i++) {
+		out->m[i]      = in->m[i * 4];
+		out->m[i + 4]  = in->m[(i * 4) + 1];
+		out->m[i + 8]  = in->m[(i * 4) + 2];
+		out->m[i + 12] = in->m[(i * 4) + 3];
+	}
+}
+
+
+float mDeterminate(Matrix* m) {
+	return
+		m->m[3] * m->m[6] * m->m[9]  * m->m[12] - m->m[2] * m->m[7] * m->m[9]  * m->m[12] -
+		m->m[3] * m->m[5] * m->m[10] * m->m[12] + m->m[1] * m->m[7] * m->m[10] * m->m[12] +
+		m->m[2] * m->m[5] * m->m[11] * m->m[12] - m->m[1] * m->m[6] * m->m[11] * m->m[12] -
+		m->m[3] * m->m[6] * m->m[8]  * m->m[13] + m->m[2] * m->m[7] * m->m[8]  * m->m[13] +
+		m->m[3] * m->m[4] * m->m[10] * m->m[13] - m->m[0] * m->m[7] * m->m[10] * m->m[13] -
+		m->m[2] * m->m[4] * m->m[11] * m->m[13] + m->m[0] * m->m[6] * m->m[11] * m->m[13] +
+		m->m[3] * m->m[5] * m->m[8]  * m->m[14] - m->m[1] * m->m[7] * m->m[8]  * m->m[14] -
+		m->m[3] * m->m[4] * m->m[9]  * m->m[14] + m->m[0] * m->m[7] * m->m[9]  * m->m[14] +
+		m->m[1] * m->m[4] * m->m[11] * m->m[14] - m->m[0] * m->m[5] * m->m[11] * m->m[14] -
+		m->m[2] * m->m[5] * m->m[8]  * m->m[15] + m->m[1] * m->m[6] * m->m[8]  * m->m[15] +
+		m->m[2] * m->m[4] * m->m[9]  * m->m[15] - m->m[0] * m->m[6] * m->m[9]  * m->m[15] -
+		m->m[1] * m->m[4] * m->m[10] * m->m[15] + m->m[0] * m->m[5] * m->m[10] * m->m[15];
+}
+
+
+// shamelessly lifted from this SO post and modified into C, added error checking, and transposed for column major ordering:
+// http://stackoverflow.com/a/7596981
+// matrix inversions suck. maybe one day i'll lift intel's super fast SSE one instead. 
+// functions returns 0 if sucessful, 1 if there is no inverse
+int mInverse(Matrix* in, Matrix* out) {
+	
+	float s0, s1, s2, s3, s4, s5;
+	float c0, c1, c2, c3, c4, c5;
+	float invdet;
+
+	s0 = in->m[0] * in->m[5]  - in->m[1] * in->m[4];
+	s1 = in->m[0] * in->m[9]  - in->m[1] * in->m[8];
+	s2 = in->m[0] * in->m[13] - in->m[1] * in->m[12];
+	s3 = in->m[4] * in->m[9]  - in->m[5] * in->m[8];
+	s4 = in->m[4] * in->m[13] - in->m[5] * in->m[12];
+	s5 = in->m[8] * in->m[13] - in->m[9] * in->m[12];
+
+	c5 = in->m[10] * in->m[15] - in->m[11] * in->m[14];
+	c4 = in->m[6]  * in->m[15]  - in->m[7]  * in->m[14];
+	c3 = in->m[6]  * in->m[11]  - in->m[7]  * in->m[10];
+	c2 = in->m[2]  * in->m[15]  - in->m[3]  * in->m[14];
+	c1 = in->m[2]  * in->m[11]  - in->m[3]  * in->m[10];
+	c0 = in->m[2]  * in->m[7]   - in->m[3]  * in->m[6];
+
+	// Should check for 0 determinant
+
+	invdet = (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
+	if(invdet == 0.0) return 1;
+	invdet = 1.0 / invdet;
+	
+	out->m[0]  = ( in->m[5] * c5 - in->m[9]  * c4 + in->m[13] * c3) * invdet;
+	out->m[4]  = (-in->m[4] * c5 + in->m[8]  * c4 - in->m[12] * c3) * invdet;
+	out->m[8]  = ( in->m[7] * s5 - in->m[11] * s4 + in->m[15] * s3) * invdet;
+	out->m[12] = (-in->m[6] * s5 + in->m[10] * s4 - in->m[14] * s3) * invdet;
+
+	out->m[1]  = (-in->m[1] * c5 + in->m[9]  * c2 - in->m[13] * c1) * invdet;
+	out->m[5]  = ( in->m[0] * c5 - in->m[8]  * c2 + in->m[12] * c1) * invdet;
+	out->m[9]  = (-in->m[3] * s5 + in->m[11] * s2 - in->m[15] * s1) * invdet;
+	out->m[13] = ( in->m[2] * s5 - in->m[10] * s2 + in->m[14] * s1) * invdet;
+
+	out->m[2]  = ( in->m[1] * c4 - in->m[5] * c2 + in->m[13] * c0) * invdet;
+	out->m[6]  = (-in->m[0] * c4 + in->m[4] * c2 - in->m[12] * c0) * invdet;
+	out->m[10] = ( in->m[3] * s4 - in->m[7] * s2 + in->m[15] * s0) * invdet;
+	out->m[14] = (-in->m[2] * s4 + in->m[6] * s2 - in->m[14] * s0) * invdet;
+
+	out->m[3]  = (-in->m[1] * c3 + in->m[5] * c1 - in->m[9]  * c0) * invdet;
+	out->m[7]  = ( in->m[0] * c3 - in->m[4] * c1 + in->m[8]  * c0) * invdet;
+	out->m[11] = (-in->m[3] * s3 + in->m[7] * s1 - in->m[11] * s0) * invdet;
+	out->m[15] = ( in->m[2] * s3 - in->m[6] * s1 + in->m[10] * s0) * invdet;
+
+	return 0;
+}
+
+
 
 // analogous to glFrustum
 // no div/0 checking here for right == left etc. just don't be an idiot.

@@ -28,19 +28,21 @@ typedef struct {
 } Vector;
 
 typedef struct {
-	union {
-		struct { float x,y,z,w; };
-		float v[4];
-	};
+	float x,y,z,w;
 } Vector4;
 
 
 typedef struct {
 	Vector o; // origin
 	Vector d; // normalized direction
-	Vector id; // inverse normalized direction
+	Vector id; // inverse normalized direction (handy enough to keep around)
 } Ray;
 
+
+typedef struct {
+	Vector n; // normal
+	float d; // distance along normal to the origin
+} Plane;
 
 
 typedef struct {
@@ -83,6 +85,10 @@ void  vNorm(Vector* v, Vector* out); // normalize the vector
 void  vUnit(Vector* v, Vector* out); // normalise the vector, alternate name
 void  vCross(Vector* a, Vector* b, Vector* out); // cross product: out = a x b
 float vScalarTriple(Vector* a, Vector* b, Vector* c); // scalar triple product: a . (b x c)
+void  vProject(Vector* what, Vector* onto, Vector* out); // slower; onto may not be normalized
+void  vProjectNorm(Vector* what, Vector* onto, Vector* out); // faster; onto must be normalized
+
+float pvDist(Plane* p, Vector* v);
 
 void vMatrixMul(Vector* in, Matrix* m, Vector* out); // multiply a vector by a matrix
 void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out); // multiply a vector by a matrix
@@ -101,6 +107,10 @@ void mRot3f(float x, float y, float z, float theta, Matrix* out); // rotate abou
 void mRotX(float theta, Matrix* out); // 
 void mRotY(float theta, Matrix* out); // rotate about axes
 void mRotZ(float theta, Matrix* out); //
+void mTranspose(Matrix* in, Matrix* out);
+void mTransposeFast(Matrix* in, Matrix* out); // in cannot be out
+float mDeterminate(Matrix* m);
+int mInverse(Matrix* in, Matrix* out); // returns 0 on success, 1 if there is no inverse; out remains unchanged
 
 
 // analogous to glFrustum
