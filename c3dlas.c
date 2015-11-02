@@ -319,7 +319,10 @@ int mInverse(Matrix* in, Matrix* out) {
 	// Should check for 0 determinant
 
 	invdet = (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
-	if(invdet == 0.0) return 1;
+	if(invdet == 0.0) {
+		fprintf(stderr, "ERROR: Matrix has no inverse!!!\n");
+		return 1;
+	}
 	invdet = 1.0 / invdet;
 	
 	out->m[0]  = ( in->m[5] * c5 - in->m[9]  * c4 + in->m[13] * c3) * invdet;

@@ -44,6 +44,9 @@ typedef struct {
 	float d; // distance along normal to the origin
 } Plane;
 
+typedef struct { // does not have to be coplanar
+	Vector v[4];
+} Quad;
 
 typedef struct {
 	float m[16];
