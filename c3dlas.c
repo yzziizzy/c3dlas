@@ -708,7 +708,60 @@ void boxQuadrant2(const AABB2* in, char ix, char iy, AABB2* out) {
 }
 
 
+// 2D integer versions
 
+int boxDisjoint2i(const AABB2i* a, const AABB2i* b) {
+
+	return a->max.x < b->min.x || b->max.x < a->min.x
+		|| a->max.y < b->min.y || b->max.y < a->min.y;
+}
+
+int boxOverlaps2i(const AABB2i* a, const AABB2i* b) {
+	return !boxDisjoint2i(a, b);
+}
+
+
+
+int boxContainsPoint2i(const AABB2i* b, const Vector2i* p) {
+	return b->min.x <= p->x && b->max.x >= p->x
+		&& b->min.y <= p->y && b->max.y >= p->y;
+}
+
+
+void boxCenter2i(const AABB2i* b, Vector2* out) {
+	out->x = (b->max.x + b->min.x) / 2.0f;
+	out->y = (b->max.y + b->min.y) / 2.0f;
+}
+
+void boxSize2i(const AABB2i* b, Vector2i* out) {
+	out->x = b->max.x - b->min.x;
+	out->y = b->max.y - b->min.y;
+}
+
+// BUG: needs some fancy math work to keep everything tight. integers don't split nicely
+void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out) {
+	Vector2 sz, c;
+	
+	printf("fix me: %s:%d", __FILE__, __LINE__);
+	exit(666);
+	
+	boxCenter2(in, &c);
+	boxSize2(in, &sz);
+	sz.x *= .5;
+	sz.y *= .5;
+	
+	out->min.x = c.x - (ix ? 0.0f : sz.x);
+	out->min.y = c.y - (iy ? 0.0f : sz.y);
+	out->max.x = c.x + (ix ? sz.x : 0.0f);
+	out->max.y = c.y + (iy ? sz.y : 0.0f);
+}
+
+
+
+
+
+
+// ray stuff
 void makeRay(Vector* origin, Vector* direction, Ray* out) {
 	
 	out->o.x = origin->x;

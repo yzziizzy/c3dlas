@@ -67,9 +67,19 @@ typedef struct AABB {
 } AABB;
 
 typedef struct AABB2 {
-	Vector min;
-	Vector max;
+	Vector2 min;
+	Vector2 max;
 } AABB2;
+
+
+typedef struct {
+	int x,y;
+} Vector2i;
+
+typedef struct AABB2i {
+	Vector2i min;
+	Vector2i max;
+} AABB2i;
 
 
 extern const Matrix IDENT_MATRIX;
@@ -195,11 +205,18 @@ int boxDisjoint2(const AABB2* a, const AABB2* b);
 int boxOverlaps2(const AABB2* a, const AABB2* b);
 int boxContainsPoint2(const AABB2* b, const Vector2* p);
 
-
-
 void boxCenter2(const AABB2* b, Vector2* out); // calcuates the center of the box
 void boxSize2(const AABB2* b, Vector2* out); // calculates the size of the box
 void boxQuadrant2(const AABB2* in, char ix, char iy, AABB2* out);
+
+// 2D integer versions
+int boxDisjoint2i(const AABB2i* a, const AABB2i* b);
+int boxOverlaps2i(const AABB2i* a, const AABB2i* b);
+int boxContainsPoint2i(const AABB2i* b, const Vector2i* p);
+
+void boxCenter2i(const AABB2i* b, Vector2* out); // calcuates the center of the box
+void boxSize2i(const AABB2i* b, Vector2i* out); // calculates the size of the box
+void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out);
 
 
 
