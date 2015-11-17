@@ -31,13 +31,23 @@ typedef struct {
 	float x,y,z,w;
 } Vector4;
 
-
 typedef struct {
 	Vector o; // origin
 	Vector d; // normalized direction
 	Vector id; // inverse normalized direction (handy enough to keep around)
 } Ray;
 
+
+typedef struct BezierSplineSegment2 {
+	Vector2 e, c; // end and control
+	struct BezierSplineSegment2* next;
+} BezierSplineSegment2;
+
+typedef struct {
+	int length;
+	unsigned char* isLoop;
+	BezierSplineSegment2* segments;
+} BezierSpline2;
 
 typedef struct {
 	Vector n; // normal
@@ -100,6 +110,10 @@ void  vCross(Vector* a, Vector* b, Vector* out); // cross product: out = a x b
 float vScalarTriple(Vector* a, Vector* b, Vector* c); // scalar triple product: a . (b x c)
 void  vProject(Vector* what, Vector* onto, Vector* out); // slower; onto may not be normalized
 void  vProjectNorm(Vector* what, Vector* onto, Vector* out); // faster; onto must be normalized
+
+// reflects the distance from v to pivot across pivot. 
+// out, pivot, and v will form a straight line with pivot exactly in the middle.
+void  vReflectAcross(Vector* v, Vector* pivot, Vector* out); 
 
 float pvDist(Plane* p, Vector* v);
 
@@ -218,6 +232,16 @@ void boxCenter2i(const AABB2i* b, Vector2* out); // calcuates the center of the 
 void boxSize2i(const AABB2i* b, Vector2i* out); // calculates the size of the box
 void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out);
 
+
+
+
+// 2d vector stuff, same as 3d except one less d
+void  vAdd2(Vector2* a, Vector2* b, Vector2* out); // add two vectors
+void  vSub2(Vector2* from, Vector2* what, Vector2* diff); // diff = from - what
+
+// reflects the distance from v to pivot across pivot. 
+// out, pivot, and v will form a straight line with pivot exactly in the middle.
+void  vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out); 
 
 
 #endif // __c3dlas_h__

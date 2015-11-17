@@ -87,6 +87,36 @@ void  vProjectNorm(Vector* what, Vector* onto, Vector* out) { // faster; onto mu
 	vScale(onto, wdo, out);
 }
 
+// reflects the distance from v to pivot across pivot. 
+// out, pivot, and v will form a straight line with pivot exactly in the middle.
+void vReflectAcross(Vector* v, Vector* pivot, Vector* out) {
+	Vector diff;
+	
+	vSub(pivot, v, &diff);
+	vAdd(pivot, &diff, out);
+}
+
+// 2d vector stuff
+
+void vAdd2(Vector2* a, Vector2* b, Vector2* out) {
+	out->x = a->x + b->x;
+	out->y = a->y + b->y;
+}
+
+void vSub2(Vector2* from, Vector2* what, Vector2* diff) { // diff = from - what
+	diff->x = from->x - what->x;
+	diff->y = from->y - what->y;
+}
+
+// reflects the distance from v to pivot across pivot. 
+// out, pivot, and v will form a straight line with pivot exactly in the middle.
+void vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out) {
+	Vector2 diff;
+	
+	vSub2(pivot, v, &diff);
+	vAdd2(pivot, &diff, out);
+}
+
 // plane-vector operations
 
 // distance from point to plane
@@ -832,4 +862,94 @@ int boxRayIntersect(const AABB* b, const Ray* r, Vector* ipoint, float* idist) {
 	
 	return 1;
 }
+
+
+// returns a local t value for the segment the normalized value falls into
+static float bsNormalToLocalT2(BezierSpline2* bs, float normalT, int* segNum) {
+	
+	float segT = 1.0 / (bs->length - (!bs->isLoop));
+	if(segNum) *segNum = (int)(normalT / segT);
+	return fmod(normalT, segT) / segT;
+}
+
+// returns which segment a normalized t falls in
+static int bsSegNum2(BezierSpline2* bs, float normalT) {
+	
+	float segT = 1.0 / (bs->length - (!bs->isLoop));
+	return (int)(normalT / segT);
+}
+
+
+// returns a full set of control points for the segment t falls into
+// out's order is e1, c1, c2, e2
+static void bsSegmentForT2(BezierSpline2* bs, float normalT, Vector2* out) {
+	BezierSplineSegment2* p, *n;
+	int segN, i;
+	
+	segN = i = bsSegNum2(bs, normalT);
+	
+	p = bs->segments;
+	while(i--) p = p->next;
+	
+	// a loop wraps around at the end
+	n = (bs->isLoop && (segN == (bs->length - 1))) ? bs->segments : p->next;
+	
+	// end 1
+	out[0].x = p->e.x;
+	out[0].y = p->e.y;
+	
+	// control 1
+	out[1].x = p->c.x;
+	out[1].y = p->c.y;
+	
+	// control 2 - this one is reflected across e2
+	vReflectAcross(&n->c, &n->e, &out[2]); 
+	
+	// end 2
+	out[3].x = n->e.x;
+	out[3].y = n->e.y;
+}
+
+
+
+	
+
+
+// BUG: this function is probably horribly broken
+// this function evaluates a spline with a [0,1] normalized value of t across the whole spline
+void bsEval2(BezierSpline2* bs, float normalT, Vector2* out) {
+	
+	int segN;
+	float localT;
+	
+	// find which spline segment the t is in
+	localT = bsNormalToLocalT2(bs, normalT, & segN);  
+	
+	// grab that segment
+	BezierSplineSegment2* seg = bs->segments;
+	
+	int i = 0;
+	while(i++ < segN) seg = seg->next;
+	
+	// find the local value of t 
+	
+	
+}
+
+
+// subdivide a spline into a set of line segments. linePoints must be allocated externally.
+// this function is faster than more accurate ones.
+void bsplineEvenLines(BezierSpline2* bs, int lineCount, Vector2* linePoints) {
+	
+	float tIncrement;
+	
+	
+	tIncrement = (float)(bs->length - 1) / (float)lineCount;
+	
+	
+	
+	
+	
+}
+
 
