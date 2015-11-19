@@ -13,6 +13,12 @@
 // vector operations
 
 
+void vCopy(const Vector* src, Vector* dst) {
+	dst->x = src->x;
+	dst->y = src->y;
+	dst->z = src->z;
+}
+
 void vAdd(Vector* a, Vector* b, Vector* out) {
 	out->x = a->x + b->x;
 	out->y = a->y + b->y;
@@ -614,6 +620,11 @@ void evalBezier(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector*
 	out->z = evalBezier1D(e1->z, e2->z, c1->z, c2->z, t);
 }
 
+void evalBezier2D(Vector2* e1, Vector2* e2, Vector2* c1, Vector2* c2, float t, Vector2* out) {
+	out->x = evalBezier1D(e1->x, e2->x, c1->x, c2->x, t);
+	out->y = evalBezier1D(e1->y, e2->y, c1->y, c2->y, t);
+}
+
 float evalBezier1D(float e1, float e2, float c1, float c2, float t) {
 	float mt, mt2, t2;
 	mt = 1 - t;
@@ -917,34 +928,30 @@ static void bsSegmentForT2(BezierSpline2* bs, float normalT, Vector2* out) {
 
 // BUG: this function is probably horribly broken
 // this function evaluates a spline with a [0,1] normalized value of t across the whole spline
-void bsEval2(BezierSpline2* bs, float normalT, Vector2* out) {
+void bsEvalPoint2(BezierSpline2* bs, float normalT, Vector2* out) {
 	
 	int segN;
 	float localT;
 	
 	// find which spline segment the t is in
-	localT = bsNormalToLocalT2(bs, normalT, & segN);  
+	localT = bsNormalToLocalT2(bs, normalT, &segN);  
 	
-	// grab that segment
-	BezierSplineSegment2* seg = bs->segments;
+	// find the local value of t
+	Vector2 cp[4];
+	bsSegmentForT2(bs, normalT, cp);
 	
-	int i = 0;
-	while(i++ < segN) seg = seg->next;
-	
-	// find the local value of t 
-	
-	
+	evalBezier2D(&cp[0], &cp[3], &cp[1], &cp[2], localT, out);
 }
 
 
 // subdivide a spline into a set of line segments. linePoints must be allocated externally.
 // this function is faster than more accurate ones.
-void bsplineEvenLines(BezierSpline2* bs, int lineCount, Vector2* linePoints) {
+void bsEvenLines(BezierSpline2* bs, int lineCount, Vector2* linePoints) {
 	
 	float tIncrement;
 	
 	
-	tIncrement = (float)(bs->length - 1) / (float)lineCount;
+	tIncrement = (float)(bs->length - (!bs->isLoop)) / (float)lineCount;
 	
 	
 	

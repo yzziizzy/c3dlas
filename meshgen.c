@@ -81,3 +81,45 @@ float* genNoisef(short width, short height, float min, float max) {
 }
 
 
+
+
+
+
+Mesh* extrudeAlongVector(Vector* lineStrip, int lineCount, Vector* v) {
+	
+	int i;
+	Mesh* m;
+	
+	m = malloc(sizeof(Mesh));
+	
+	// step 1: allocate enough memory for the mesh
+	m->vertexCnt = (lineCount + 1) * 2;
+	m->indexCnt = 3 * vertexCnt;
+	
+	m->vertices = malloc(sizeof(Vector) * vertexCnt);
+	m->indices = malloc(sizeof(short) * indexCnt);
+	
+	// fill in vertices
+	for(i = 0; i <= lineCount; i++) {
+		vCopy(&lineStrip[i], &m->vertices[i*2]);
+		vAdd(&lineStrip[i], v, &m->vertices[(i*2)+1]);
+	}
+	
+	// fill in indices
+	for(i = 0; i <= lineCount; i++) {
+		m->indices[(i*6)+0] = i;
+		m->indices[(i*6)+1] = i + 1
+	}
+	
+	
+	
+	
+	
+}
+
+
+
+
+
+
+

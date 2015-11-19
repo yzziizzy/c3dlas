@@ -18,6 +18,18 @@ typedef struct {
 } IndexedPatch;
 
 
+typedef struct Mesh {
+	Vector* vertices;
+	unsigned short* indices;
+	int vertexCnt;
+	int indexCnt;
+	// always GL_TRIANGLES
+	
+	
+} Mesh;
+
+
+
 // TODO: winding and strips. currently it outputs a triangle list and the winding is probably fucked.
 // in the x-y plane, 0,0 at the lower left
 void mgGenFlatPatch(short width, short height, IndexedPatch* out);
@@ -25,6 +37,11 @@ void mgGenFlatPatch(short width, short height, IndexedPatch* out);
 
 
 float* genNoisef(short width, short height, float min, float max);
+
+
+
+
+
 
 
 
