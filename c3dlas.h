@@ -111,6 +111,9 @@ void  vCross(Vector* a, Vector* b, Vector* out); // cross product: out = a x b
 float vScalarTriple(Vector* a, Vector* b, Vector* c); // scalar triple product: a . (b x c)
 void  vProject(Vector* what, Vector* onto, Vector* out); // slower; onto may not be normalized
 void  vProjectNorm(Vector* what, Vector* onto, Vector* out); // faster; onto must be normalized
+void  vMin(Vector* a, Vector* b, Vector* out); // returns the minimum values of each component
+void  vMax(Vector* a, Vector* b, Vector* out); // returns the maximum values of each component
+void  vSet(float x, float y, float z, Vector* out);
 
 // reflects the distance from v to pivot across pivot. 
 // out, pivot, and v will form a straight line with pivot exactly in the middle.

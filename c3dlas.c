@@ -93,6 +93,28 @@ void  vProjectNorm(Vector* what, Vector* onto, Vector* out) { // faster; onto mu
 	vScale(onto, wdo, out);
 }
 
+
+// returns the minimum values of each component
+void  vMin(Vector* a, Vector* b, Vector* out) {
+	out->x = fmin(a->x, b->x);
+	out->y = fmin(a->y, b->y);
+	out->z = fmin(a->z, b->z);
+}
+
+// returns the maximum values of each component
+void  vMax(Vector* a, Vector* b, Vector* out) {
+	out->x = fmax(a->x, b->x);
+	out->y = fmax(a->y, b->y);
+	out->z = fmax(a->z, b->z);
+}
+
+void inline vSet(float x, float y, float z, Vector* out) {
+	out->x = x;
+	out->y = y;
+	out->z = x;
+}
+
+
 // reflects the distance from v to pivot across pivot. 
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void vReflectAcross(Vector* v, Vector* pivot, Vector* out) {
