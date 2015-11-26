@@ -1,6 +1,9 @@
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
+#include "c3dlas.h"
 #include "meshgen.h"
 
 
@@ -94,10 +97,10 @@ Mesh* extrudeAlongVector(Vector* lineStrip, int lineCount, Vector* v) {
 	
 	// step 1: allocate enough memory for the mesh
 	m->vertexCnt = (lineCount + 1) * 2;
-	m->indexCnt = 3 * vertexCnt;
+	m->indexCnt = 3 * m->vertexCnt;
 	
-	m->vertices = malloc(sizeof(Vector) * vertexCnt);
-	m->indices = malloc(sizeof(short) * indexCnt);
+	m->vertices = malloc(sizeof(Vector) * m->vertexCnt);
+	m->indices = malloc(sizeof(short) * m->indexCnt);
 	
 	// fill in vertices
 	for(i = 0; i <= lineCount; i++) {
@@ -108,7 +111,7 @@ Mesh* extrudeAlongVector(Vector* lineStrip, int lineCount, Vector* v) {
 	// fill in indices
 	for(i = 0; i <= lineCount; i++) {
 		m->indices[(i*6)+0] = i;
-		m->indices[(i*6)+1] = i + 1
+		m->indices[(i*6)+1] = i + 1;
 	}
 	
 	
@@ -118,6 +121,128 @@ Mesh* extrudeAlongVector(Vector* lineStrip, int lineCount, Vector* v) {
 }
 
 
+Mesh* allocMesh(int triangles) {
+	Mesh* m;
+	
+	m = calloc(sizeof(Mesh), 1);
+	
+	if(triangles <= 0) return m;
+	
+	m->vertices = malloc(sizeof(Vector) * 3 * triangles);
+	m->normals = malloc(sizeof(Vector) * 3 * triangles);
+	m->indices = malloc(sizeof(unsigned short) * 3 * triangles);
+	
+	m->szVertices = 3 * triangles;
+	m->szIndices = 3 * triangles;
+	
+	return m;
+}
+
+
+
+Mesh* makeFlatCube(Vector* p1, Vector* p2) {
+	
+	Mesh* m;
+	Vector min, max;
+	int i, n;
+	
+	vMin(p1, p2, &min);
+	vMax(p1, p2, &max);
+	
+	m = allocMesh(6 * 2);
+	
+	i = 0;
+	n = 0;
+	// x+ face
+	vSet(max.x, min.y, min.z, &m->vertices[i++]);
+	vSet(max.x, min.y, max.z, &m->vertices[i++]);
+	vSet(max.x, max.y, min.z, &m->vertices[i++]);
+	vSet(max.x, max.y, max.z, &m->vertices[i++]);
+	while(n <= i) vSet(1, 0, 0, &m->normals[n++]);
+
+	// x- face
+	vSet(min.x, min.y, min.z, &m->vertices[i++]);
+	vSet(min.x, min.y, max.z, &m->vertices[i++]);
+	vSet(min.x, max.y, min.z, &m->vertices[i++]);
+	vSet(min.x, max.y, max.z, &m->vertices[i++]);
+	while(n <= i) vSet(-1, 0, 0, &m->normals[n++]);
+
+	// y+ face
+	vSet(min.x, max.y, min.z, &m->vertices[i++]);
+	vSet(min.x, max.y, max.z, &m->vertices[i++]);
+	vSet(max.x, max.y, min.z, &m->vertices[i++]);
+	vSet(max.x, max.y, max.z, &m->vertices[i++]);
+	while(n <= i) vSet(0, 1, 0, &m->normals[n++]);
+
+	// y- face
+	vSet(min.x, min.y, min.z, &m->vertices[i++]);
+	vSet(min.x, min.y, max.z, &m->vertices[i++]);
+	vSet(max.x, min.y, min.z, &m->vertices[i++]);
+	vSet(max.x, min.y, max.z, &m->vertices[i++]);
+	while(n <= i) vSet(0, -1, 0, &m->normals[n++]);
+
+	// z+ face
+	vSet(min.x, min.y, max.z, &m->vertices[i++]);
+	vSet(max.x, min.y, max.z, &m->vertices[i++]);
+	vSet(min.x, max.y, max.z, &m->vertices[i++]);
+	vSet(max.x, max.y, max.z, &m->vertices[i++]);
+	while(n <= i) vSet(0, 0, 1, &m->normals[n++]);
+
+	// z- face
+	vSet(min.x, min.y, min.z, &m->vertices[i++]);
+	vSet(max.x, min.y, min.z, &m->vertices[i++]);
+	vSet(min.x, max.y, min.z, &m->vertices[i++]);
+	vSet(max.x, max.y, min.z, &m->vertices[i++]);
+	while(n <= i) vSet(0, 0, -1, &m->normals[n++]);
+	
+	
+}
+
+
+// shitty version
+Mesh* makeCube(Matrix* mat, int flat) {
+	Mesh* m;
+	int i;
+	
+	static Vector vertices[] = {
+		// front face
+		{-.5, -.5,  .5},
+		{-.5,  .5,  .5},
+		{ .5,  .5,  .5},
+		{ .5, -.5,  .5},
+		// back face
+		{-.5, -.5, -.5},
+		{-.5,  .5, -.5},
+		{ .5,  .5, -.5},
+		{ .5, -.5, -.5}
+	};
+	
+	static unsigned short indices[] = {
+		0,1,2, 2,3,0, 
+		4,5,6, 6,7,4,
+		0,1,4, 1,4,5,
+		3,4,7, 3,0,4,
+		2,5,6, 0,2,5,
+		2,3,6, 3,6,7,
+	};
+	
+	m = malloc(sizeof(Mesh));
+	m->vertices = malloc(sizeof(Vector) * 8);
+	m->indices = malloc(sizeof(unsigned short) * 8 * 2 * 3);
+	
+	m->vertexCnt = 8;
+	m->indexCnt = 3*2*6;
+	
+	// transform the vertices
+	for(i = 0; i < 8; i++)
+		vMatrixMul(&vertices[i], mat, &m->vertices[i]);
+	
+	// fill the index buffer
+	memcpy(m->indices, indices, sizeof(indices));
+	
+	
+	return m;
+}
 
 
 

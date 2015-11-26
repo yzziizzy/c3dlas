@@ -18,12 +18,24 @@ typedef struct {
 } IndexedPatch;
 
 
+
+
+
+
+
 typedef struct Mesh {
 	Vector* vertices;
+	Vector* normals;
 	unsigned short* indices;
+	
+	// used quantity
 	int vertexCnt;
 	int indexCnt;
 	// always GL_TRIANGLES
+	
+	// allocated sizes, in elements
+	int szVertices;
+	int szIndices;
 	
 	
 } Mesh;
@@ -39,7 +51,7 @@ void mgGenFlatPatch(short width, short height, IndexedPatch* out);
 float* genNoisef(short width, short height, float min, float max);
 
 
-
+Mesh* makeCube(Matrix* mat, int flat);
 
 
 
