@@ -136,6 +136,27 @@ void vSub2(Vector2* from, Vector2* what, Vector2* diff) { // diff = from - what
 	diff->y = from->y - what->y;
 }
 
+void vScale2(Vector2* v, float scalar, Vector2* out) {
+	out->x = v->x * scalar;
+	out->y = v->y * scalar;
+}
+
+void vNorm2(Vector2* v, Vector2* out) {
+	vUnit2(v, out);
+}
+
+void vUnit2(Vector2* v, Vector2* out) {
+	float n;
+	n = (v->x * v->x) + (v->y * v->y);
+	
+	if(n >= 1.0f - FLT_EPSILON || n >= 1.0f + FLT_EPSILON) return; // very exact here
+	
+	n = 1.0f / sqrtf(n);
+	out->x = v->x * n;
+	out->y = v->y * n;
+}
+
+
 // reflects the distance from v to pivot across pivot. 
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out) {

@@ -242,6 +242,9 @@ void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out);
 // 2d vector stuff, same as 3d except one less d
 void  vAdd2(Vector2* a, Vector2* b, Vector2* out); // add two vectors
 void  vSub2(Vector2* from, Vector2* what, Vector2* diff); // diff = from - what
+void  vScale2(Vector2* v, float scalar, Vector2* out); // scalar muliplication 
+void  vNorm2(Vector2* v, Vector2* out); // normalize the vector
+void  vUnit2(Vector2* v, Vector2* out); // normalise the vector, alternate name
 
 // reflects the distance from v to pivot across pivot. 
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
