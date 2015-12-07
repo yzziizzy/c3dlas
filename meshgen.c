@@ -328,11 +328,40 @@ void calcFlatNormals(Mesh* m) {
 }
 
 
+// only works if vertices are welded first. 
+void calcSmoothNormals(Mesh* m) {
+	
+	Vector* sums;
+	int i, vi0, vi1, vi2;
+	Vector n;
+	
+	sums = calloc(1, m->vertexCnt * sizeof(Vector));
+	
+	for(i = 0; i < m->indexCnt; i += 3) {
+		vi0 = m->indices[i];
+		vi1 = m->indices[i];
+		vi2 = m->indices[i];
+		
+		vTriFaceNormal(&m->vertices[v0].v, &m->vertices[v1].v, &m->vertices[v2].v, &n);
+		
+		vAdd(&n, &sums[vi0]); 
+		vAdd(&n, &sums[vi1]); 
+		vAdd(&n, &sums[vi2]); 
+	};
+	
+	for(i = 0; i < m->vertexCnt; i++) {
+		vNorm(&sums[i], &m->vertices[i].n); 
+	}
+	
+	free(sums);
+}
+
+
 
 // rewrites a mesh with no vertex reuse. required for flat shading.
 // super mega naive version; git-r-done. probably more cache-friendly than fancy ones anyway.
 //    a few bits of data can probably be collected in previous passes, like newVertexCnt.
-void duplicateVertices(Mesh* m) {
+void unweldVertices(Mesh* m) {
 	
 	char* vusage;
 	int i;
@@ -387,6 +416,8 @@ void duplicateVertices(Mesh* m) {
 	
 	
 	m->vertexCnt = newVertexCnt;
+
+	free(vusage);
 }
 
 
