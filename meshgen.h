@@ -45,6 +45,23 @@ typedef struct Mesh {
 } Mesh;
 
 
+typedef struct MeshSlice {
+	
+	MeshVertex* vertices; 
+	short* indices; 
+	// always line strips; -1 resets
+	
+	int vertexCnt;
+	int indexCnt;
+	
+	// allocated sizes, in elements
+	int szVertices;
+	int szIndices;
+	
+	Vector2 texDxDy;
+} MeshSlice;
+
+
 
 // TODO: winding and strips. currently it outputs a triangle list and the winding is probably fucked.
 // in the x-y plane, 0,0 at the lower left

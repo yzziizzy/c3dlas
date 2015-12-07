@@ -358,6 +358,13 @@ void calcSmoothNormals(Mesh* m) {
 
 
 
+void weldVertices(Mesh* m) {
+	
+	
+	
+}
+
+
 // rewrites a mesh with no vertex reuse. required for flat shading.
 // super mega naive version; git-r-done. probably more cache-friendly than fancy ones anyway.
 //    a few bits of data can probably be collected in previous passes, like newVertexCnt.
@@ -421,3 +428,57 @@ void unweldVertices(Mesh* m) {
 }
 
 
+
+MeshSlice* allocMeshSlice(int vcnt, int icnt) {
+	
+	MeshSlice* ms;
+	
+	ms = calloc(1, sizeof(MeshSlice));
+	
+	ms->vertices = calloc(1, vcnt * sizeof(MeshVertex));
+	ms->indices = calloc(1, icnt * sizeof(short));
+	
+	ms->szVertices = vcnt;
+	ms->szIndices = icnt;
+	
+	return ms;
+}
+
+
+
+MeshSlice* makeCircle(float radius, int divisions) {
+	
+	MeshSlice* ms;
+	int i;
+	float divf = (float)divisions;
+	
+	ms = allocMeshSlice(divisions, divisions + 1);
+	
+	for(i = 0; i < divisions; i++) {
+		ms->vertices[i].v.x = radius * sin((i / divf) * F_2PI); 
+		ms->vertices[i].v.y = radius * cos((i / divf) * F_2PI); 
+		ms->vertices[i].v.z = 0;
+		vCopy(&ms->vertices[i].v, &ms->vertices[i].n);
+		ms->vertices[i].t.u = i / divf;
+		ms->vertices[i].t.v = 0;
+		
+		ms->indices[i] = i;
+	}
+	
+	ms->indices[divisions] = 0;
+	
+	ms->vertexCnt = divisions;
+	ms->indexCnt = divisions + 1;
+	
+	ms->texDxDy.x = 0;
+	ms->texDxDy.y = 1;
+	
+	return ms;
+}
+
+
+void appendBezierSpline(MeshSlice* ms, BezierSpline* bs, float tolerance, int connectToEnd) {
+	
+	
+	
+}
