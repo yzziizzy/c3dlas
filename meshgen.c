@@ -134,6 +134,9 @@ Mesh* allocMesh(int triangles) {
 	m->szVertices = 3 * triangles;
 	m->szIndices = 3 * triangles;
 	
+	m->vertexCnt = 0;
+	m->indexCnt = 0;
+	
 	return m;
 }
 
@@ -182,6 +185,58 @@ Mesh* makeCube(Matrix* mat, int flat) {
 	return m;
 }
 
+
+Mesh* makeCuboid(Vector* p1, Vector* p2) {
+	
+	Mesh* m;
+	Vector min, max;
+	int i, n;
+	
+	vMin(p1, p2, &min);
+	vMax(p1, p2, &max);
+	
+	m = allocMesh(6 * 2);
+	
+	i = 0;
+	n = 0;
+	// x+ face
+	vSet(max.x, min.y, min.z, &m->vertices[i++].v);
+	vSet(max.x, min.y, max.z, &m->vertices[i++].v);
+	vSet(max.x, max.y, min.z, &m->vertices[i++].v);
+	vSet(max.x, max.y, max.z, &m->vertices[i++].v);
+
+	// x- face
+	vSet(min.x, min.y, min.z, &m->vertices[i++].v);
+	vSet(min.x, min.y, max.z, &m->vertices[i++].v);
+	vSet(min.x, max.y, min.z, &m->vertices[i++].v);
+	vSet(min.x, max.y, max.z, &m->vertices[i++].v);
+
+	// y+ face
+	vSet(min.x, max.y, min.z, &m->vertices[i++].v);
+	vSet(min.x, max.y, max.z, &m->vertices[i++].v);
+	vSet(max.x, max.y, min.z, &m->vertices[i++].v);
+	vSet(max.x, max.y, max.z, &m->vertices[i++].v);
+
+	// y- face
+	vSet(min.x, min.y, min.z, &m->vertices[i++].v);
+	vSet(min.x, min.y, max.z, &m->vertices[i++].v);
+	vSet(max.x, min.y, min.z, &m->vertices[i++].v);
+	vSet(max.x, min.y, max.z, &m->vertices[i++].v);
+
+	// z+ face
+	vSet(min.x, min.y, max.z, &m->vertices[i++].v);
+	vSet(max.x, min.y, max.z, &m->vertices[i++].v);
+	vSet(min.x, max.y, max.z, &m->vertices[i++].v);
+	vSet(max.x, max.y, max.z, &m->vertices[i++].v);
+
+	// z- face
+	vSet(min.x, min.y, min.z, &m->vertices[i++]);
+	vSet(max.x, min.y, min.z, &m->vertices[i++]);
+	vSet(min.x, max.y, min.z, &m->vertices[i++]);
+	vSet(max.x, max.y, min.z, &m->vertices[i++]);
+	
+	m->vertexCnt = i;
+}
 
 
 
