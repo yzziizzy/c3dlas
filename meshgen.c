@@ -142,7 +142,72 @@ Mesh* allocMesh(int triangles) {
 
 
 
+void growMeshVertices(Mesh* m, int count) {
+	if(count < m->szVertices) return;
+	
+	m->vertices = realloc(m->vertices, sizeof(MeshVertex) * count);
+	m->szVertices = count;
+}
 
+void growMeshIndices(Mesh* m, int count) {
+	if(count < m->szIndices) return;
+	
+	m->indices = realloc(m->indices, sizeof(MeshVertex) * count);
+	m->szIndices = count;
+}
+
+void checkMeshGrow(Mesh* m, int newVertices, int newIndices) {
+	if(m->szVertices - m->vertexCnt < newVertices) {
+		if(m->szVertices < 16) m->szVertices = 16;
+		// grow by the next multiple of szVertices large enough to fit the requested quantity
+		growMeshVertices(m, (((m->szVertices + newVertices) / m->szVertices) + 1) * m->szVertices);
+	}
+	
+	if(m->szIndices - m->indexCnt < newIndices) {
+		if(m->szIndices < 16) m->szIndices = 16;
+		// same as above
+		growMeshIndices(m, (((m->szIndices + newIndices) / m->szIndices) + 1) * m->szIndices);
+	}
+	
+}
+
+
+
+void appendTriangle(Mesh* m, Vector* v0, Vector* v1, Vector* v2) {
+	
+	checkGrowMesh(m, 3, 3);
+	
+	appendTriangleFast(m, v0, v1, v2);
+}
+
+// doesn't check mesh allocation size. Real Programmers(TM) already know how much memory there is.
+void appendTriangleFast(Mesh* m, Vector* v0, Vector* v1, Vector* v2) {
+	int i = m->vertexCnt;
+	int j = m->indexCnt;
+	
+	m->indices[j++] = i;
+	m->indices[j++] = i+1;
+	m->indices[j++] = i+2;
+	vCopy(v0, &m->vertices[i++].v);
+	vCopy(v1, &m->vertices[i++].v);
+	vCopy(v2, &m->vertices[i++].v);
+	
+	m->vertexCnt = i;
+	m->indexCnt = j;
+}
+
+
+// appends a face of vnct vertices to the mesh
+// CW winding, convex polygons only. will be tesselated as a fan pivoting around v[0].
+void appendFace(Mesh* m, Vector* v, int vcnt) { 
+	int i;
+	
+	checkGrowMesh(m, vcnt, 3 * (vcnt - 2));
+	
+	for(i = 0; i < vcnt - 2; i++) {
+		appendTriangleFast(m, &v[0], &v[i+1], &v[i+2]);
+	}
+}
 
 
 // shitty version
@@ -244,7 +309,7 @@ Mesh* makeCuboid(Vector* p1, Vector* p2) {
 
 
 // assumes vertices are not shared 
-void calcFlatNormals(Mesh*) {
+void calcFlatNormals(Mesh* m) {
 	int j, i1, i2, i3;
 	Vector n;
 	
