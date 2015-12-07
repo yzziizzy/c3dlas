@@ -128,8 +128,7 @@ Mesh* allocMesh(int triangles) {
 	
 	if(triangles <= 0) return m;
 	
-	m->vertices = malloc(sizeof(Vector) * 3 * triangles);
-	m->normals = malloc(sizeof(Vector) * 3 * triangles);
+	m->vertices = malloc(sizeof(MeshVertex) * triangles);
 	m->indices = malloc(sizeof(unsigned short) * 3 * triangles);
 	
 	m->szVertices = 3 * triangles;
@@ -140,63 +139,7 @@ Mesh* allocMesh(int triangles) {
 
 
 
-Mesh* makeFlatCube(Vector* p1, Vector* p2) {
-	
-	Mesh* m;
-	Vector min, max;
-	int i, n;
-	
-	vMin(p1, p2, &min);
-	vMax(p1, p2, &max);
-	
-	m = allocMesh(6 * 2);
-	
-	i = 0;
-	n = 0;
-	// x+ face
-	vSet(max.x, min.y, min.z, &m->vertices[i++]);
-	vSet(max.x, min.y, max.z, &m->vertices[i++]);
-	vSet(max.x, max.y, min.z, &m->vertices[i++]);
-	vSet(max.x, max.y, max.z, &m->vertices[i++]);
-	while(n <= i) vSet(1, 0, 0, &m->normals[n++]);
 
-	// x- face
-	vSet(min.x, min.y, min.z, &m->vertices[i++]);
-	vSet(min.x, min.y, max.z, &m->vertices[i++]);
-	vSet(min.x, max.y, min.z, &m->vertices[i++]);
-	vSet(min.x, max.y, max.z, &m->vertices[i++]);
-	while(n <= i) vSet(-1, 0, 0, &m->normals[n++]);
-
-	// y+ face
-	vSet(min.x, max.y, min.z, &m->vertices[i++]);
-	vSet(min.x, max.y, max.z, &m->vertices[i++]);
-	vSet(max.x, max.y, min.z, &m->vertices[i++]);
-	vSet(max.x, max.y, max.z, &m->vertices[i++]);
-	while(n <= i) vSet(0, 1, 0, &m->normals[n++]);
-
-	// y- face
-	vSet(min.x, min.y, min.z, &m->vertices[i++]);
-	vSet(min.x, min.y, max.z, &m->vertices[i++]);
-	vSet(max.x, min.y, min.z, &m->vertices[i++]);
-	vSet(max.x, min.y, max.z, &m->vertices[i++]);
-	while(n <= i) vSet(0, -1, 0, &m->normals[n++]);
-
-	// z+ face
-	vSet(min.x, min.y, max.z, &m->vertices[i++]);
-	vSet(max.x, min.y, max.z, &m->vertices[i++]);
-	vSet(min.x, max.y, max.z, &m->vertices[i++]);
-	vSet(max.x, max.y, max.z, &m->vertices[i++]);
-	while(n <= i) vSet(0, 0, 1, &m->normals[n++]);
-
-	// z- face
-	vSet(min.x, min.y, min.z, &m->vertices[i++]);
-	vSet(max.x, min.y, min.z, &m->vertices[i++]);
-	vSet(min.x, max.y, min.z, &m->vertices[i++]);
-	vSet(max.x, max.y, min.z, &m->vertices[i++]);
-	while(n <= i) vSet(0, 0, -1, &m->normals[n++]);
-	
-	
-}
 
 
 // shitty version
@@ -226,16 +169,11 @@ Mesh* makeCube(Matrix* mat, int flat) {
 		2,3,6, 3,6,7,
 	};
 	
-	m = malloc(sizeof(Mesh));
-	m->vertices = malloc(sizeof(Vector) * 8);
-	m->indices = malloc(sizeof(unsigned short) * 8 * 2 * 3);
-	
-	m->vertexCnt = 8;
-	m->indexCnt = 3*2*6;
+	m = allocMesh(6 * 2);
 	
 	// transform the vertices
 	for(i = 0; i < 8; i++)
-		vMatrixMul(&vertices[i], mat, &m->vertices[i]);
+		vMatrixMul(&vertices[i], mat, &m->vertices[i].v);
 	
 	// fill the index buffer
 	memcpy(m->indices, indices, sizeof(indices));
@@ -246,5 +184,89 @@ Mesh* makeCube(Matrix* mat, int flat) {
 
 
 
+
+
+
+
+// assumes vertices are not shared 
+void calcFlatNormals(Mesh*) {
+	int j, i1, i2, i3;
+	Vector n;
+	
+	
+	for(j = 0; j < m->indexCnt; j += 3) {
+		
+		i1 = m->indices[i];
+		i2 = m->indices[i+1];
+		i3 = m->indices[i+2];
+		
+		vTriFaceNormal(&m->vertices[i1].v, &m->vertices[i2].v, &m->vertices[i3].v, &n);
+		vCopy(&n, &m->vertices[i1].n);
+		vCopy(&n, &m->vertices[i2].n);
+		vCopy(&n, &m->vertices[i3].n);
+	}
+}
+
+
+
+// rewrites a mesh with no vertex reuse. required for flat shading.
+// super mega naive version; git-r-done. probably more cache-friendly than fancy ones anyway.
+//    a few bits of data can probably be collected in previous passes, like newVertexCnt.
+void duplicateVertices(Mesh* m) {
+	
+	char* vusage;
+	int i;
+	int good_already = 1; // this variable looks silly in camelCase
+	int newVertexCnt = 0;
+	int newVIndex;
+	
+	
+	vusage = calloc(1, sizeof(char) * m->vertexCnt);
+	
+	// see how many vertices are reused;
+	for(i = 0; i < m->indexCnt; i++) {
+		vusage[m->indices[i]]++;
+		if(vusage[m->indices[i]] > 1) good_already = 0;
+	}
+	
+	// return early if no vertices are used twice
+	if(good_already) {
+		free(vusage);
+		return;
+	}
+	
+	// calculate new vertex buffer size and realloc if necessary
+	for(i = 0; i < m->vertexCnt; i++) {
+		newVertexCnt += vusage[i];
+	}
+	
+	if(newVertexCnt > szVertices) {
+		realloc(m->vertices, sizeof(MeshVertex) * newVertexCnt);
+		m->szVertices = newVertexCnt;
+	}
+	
+	// "new" vertices are appended after the last "old" vertex
+	newVindex = m->vertexCnt;
+	for(i = 0; i < m->indexCnt; i++) {
+		int vi;
+		
+		vi = m->indices[i]; 
+		if(vusage[vi] > 1) {
+			// copy vertex
+			memcpy(&m->vertices[vi], &m->vertices[newVindex], sizeof(MeshVertex));
+			
+			// update index buffer with new vertex
+			m->indices[i] = newVIndex;
+			
+			// mark off one of the "uses"
+			vusage[vi]--;
+			
+			newVIndex++;
+		}
+	}
+	
+	
+	m->vertexCnt = newVertexCnt;
+}
 
 

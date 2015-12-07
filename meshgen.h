@@ -21,11 +21,15 @@ typedef struct {
 
 
 
-
+typedef struct MeshVertex {
+	Vector v, n;
+	struct {
+		unsigned short u, v;
+	} t;
+} MeshVertex;
 
 typedef struct Mesh {
-	Vector* vertices;
-	Vector* normals;
+	MeshVertex* vertices;
 	unsigned short* indices;
 	
 	// used quantity

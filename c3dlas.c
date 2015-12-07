@@ -166,6 +166,17 @@ void vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out) {
 	vAdd2(pivot, &diff, out);
 }
 
+void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out) {
+	Vector a_b, a_c;
+	
+	vSub(a, b, &a_b);
+	vSub(a, c, &a_c);
+	vCross(&a_b, &a_b, out);
+	vNorm(out, out);
+}
+
+
+
 // plane-vector operations
 
 // distance from point to plane

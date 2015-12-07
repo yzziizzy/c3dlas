@@ -118,6 +118,7 @@ void  vSet(float x, float y, float z, Vector* out);
 // reflects the distance from v to pivot across pivot. 
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void  vReflectAcross(Vector* v, Vector* pivot, Vector* out); 
+void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out); // returns a normalized face normal for the given triangle
 
 float pvDist(Plane* p, Vector* v);
 
