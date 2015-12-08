@@ -19,6 +19,19 @@ void vCopy(const Vector* src, Vector* dst) {
 	dst->z = src->z;
 }
 
+void vSwap(Vector* a, Vector* b) { // swap two vectors
+	float x, y, z;
+	x = a->x;
+	y = a->y;
+	z = a->z;
+	a->x = b->x;
+	a->y = b->y;
+	a->z = b->z;
+	b->x = x;
+	b->y = y;
+	b->z = z;
+}
+
 void vAdd(Vector* a, Vector* b, Vector* out) {
 	out->x = a->x + b->x;
 	out->y = a->y + b->y;
@@ -125,6 +138,16 @@ void vReflectAcross(Vector* v, Vector* pivot, Vector* out) {
 }
 
 // 2d vector stuff
+
+void vSwap2(Vector2* a, Vector2* b) { // swap two vectors
+	float x, y;
+	x = a->x;
+	y = a->y;
+	a->x = b->x;
+	a->y = b->y;
+	b->x = x;
+	b->y = y;
+}
 
 void vAdd2(Vector2* a, Vector2* b, Vector2* out) {
 	out->x = a->x + b->x;

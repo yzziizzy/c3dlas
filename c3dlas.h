@@ -99,6 +99,7 @@ extern const Matrix IDENT_MATRIX;
 
 
 void  vCopy(const Vector* src, Vector* dst); // add two vectors
+void  vSwap(Vector* a, Vector* b); // swap two vectors
 void  vAdd(Vector* a, Vector* b, Vector* out); // add two vectors
 void  vSub(Vector* from, Vector* what, Vector* diff); // diff = from - what
 void  vScale(Vector* v, float scalar, Vector* out); // scalar muliplication 
@@ -241,6 +242,7 @@ void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out);
 
 
 // 2d vector stuff, same as 3d except one less d
+void  vSwap2(Vector2* a, Vector2* b); // swap two vectors
 void  vAdd2(Vector2* a, Vector2* b, Vector2* out); // add two vectors
 void  vSub2(Vector2* from, Vector2* what, Vector2* diff); // diff = from - what
 void  vScale2(Vector2* v, float scalar, Vector2* out); // scalar muliplication 
