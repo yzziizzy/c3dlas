@@ -58,6 +58,10 @@ typedef struct { // does not have to be coplanar
 	Vector v[4];
 } Quad;
 
+typedef struct { // does not have to be coplanar
+	Vector2 v[4];
+} Quad2;
+
 typedef struct {
 	float m[16];
 } Matrix;
@@ -238,8 +242,10 @@ void boxCenter2i(const AABB2i* b, Vector2* out); // calcuates the center of the 
 void boxSize2i(const AABB2i* b, Vector2i* out); // calculates the size of the box
 void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out);
 
-
-
+// find the center of a quad
+void quadCenter2(const Quad2* in, Vector2* out); 
+void quadRoundOutward2(const Quad2* in, Vector2i* out);
+void quadRoundInward2(const Quad2* in, Vector2i* out);
 
 // 2d vector stuff, same as 3d except one less d
 void  vSwap2(Vector2* a, Vector2* b); // swap two vectors
@@ -253,6 +259,12 @@ void  vUnit2(Vector2* v, Vector2* out); // normalise the vector, alternate name
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void  vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out); 
 
+// degenerate cases may not give desired results. GIGO.
+void  vRoundAway2(const Vector2* in, const Vector2* center, Vector2i* out) 
+void  vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out) 
+
+// 2d integer vector stuff
+void  vSwap2i(Vector2i* a, Vector2i* b); // swap two vectors
 
 #endif // __c3dlas_h__
 

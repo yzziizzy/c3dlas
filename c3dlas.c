@@ -137,6 +137,19 @@ void vReflectAcross(Vector* v, Vector* pivot, Vector* out) {
 	vAdd(pivot, &diff, out);
 }
 
+// calculate a unit vector normal to a triangle's face.
+void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out) {
+	Vector a_b, a_c;
+	
+	vSub(a, b, &a_b);
+	vSub(a, c, &a_c);
+	vCross(&a_b, &a_b, out);
+	vNorm(out, out);
+}
+
+
+
+
 // 2d vector stuff
 
 void vSwap2(Vector2* a, Vector2* b) { // swap two vectors
@@ -189,16 +202,40 @@ void vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out) {
 	vAdd2(pivot, &diff, out);
 }
 
-void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out) {
-	Vector a_b, a_c;
-	
-	vSub(a, b, &a_b);
-	vSub(a, c, &a_c);
-	vCross(&a_b, &a_b, out);
-	vNorm(out, out);
+
+
+
+
+void vSwap2i(Vector2i* a, Vector2i* b) { // swap two vectors
+	int x, y;
+	x = a->x;
+	y = a->y;
+	a->x = b->x;
+	a->y = b->y;
+	b->x = x;
+	b->y = y;
 }
 
 
+// degenerate cases may not give desired results. GIGO.
+void vRoundAway2(const Vector2* in, const Vector2* center, Vector2i* out) {
+	
+	if(in->x > center->x) out->x = ceilf(in->x);
+	else out->x = floorf(in->x);
+	
+	if(in->y > center->y) out->y = ceilf(in->y);
+	else out->y = floorf(in->y);
+}
+
+// degenerate cases may not give desired results. GIGO.
+void vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out) {
+	
+	if(in->x > center->x) out->x = floorf(in->x);
+	else out->x = ceilf(in->x);
+	
+	if(in->y > center->y) out->y = floorf(in->y);
+	else out->y = ceilf(in->y);
+}
 
 // plane-vector operations
 
@@ -876,6 +913,40 @@ void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out) {
 
 
 
+// find the center of a quad
+void quadCenter2(const Quad2* q, Vector2* out) {
+	Vector2 c;
+	int i;
+	
+	for(i = 0; i < 4; i++) {
+		c.x += q->v[i].x;
+		c.y += q->v[i].y;
+	}
+	
+	out->x = c.x / 4;
+	out->y = c.y / 4;
+}
+
+
+void quadRoundOutward2(const Quad2* in, Vector2i* out) {
+	Vector2 c;
+	int i;
+	
+	quadCenter2(in, &c);
+	
+	for(i = 0; i < 4; i++)
+		vRoundAway2(&in->v[i], &c, &out[i]);
+}
+
+void quadRoundInward2(const Quad2* in, Vector2i* out) {
+	Vector2 c;
+	int i;
+	
+	quadCenter2(in, &c);
+	
+	for(i = 0; i < 4; i++)
+		vRoundToward2(&in->v[i], &c, &out[i]);
+}
 
 
 
