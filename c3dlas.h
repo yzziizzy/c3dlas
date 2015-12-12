@@ -58,9 +58,13 @@ typedef struct { // does not have to be coplanar
 	Vector v[4];
 } Quad;
 
-typedef struct { // does not have to be coplanar
+typedef struct {
 	Vector2 v[4];
 } Quad2;
+
+typedef struct {
+	Vector2i v[4];
+} Quad2i;
 
 typedef struct {
 	float m[16];

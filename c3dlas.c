@@ -938,16 +938,28 @@ void quadRoundOutward2(const Quad2* in, Vector2i* out) {
 		vRoundAway2(&in->v[i], &c, &out[i]);
 }
 
-void quadRoundInward2(const Quad2* in, Vector2i* out) {
+void quadRoundInward2(const Quad2* in, Quad2i* out) {
 	Vector2 c;
 	int i;
 	
 	quadCenter2(in, &c);
 	
 	for(i = 0; i < 4; i++)
-		vRoundToward2(&in->v[i], &c, &out[i]);
+		vRoundToward2(&in->v[i], &c, &out->v[i]);
 }
 
+
+int quadIsPoint2i(const Quad2i* q) {
+	return (
+		q->v[0].x == q->v[1].x == q->v[2].x == q->v[3].x && 
+		q->v[0].y == q->v[1].y == q->v[2].y == q->v[3].y);
+}
+
+int quadIsAARect2i(const Quad2i* q) {
+	return (
+		q->v[0].x == q->v[3].x && q->v[1].x == q->v[2].x && 
+		q->v[0].y == q->v[1].y && q->v[2].y == q->v[3].y);
+}
 
 
 // ray stuff

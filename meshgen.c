@@ -358,7 +358,7 @@ void calcSmoothNormals(Mesh* m) {
 
 
 
-void weldVertices(Mesh* m) {
+void weldVertices(Mesh* m, float epsilon) {
 	
 	
 	
