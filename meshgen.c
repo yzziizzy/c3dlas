@@ -156,7 +156,7 @@ void growMeshIndices(Mesh* m, int count) {
 	m->szIndices = count;
 }
 
-void checkMeshGrow(Mesh* m, int newVertices, int newIndices) {
+void checkGrowMesh(Mesh* m, int newVertices, int newIndices) {
 	if(m->szVertices - m->vertexCnt < newVertices) {
 		if(m->szVertices < 16) m->szVertices = 16;
 		// grow by the next multiple of szVertices large enough to fit the requested quantity
@@ -316,9 +316,9 @@ void calcFlatNormals(Mesh* m) {
 	
 	for(j = 0; j < m->indexCnt; j += 3) {
 		
-		i1 = m->indices[i];
-		i2 = m->indices[i+1];
-		i3 = m->indices[i+2];
+		i1 = m->indices[j];
+		i2 = m->indices[j+1];
+		i3 = m->indices[j+2];
 		
 		vTriFaceNormal(&m->vertices[i1].v, &m->vertices[i2].v, &m->vertices[i3].v, &n);
 		vCopy(&n, &m->vertices[i1].n);
@@ -342,11 +342,11 @@ void calcSmoothNormals(Mesh* m) {
 		vi1 = m->indices[i];
 		vi2 = m->indices[i];
 		
-		vTriFaceNormal(&m->vertices[v0].v, &m->vertices[v1].v, &m->vertices[v2].v, &n);
+		vTriFaceNormal(&m->vertices[vi0].v, &m->vertices[vi1].v, &m->vertices[vi2].v, &n);
 		
-		vAdd(&n, &sums[vi0]); 
-		vAdd(&n, &sums[vi1]); 
-		vAdd(&n, &sums[vi2]); 
+		vAdd(&n, &sums[vi0], &sums[vi0]); 
+		vAdd(&n, &sums[vi1], &sums[vi1]); 
+		vAdd(&n, &sums[vi2], &sums[vi2]); 
 	};
 	
 	for(i = 0; i < m->vertexCnt; i++) {
@@ -396,20 +396,20 @@ void unweldVertices(Mesh* m) {
 		newVertexCnt += vusage[i];
 	}
 	
-	if(newVertexCnt > szVertices) {
+	if(newVertexCnt > m->szVertices) {
 		realloc(m->vertices, sizeof(MeshVertex) * newVertexCnt);
 		m->szVertices = newVertexCnt;
 	}
 	
 	// "new" vertices are appended after the last "old" vertex
-	newVindex = m->vertexCnt;
+	newVIndex = m->vertexCnt;
 	for(i = 0; i < m->indexCnt; i++) {
 		int vi;
 		
 		vi = m->indices[i]; 
 		if(vusage[vi] > 1) {
 			// copy vertex
-			memcpy(&m->vertices[vi], &m->vertices[newVindex], sizeof(MeshVertex));
+			memcpy(&m->vertices[vi], &m->vertices[newVIndex], sizeof(MeshVertex));
 			
 			// update index buffer with new vertex
 			m->indices[i] = newVIndex;

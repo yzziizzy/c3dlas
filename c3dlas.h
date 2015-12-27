@@ -31,12 +31,27 @@ typedef struct {
 	float x,y,z,w;
 } Vector4;
 
+typedef struct Vector2i {
+	int x,y;
+} Vector2i;
+
 typedef struct {
 	Vector o; // origin
 	Vector d; // normalized direction
 	Vector id; // inverse normalized direction (handy enough to keep around)
 } Ray;
 
+
+typedef struct BezierSplineSegment {
+	Vector e, c; // end and control
+	struct BezierSplineSegment* next;
+} BezierSplineSegment;
+
+typedef struct {
+	int length;
+	unsigned char isLoop;
+	BezierSplineSegment* segments;
+} BezierSpline;
 
 typedef struct BezierSplineSegment2 {
 	Vector2 e, c; // end and control
@@ -45,7 +60,7 @@ typedef struct BezierSplineSegment2 {
 
 typedef struct {
 	int length;
-	unsigned char* isLoop;
+	unsigned char isLoop;
 	BezierSplineSegment2* segments;
 } BezierSpline2;
 
@@ -89,10 +104,6 @@ typedef struct AABB2 {
 	Vector2 max;
 } AABB2;
 
-
-typedef struct {
-	int x,y;
-} Vector2i;
 
 typedef struct AABB2i {
 	Vector2i min;
@@ -248,8 +259,8 @@ void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out);
 
 // find the center of a quad
 void quadCenter2(const Quad2* in, Vector2* out); 
-void quadRoundOutward2(const Quad2* in, Vector2i* out);
-void quadRoundInward2(const Quad2* in, Vector2i* out);
+void quadRoundOutward2(const Quad2* in, Quad2i* out);
+void quadRoundInward2(const Quad2* in, Quad2i* out);
 
 // 2d vector stuff, same as 3d except one less d
 void  vSwap2(Vector2* a, Vector2* b); // swap two vectors
@@ -264,8 +275,8 @@ void  vUnit2(Vector2* v, Vector2* out); // normalise the vector, alternate name
 void  vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out); 
 
 // degenerate cases may not give desired results. GIGO.
-void  vRoundAway2(const Vector2* in, const Vector2* center, Vector2i* out) 
-void  vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out) 
+void  vRoundAway2(const Vector2* in, const Vector2* center, Vector2i* out); 
+void  vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out); 
 
 // 2d integer vector stuff
 void  vSwap2i(Vector2i* a, Vector2i* b); // swap two vectors

@@ -928,14 +928,14 @@ void quadCenter2(const Quad2* q, Vector2* out) {
 }
 
 
-void quadRoundOutward2(const Quad2* in, Vector2i* out) {
+void quadRoundOutward2(const Quad2* in, Quad2i* out) {
 	Vector2 c;
 	int i;
 	
 	quadCenter2(in, &c);
 	
 	for(i = 0; i < 4; i++)
-		vRoundAway2(&in->v[i], &c, &out[i]);
+		vRoundAway2(&in->v[i], &c, &out->v[i]);
 }
 
 void quadRoundInward2(const Quad2* in, Quad2i* out) {
