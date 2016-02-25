@@ -17,6 +17,7 @@
 #define RAD2DEG (57.29577951308232087679815481410517033240547246656432154916024386)
 #define DEG2RAD (0.0174532925199432957692369076848861271344287188854172545609719144)
 
+#define FLT_CMP_EPSILON 0.000001
 
 
 typedef struct {
@@ -116,7 +117,7 @@ extern const Matrix IDENT_MATRIX;
 
 
 
-int   vEq(Vector* a, Vector* b); // safe equivalence, to FLT_EPSILON
+int   vEq(Vector* a, Vector* b); // safe equivalence, to FLT_CMP_EPSILON
 int   vEqEp(Vector* a, Vector* b, float epsilon); // safe equivalence, to arbitrary epsilon
 void  vCopy(const Vector* src, Vector* dst); // add two vectors
 void  vSwap(Vector* a, Vector* b); // swap two vectors

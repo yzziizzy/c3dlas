@@ -13,7 +13,7 @@
 // vector operations
 
 int vEq(Vector* a, Vector* b) {
-	return vEqEp(a, b, FLT_EPSILON);
+	return vEqEp(a, b, FLT_CMP_EPSILON);
 }
 
 int vEqEp(Vector* a, Vector* b, float epsilon) {
