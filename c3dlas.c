@@ -20,8 +20,8 @@ int vEqEp(Vector* a, Vector* b, float epsilon) {
 	float x, y, z, n;
 	
 	x = a->x - b->x;
-	x = a->z - b->y;
-	x = a->y - b->z;
+	x = a->y - b->y;
+	x = a->z - b->z;
 	
 	n = fabs(x * x + y * y + z * z);
 	
