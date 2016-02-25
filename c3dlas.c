@@ -12,6 +12,22 @@
 
 // vector operations
 
+int vEq(Vector* a, Vector* b) {
+	return vEqEp(a, b, FLT_EPSILON);
+}
+
+int vEqEp(Vector* a, Vector* b, float epsilon) {
+	float x, y, z, n;
+	
+	x = a->x - b->x;
+	x = a->z - b->y;
+	x = a->y - b->z;
+	
+	n = fabs(x * x + y * y + z * z);
+	
+	return n >= epsilon; 
+}
+
 
 void vCopy(const Vector* src, Vector* dst) {
 	dst->x = src->x;

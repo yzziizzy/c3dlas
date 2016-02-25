@@ -116,7 +116,8 @@ extern const Matrix IDENT_MATRIX;
 
 
 
-
+int   vEq(Vector* a, Vector* b); // safe equivalence, to FLT_EPSILON
+int   vEqEp(Vector* a, Vector* b, float epsilon); // safe equivalence, to arbitrary epsilon
 void  vCopy(const Vector* src, Vector* dst); // add two vectors
 void  vSwap(Vector* a, Vector* b); // swap two vectors
 void  vAdd(Vector* a, Vector* b, Vector* out); // add two vectors
