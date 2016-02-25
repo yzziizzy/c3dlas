@@ -25,7 +25,7 @@ int vEqEp(Vector* a, Vector* b, float epsilon) {
 	
 	n = fabs(x * x + y * y + z * z);
 	
-	return n >= epsilon; 
+	return n <= epsilon * epsilon; 
 }
 
 
