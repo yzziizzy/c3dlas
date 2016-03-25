@@ -25,7 +25,7 @@ int vEqEp(Vector* a, Vector* b, float epsilon) {
 	
 	n = fabs(x * x + y * y + z * z);
 	
-	return n <= epsilon * epsilon; 
+	return n <= epsilon * epsilon;
 }
 
 
@@ -144,7 +144,7 @@ void inline vSet(float x, float y, float z, Vector* out) {
 }
 
 
-// reflects the distance from v to pivot across pivot. 
+// reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void vReflectAcross(Vector* v, Vector* pivot, Vector* out) {
 	Vector diff;
@@ -209,7 +209,7 @@ void vUnit2(Vector2* v, Vector2* out) {
 }
 
 
-// reflects the distance from v to pivot across pivot. 
+// reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out) {
 	Vector2 diff;
@@ -270,7 +270,7 @@ void vMatrixMul(Vector* in, Matrix* m, Vector* out) {
 	vMatrixMulf(in->x, in->y, in->z, m, out);
 }
 
-void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out) { 
+void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out) {
 	Vector4 v;
 
 	v.x = x * m->m[0+0] + y * m->m[0+1] + z * m->m[0+2] + 1 * m->m[0+3];
@@ -292,9 +292,9 @@ void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out) {
 
 
 
-const Matrix IDENT_MATRIX = { { 1, 0, 0, 0, 
-                                0, 1, 0, 0, 
-                                0, 0, 1, 0, 
+const Matrix IDENT_MATRIX = { { 1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
                                 0, 0, 0, 1 } };
 
 
@@ -302,7 +302,7 @@ void mIdent(Matrix* m) {
 	*m = IDENT_MATRIX;
 }
 
-void mCopy(Matrix* in, Matrix* out) { 
+void mCopy(Matrix* in, Matrix* out) {
 	memcpy(in->m, out->m, sizeof(out->m));
 }
 
@@ -312,10 +312,10 @@ void mFastMul(Matrix* a, Matrix* b, Matrix* out) {
 	
 	for(r = 0; r < 4; r++) {
 		for(c = 0; c < 4; c++) {
-			out->m[c + r * 4] = 
-				(a->m[r * 4 + 0] * b->m[c + 0]) + 
-				(a->m[r * 4 + 1] * b->m[c + 4]) + 
-				(a->m[r * 4 + 2] * b->m[c + 8]) + 
+			out->m[c + r * 4] =
+				(a->m[r * 4 + 0] * b->m[c + 0]) +
+				(a->m[r * 4 + 1] * b->m[c + 4]) +
+				(a->m[r * 4 + 2] * b->m[c + 8]) +
 				(a->m[r * 4 + 3] * b->m[c + 12]);
 		}
 	}
@@ -460,7 +460,7 @@ float mDeterminate(Matrix* m) {
 
 // shamelessly lifted from this SO post and modified into C, added error checking, and transposed for column major ordering:
 // http://stackoverflow.com/a/7596981
-// matrix inversions suck. maybe one day i'll lift intel's super fast SSE one instead. 
+// matrix inversions suck. maybe one day i'll lift intel's super fast SSE one instead.
 // functions returns 0 if sucessful, 1 if there is no inverse
 int mInverse(Matrix* in, Matrix* out) {
 	
@@ -538,7 +538,7 @@ void mFrustum(float left, float right, float top, float bottom, float near, floa
 
 
 // analogous to gluPerspective
-// same div/0 warnings apply. if you get an FP exception you deserve it. 
+// same div/0 warnings apply. if you get an FP exception you deserve it.
 // use a double for fov; the precision matters often.
 // https://www.opengl.org/archives/resources/faq/technical/transformations.htm
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
@@ -574,7 +574,7 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 	m.m[5] = 2 / (top - bottom);
 	m.m[10] = -2 / (far - near);
 	m.m[12] = -(right + left) / (right - left);
-	m.m[13] = -(top + bottom) / (top - bottom);		
+	m.m[13] = -(top + bottom) / (top - bottom);
 	m.m[14] = -(far + near) / (far - near);
 	m.m[15] = 1;
 	
@@ -726,7 +726,7 @@ void msRot3f(float x, float y, float z, float theta, MatrixStack* ms) { // rotat
 	mRot3f(x, y, z, theta, msGetTop(ms));
 }
 
-void msFrustum(float left, float right, float top, float bottom, float near, float far, MatrixStack* ms) { 
+void msFrustum(float left, float right, float top, float bottom, float near, float far, MatrixStack* ms) {
 	mFrustum(left, right, top, bottom, near, far, msGetTop(ms));
 }
 
@@ -899,7 +899,7 @@ int boxContainsPoint2i(const AABB2i* b, const Vector2i* p) {
 }
 
 
-void boxCenter2i(const AABB2i* b, Vector2* out) {
+void boxCenter2i(const AABB2i* b, Vector2i* out) {
 	out->x = (b->max.x + b->min.x) / 2.0f;
 	out->y = (b->max.y + b->min.y) / 2.0f;
 }
@@ -911,20 +911,20 @@ void boxSize2i(const AABB2i* b, Vector2i* out) {
 
 // BUG: needs some fancy math work to keep everything tight. integers don't split nicely
 void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out) {
-	Vector2 sz, c;
+	Vector2i sz, c;
 	
 	printf("fix me: %s:%d", __FILE__, __LINE__);
 	exit(666);
 	
-	boxCenter2(in, &c);
-	boxSize2(in, &sz);
+	boxCenter2i(in, &c);
+	boxSize2i(in, &sz);
 	sz.x *= .5;
 	sz.y *= .5;
 	
-	out->min.x = c.x - (ix ? 0.0f : sz.x);
-	out->min.y = c.y - (iy ? 0.0f : sz.y);
-	out->max.x = c.x + (ix ? sz.x : 0.0f);
-	out->max.y = c.y + (iy ? sz.y : 0.0f);
+	out->min.x = c.x - (ix ?    0 : sz.x);
+	out->min.y = c.y - (iy ?    0 : sz.y);
+	out->max.x = c.x + (ix ? sz.x :    0);
+	out->max.y = c.y + (iy ? sz.y :    0);
 }
 
 
@@ -967,13 +967,13 @@ void quadRoundInward2(const Quad2* in, Quad2i* out) {
 
 int quadIsPoint2i(const Quad2i* q) {
 	return (
-		q->v[0].x == q->v[1].x == q->v[2].x == q->v[3].x && 
+		q->v[0].x == q->v[1].x == q->v[2].x == q->v[3].x &&
 		q->v[0].y == q->v[1].y == q->v[2].y == q->v[3].y);
 }
 
 int quadIsAARect2i(const Quad2i* q) {
 	return (
-		q->v[0].x == q->v[3].x && q->v[1].x == q->v[2].x && 
+		q->v[0].x == q->v[3].x && q->v[1].x == q->v[2].x &&
 		q->v[0].y == q->v[1].y && q->v[2].y == q->v[3].y);
 }
 
@@ -989,7 +989,7 @@ void makeRay(Vector* origin, Vector* direction, Ray* out) {
 	vInverse(&out->d, &out->id);
 }
 
-// this version has no branching, but only answers yes or no. 
+// this version has no branching, but only answers yes or no.
 // algorithm explanation here. hopefully my extrapolation into 3 dimensions is correct.
 // http://tavianator.com/fast-branchless-raybounding-box-intersections/
 int boxRayIntersectFast(const AABB* b, const Ray* r) {
@@ -1090,7 +1090,7 @@ static void bsSegmentForT2(BezierSpline2* bs, float normalT, Vector2* out) {
 	out[1].y = p->c.y;
 	
 	// control 2 - this one is reflected across e2
-	vReflectAcross(&n->c, &n->e, &out[2]); 
+	vReflectAcross2(&n->c, &n->e, &out[2]);
 	
 	// end 2
 	out[3].x = n->e.x;
@@ -1110,7 +1110,7 @@ void bsEvalPoint2(BezierSpline2* bs, float normalT, Vector2* out) {
 	float localT;
 	
 	// find which spline segment the t is in
-	localT = bsNormalToLocalT2(bs, normalT, &segN);  
+	localT = bsNormalToLocalT2(bs, normalT, &segN);
 	
 	// find the local value of t
 	Vector2 cp[4];
