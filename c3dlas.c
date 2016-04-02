@@ -140,7 +140,7 @@ void  vMax(Vector* a, Vector* b, Vector* out) {
 void inline vSet(float x, float y, float z, Vector* out) {
 	out->x = x;
 	out->y = y;
-	out->z = x;
+	out->z = z;
 }
 
 
@@ -168,6 +168,26 @@ void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out) {
 
 // 2d vector stuff
 
+int vEq2(Vector2* a, Vector2* b) {
+	return vEqEp2(a, b, FLT_CMP_EPSILON);
+}
+
+int vEqEp2(Vector2* a, Vector2* b, float epsilon) {
+	float x, y, n;
+	
+	x = a->x - b->x;
+	y = a->y - b->y;
+	
+	n = fabs(x * x + y * y);
+	
+	return n <= epsilon * epsilon;
+}
+
+void vCopy2(const Vector2* src, Vector2* dst) {
+	dst->x = src->x;
+	dst->y = src->y;
+}
+
 void vSwap2(Vector2* a, Vector2* b) { // swap two vectors
 	float x, y;
 	x = a->x;
@@ -193,6 +213,20 @@ void vScale2(Vector2* v, float scalar, Vector2* out) {
 	out->y = v->y * scalar;
 }
 
+void vInverse2(Vector2* v, Vector2* out) {
+	// see vInverse for snark
+	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
+	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
+}
+
+float vMag2(Vector2* v) {
+	return sqrt((float)((v->x * v->x) + (v->y * v->y)));
+}
+
+float vDot2(Vector2* a, Vector2* b) {
+	return (float)((a->x * b->x) + (a->y * b->y));
+}
+
 void vNorm2(Vector2* v, Vector2* out) {
 	vUnit2(v, out);
 }
@@ -208,6 +242,23 @@ void vUnit2(Vector2* v, Vector2* out) {
 	out->y = v->y * n;
 }
 
+// returns the minimum values of each component
+void  vMin2(Vector2* a, Vector2* b, Vector2* out) {
+	out->x = fmin(a->x, b->x);
+	out->y = fmin(a->y, b->y);
+}
+
+// returns the maximum values of each component
+void  vMax2(Vector2* a, Vector2* b, Vector2* out) {
+	out->x = fmax(a->x, b->x);
+	out->y = fmax(a->y, b->y);
+}
+
+void inline vSet2(float x, float y, Vector2* out) {
+	out->x = x;
+	out->y = y;
+}
+
 
 // reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
@@ -216,20 +267,6 @@ void vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out) {
 	
 	vSub2(pivot, v, &diff);
 	vAdd2(pivot, &diff, out);
-}
-
-
-
-
-
-void vSwap2i(Vector2i* a, Vector2i* b) { // swap two vectors
-	int x, y;
-	x = a->x;
-	y = a->y;
-	a->x = b->x;
-	a->y = b->y;
-	b->x = x;
-	b->y = y;
 }
 
 
@@ -252,6 +289,68 @@ void vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out) {
 	if(in->y > center->y) out->y = floorf(in->y);
 	else out->y = ceilf(in->y);
 }
+
+
+
+// 2d integer vector stuff
+
+int vEq2i(Vector2i* a, Vector2i* b) {
+	return a->x == b->x && a->y == b->y;
+}
+
+void vCopy2i(const Vector2i* src, Vector2i* dst) {
+	dst->x = src->x;
+	dst->y = src->y;
+}
+
+void vSwap2i(Vector2i* a, Vector2i* b) { // swap two vectors
+	int x, y;
+	x = a->x;
+	y = a->y;
+	a->x = b->x;
+	a->y = b->y;
+	b->x = x;
+	b->y = y;
+}
+
+void vAdd2i(Vector2i* a, Vector2i* b, Vector2i* out) {
+	out->x = a->x + b->x;
+	out->y = a->y + b->y;
+}
+
+void vSub2i(Vector2i* from, Vector2i* what, Vector2i* diff) { // diff = from - what
+	diff->x = from->x - what->x;
+	diff->y = from->y - what->y;
+}
+
+void vScale2i(Vector2i* v, int scalar, Vector2i* out) {
+	out->x = v->x * scalar;
+	out->y = v->y * scalar;
+}
+
+int vDot2i(Vector2i* a, Vector2i* b) {
+	return ((a->x * b->x) + (a->y * b->y));
+}
+
+// returns the minimum values of each component
+void  vMin2i(Vector2i* a, Vector2i* b, Vector2i* out) {
+	out->x = MIN(a->x, b->x);
+	out->y = MIN(a->y, b->y);
+}
+
+// returns the maximum values of each component
+void  vMax2i(Vector2i* a, Vector2i* b, Vector2i* out) {
+	out->x = MAX(a->x, b->x);
+	out->y = MAX(a->y, b->y);
+}
+
+void inline vSet2i(int x, int y, Vector2i* out) {
+	out->x = x;
+	out->y = y;
+}
+
+
+
 
 // plane-vector operations
 
