@@ -320,8 +320,8 @@ int boxDisjoint2i(const AABB2i* a, const AABB2i* b);
 int boxOverlaps2i(const AABB2i* a, const AABB2i* b);
 int boxContainsPoint2i(const AABB2i* b, const Vector2i* p);
 
-void boxCenter2i(const AABB2i* b, Vector2i* out); // calcuates the center of the box
-void boxSize2i(const AABB2i* b, Vector2i* out); // calculates the size of the box
+void boxCenter2i(const AABB2i* b, Vector2* out); // calcuates the center of the box
+void boxSize2i(const AABB2i* b, Vector2* out); // calculates the size of the box
 void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out);
 
 // find the center of a quad
