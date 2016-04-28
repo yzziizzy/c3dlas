@@ -20,6 +20,28 @@
 #define FLT_CMP_EPSILON 0.000001
 
 
+#define MAX(a,b) ({ \
+	__typeof__ (a) _a = (a); \
+	__typeof__ (b) _b = (b); \
+	_a > _b ? _a : _b; \
+})
+#define MIN(a,b) ({ \
+	__typeof__ (a) _a = (a); \
+	__typeof__ (b) _b = (b); \
+	_a < _b ? _a : _b; \
+})
+#define MAXE(a,b) ({ \
+	__typeof__ (a) _a = (a); \
+	__typeof__ (b) _b = (b); \
+	_a >= _b ? _a : _b; \
+})
+#define MINE(a,b) ({ \
+	__typeof__ (a) _a = (a); \
+	__typeof__ (b) _b = (b); \
+	_a <= _b ? _a : _b; \
+})
+
+
 typedef struct {
 	float x,y;
 } Vector2;
@@ -119,11 +141,11 @@ extern const Matrix IDENT_MATRIX;
 
 int   vEq(Vector* a, Vector* b); // safe equivalence, to FLT_CMP_EPSILON
 int   vEqEp(Vector* a, Vector* b, float epsilon); // safe equivalence, to arbitrary epsilon
-void  vCopy(const Vector* src, Vector* dst); // add two vectors
+void  vCopy(const Vector* src, Vector* dst); // copy vector values
 void  vSwap(Vector* a, Vector* b); // swap two vectors
 void  vAdd(Vector* a, Vector* b, Vector* out); // add two vectors
 void  vSub(Vector* from, Vector* what, Vector* diff); // diff = from - what
-void  vScale(Vector* v, float scalar, Vector* out); // scalar muliplication 
+void  vScale(Vector* v, float scalar, Vector* out); // scalar muliplication
 void  vInverse(Vector* v, Vector* out); // inverse
 float vMag(Vector* v); // return the magnitude
 float vDot(Vector* a, Vector* b); // dot product
@@ -137,10 +159,53 @@ void  vMin(Vector* a, Vector* b, Vector* out); // returns the minimum values of 
 void  vMax(Vector* a, Vector* b, Vector* out); // returns the maximum values of each component
 void  vSet(float x, float y, float z, Vector* out);
 
-// reflects the distance from v to pivot across pivot. 
+// reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
-void  vReflectAcross(Vector* v, Vector* pivot, Vector* out); 
+void  vReflectAcross(Vector* v, Vector* pivot, Vector* out);
 void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out); // returns a normalized face normal for the given triangle
+
+
+// 2d vector stuff, same as 3d except one less d
+int   vEq2(Vector2* a, Vector2* b); // safe equivalence, to FLT_CMP_EPSILON
+int   vEqEp2(Vector2* a, Vector2* b, float epsilon); // safe equivalence, to arbitrary epsilon
+void  vCopy2(const Vector2* src, Vector2* dst); // copy vector values
+void  vSwap2(Vector2* a, Vector2* b); // swap two vectors
+void  vAdd2(Vector2* a, Vector2* b, Vector2* out); // add two vectors
+void  vSub2(Vector2* from, Vector2* what, Vector2* diff); // diff = from - what
+void  vScale2(Vector2* v, float scalar, Vector2* out); // scalar muliplication
+void  vInverse2(Vector2* v, Vector2* out); // inverse
+float vMag2(Vector2* v); // return the magnitude
+float vDot2(Vector2* a, Vector2* b); // dot product
+void  vNorm2(Vector2* v, Vector2* out); // normalize the vector
+void  vUnit2(Vector2* v, Vector2* out); // normalise the vector, alternate name
+void  vMin2(Vector2* a, Vector2* b, Vector2* out); // returns the minimum values of each component
+void  vMax2(Vector2* a, Vector2* b, Vector2* out); // returns the maximum values of each component
+void  vSet2(float x, float y, Vector2* out);
+
+// reflects the distance from v to pivot across pivot.
+// out, pivot, and v will form a straight line with pivot exactly in the middle.
+void  vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out);
+
+// degenerate cases may not give desired results. GIGO.
+void  vRoundAway2(const Vector2* in, const Vector2* center, Vector2i* out);
+void  vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out);
+
+
+// 2d integer vector stuff
+int   vEq2i(Vector2i* a, Vector2i* b);
+void  vCopy2i(const Vector2i* src, Vector2i* dst); // copy vector values
+void  vSwap2i(Vector2i* a, Vector2i* b); // swap two vectors
+void  vAdd2i(Vector2i* a, Vector2i* b, Vector2i* out); // add two vectors
+void  vSub2i(Vector2i* from, Vector2i* what, Vector2i* diff); // diff = from - what
+void  vScale2i(Vector2i* v, int scalar, Vector2i* out); // scalar muliplication
+int   vDot2i(Vector2i* a, Vector2i* b); // dot product
+void  vMin2i(Vector2i* a, Vector2i* b, Vector2i* out); // returns the minimum values of each component
+void  vMax2i(Vector2i* a, Vector2i* b, Vector2i* out); // returns the maximum values of each component
+void  vSet2i(int x, int y, Vector2i* out);
+
+
+
+
 
 float pvDist(Plane* p, Vector* v);
 
@@ -149,7 +214,7 @@ void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out); // multiply
 
 
 void mIdent(Matrix* m); // set m to the identity matrix
-void mCopy(Matrix* in, Matrix* out); 
+void mCopy(Matrix* in, Matrix* out);
 void mFastMul(Matrix* a, Matrix* b, Matrix* out); // a and b cannot also be out. mostly internal use.
 void mMul(Matrix* a, Matrix* out); // makes a copy of out before multiplying over it
 void mTransv(Vector* v, Matrix* out); // translation
@@ -158,7 +223,7 @@ void mScalev(Vector* v, Matrix* out);
 void mScale3f(float x, float y, float z, Matrix* out);
 void mRotv(Vector* v, float theta, Matrix* out); // rotate about a vector
 void mRot3f(float x, float y, float z, float theta, Matrix* out); // rotate about a vector
-void mRotX(float theta, Matrix* out); // 
+void mRotX(float theta, Matrix* out); //
 void mRotY(float theta, Matrix* out); // rotate about axes
 void mRotZ(float theta, Matrix* out); //
 void mTranspose(Matrix* in, Matrix* out);
@@ -172,14 +237,14 @@ int mInverse(Matrix* in, Matrix* out); // returns 0 on success, 1 if there is no
 void mFrustum(float left, float right, float top, float bottom, float near, float far, Matrix* out);
 
 // analogous to gluPerspective
-// same div/0 warnings apply. if you get an FP exception you deserve it. 
+// same div/0 warnings apply. if you get an FP exception you deserve it.
 // use a double for fov; the precision matters often.
 // https://www.opengl.org/archives/resources/faq/technical/transformations.htm
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
 void mPerspective(double fov, float aspect, float near, float far, Matrix* out);
 
 // orthographic projection. use this for a "2D" look.
-// same div/0 warnings. 
+// same div/0 warnings.
 void mOrtho(float left, float right, float top, float bottom, float near, float far, Matrix* out);
 
 // analgous to gluLookAt
@@ -196,7 +261,7 @@ void mPrint(Matrix* m, FILE* f);
 void msAlloc(int size, MatrixStack* ms);
 void msFree(MatrixStack* ms);
 
-int msPush(MatrixStack* ms); 
+int msPush(MatrixStack* ms);
 void msPop(MatrixStack* ms);
 Matrix* msGetTop(MatrixStack* ms);
 
@@ -204,7 +269,7 @@ void msPrintAll(MatrixStack* ms, FILE* f);
 
 // these are all wrappers around the functions listed above
 void msIdent(MatrixStack* ms); // set to the identity matrix
-void msCopy(Matrix* in, MatrixStack* ms); 
+void msCopy(Matrix* in, MatrixStack* ms);
 void msMul(Matrix* a, MatrixStack* ms); // makes a copy of out before multiplying over it
 void msTransv(Vector* v, MatrixStack* ms); // translation
 void msTrans3f(float x, float y, float z, MatrixStack* ms); // translation
@@ -219,7 +284,7 @@ void msLookAt(Vector* eye, Vector* center, Vector* up, MatrixStack* ms);
 
 
 void evalBezier(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out);
-void evalBezierTangent(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out); // tangent vector; not normalized 
+void evalBezierTangent(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out); // tangent vector; not normalized
 void evalBezierNorm(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out); // normal vector; not normalized
 float evalBezier1D(float e1, float e2, float c1, float c2, float t);
 float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t); // first derivative with respect to t
@@ -256,32 +321,13 @@ int boxOverlaps2i(const AABB2i* a, const AABB2i* b);
 int boxContainsPoint2i(const AABB2i* b, const Vector2i* p);
 
 void boxCenter2i(const AABB2i* b, Vector2* out); // calcuates the center of the box
-void boxSize2i(const AABB2i* b, Vector2i* out); // calculates the size of the box
+void boxSize2i(const AABB2i* b, Vector2* out); // calculates the size of the box
 void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out);
 
 // find the center of a quad
-void quadCenter2(const Quad2* in, Vector2* out); 
+void quadCenter2(const Quad2* in, Vector2* out);
 void quadRoundOutward2(const Quad2* in, Quad2i* out);
 void quadRoundInward2(const Quad2* in, Quad2i* out);
-
-// 2d vector stuff, same as 3d except one less d
-void  vSwap2(Vector2* a, Vector2* b); // swap two vectors
-void  vAdd2(Vector2* a, Vector2* b, Vector2* out); // add two vectors
-void  vSub2(Vector2* from, Vector2* what, Vector2* diff); // diff = from - what
-void  vScale2(Vector2* v, float scalar, Vector2* out); // scalar muliplication 
-void  vNorm2(Vector2* v, Vector2* out); // normalize the vector
-void  vUnit2(Vector2* v, Vector2* out); // normalise the vector, alternate name
-
-// reflects the distance from v to pivot across pivot. 
-// out, pivot, and v will form a straight line with pivot exactly in the middle.
-void  vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out); 
-
-// degenerate cases may not give desired results. GIGO.
-void  vRoundAway2(const Vector2* in, const Vector2* center, Vector2i* out); 
-void  vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out); 
-
-// 2d integer vector stuff
-void  vSwap2i(Vector2i* a, Vector2i* b); // swap two vectors
 
 #endif // __c3dlas_h__
 

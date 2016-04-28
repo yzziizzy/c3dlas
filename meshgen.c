@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "c3dlas.h"
 #include "meshgen.h"
@@ -19,7 +20,7 @@ void mgGenFlatPatch(short width, short height, IndexedPatch* out) {
 	
 	cnt = (width + 1) * (height + 1); // plus one for the edge
 	out->nElements = width * height * 2;
-	out->nVertices = out->nNormals = cnt; 
+	out->nVertices = out->nNormals = cnt;
 	out->nIndices = out->nElements * 3;
 	
 	out->width = width;
@@ -77,7 +78,7 @@ float* genNoisef(short width, short height, float min, float max) {
 	out = (float*)malloc(len * sizeof(float));
 	
 	// no need for super quality math stuff here. it's just randomish junk for textures.
-	for(i = 0; i < len; i++) 
+	for(i = 0; i < len; i++)
 		out[i] = (((float)rand() / RAND_MAX) * range) + min;
 	
 	return out;
@@ -104,8 +105,8 @@ Mesh* extrudeAlongVector(Vector* lineStrip, int lineCount, Vector* v) {
 	
 	// fill in vertices
 	for(i = 0; i <= lineCount; i++) {
-		vCopy(&lineStrip[i], &m->vertices[i*2]);
-		vAdd(&lineStrip[i], v, &m->vertices[(i*2)+1]);
+		vCopy(&lineStrip[i], &m->vertices[i*2].v);
+		vAdd(&lineStrip[i], v, &m->vertices[(i*2)+1].v);
 	}
 	
 	// fill in indices
@@ -173,13 +174,6 @@ void checkGrowMesh(Mesh* m, int newVertices, int newIndices) {
 
 
 
-void appendTriangle(Mesh* m, Vector* v0, Vector* v1, Vector* v2) {
-	
-	checkGrowMesh(m, 3, 3);
-	
-	appendTriangleFast(m, v0, v1, v2);
-}
-
 // doesn't check mesh allocation size. Real Programmers(TM) already know how much memory there is.
 void appendTriangleFast(Mesh* m, Vector* v0, Vector* v1, Vector* v2) {
 	int i = m->vertexCnt;
@@ -196,10 +190,17 @@ void appendTriangleFast(Mesh* m, Vector* v0, Vector* v1, Vector* v2) {
 	m->indexCnt = j;
 }
 
+void appendTriangle(Mesh* m, Vector* v0, Vector* v1, Vector* v2) {
+	
+	checkGrowMesh(m, 3, 3);
+	
+	appendTriangleFast(m, v0, v1, v2);
+}
+
 
 // appends a face of vnct vertices to the mesh
 // CW winding, convex polygons only. will be tesselated as a fan pivoting around v[0].
-void appendFace(Mesh* m, Vector* v, int vcnt) { 
+void appendFace(Mesh* m, Vector* v, int vcnt) {
 	int i;
 	
 	checkGrowMesh(m, vcnt, 3 * (vcnt - 2));
@@ -229,7 +230,7 @@ Mesh* makeCube(Matrix* mat, int flat) {
 	};
 	
 	static unsigned short indices[] = {
-		0,1,2, 2,3,0, 
+		0,1,2, 2,3,0,
 		4,5,6, 6,7,4,
 		0,1,4, 1,4,5,
 		3,4,7, 3,0,4,
@@ -295,10 +296,10 @@ Mesh* makeCuboid(Vector* p1, Vector* p2) {
 	vSet(max.x, max.y, max.z, &m->vertices[i++].v);
 
 	// z- face
-	vSet(min.x, min.y, min.z, &m->vertices[i++]);
-	vSet(max.x, min.y, min.z, &m->vertices[i++]);
-	vSet(min.x, max.y, min.z, &m->vertices[i++]);
-	vSet(max.x, max.y, min.z, &m->vertices[i++]);
+	vSet(min.x, min.y, min.z, &m->vertices[i++].v);
+	vSet(max.x, min.y, min.z, &m->vertices[i++].v);
+	vSet(min.x, max.y, min.z, &m->vertices[i++].v);
+	vSet(max.x, max.y, min.z, &m->vertices[i++].v);
 	
 	m->vertexCnt = i;
 }
@@ -308,7 +309,7 @@ Mesh* makeCuboid(Vector* p1, Vector* p2) {
 
 
 
-// assumes vertices are not shared 
+// assumes vertices are not shared
 void calcFlatNormals(Mesh* m) {
 	int j, i1, i2, i3;
 	Vector n;
@@ -328,7 +329,7 @@ void calcFlatNormals(Mesh* m) {
 }
 
 
-// only works if vertices are welded first. 
+// only works if vertices are welded first.
 void calcSmoothNormals(Mesh* m) {
 	
 	Vector* sums;
@@ -344,13 +345,13 @@ void calcSmoothNormals(Mesh* m) {
 		
 		vTriFaceNormal(&m->vertices[vi0].v, &m->vertices[vi1].v, &m->vertices[vi2].v, &n);
 		
-		vAdd(&n, &sums[vi0], &sums[vi0]); 
-		vAdd(&n, &sums[vi1], &sums[vi1]); 
-		vAdd(&n, &sums[vi2], &sums[vi2]); 
+		vAdd(&n, &sums[vi0], &sums[vi0]);
+		vAdd(&n, &sums[vi1], &sums[vi1]);
+		vAdd(&n, &sums[vi2], &sums[vi2]);
 	};
 	
 	for(i = 0; i < m->vertexCnt; i++) {
-		vNorm(&sums[i], &m->vertices[i].n); 
+		vNorm(&sums[i], &m->vertices[i].n);
 	}
 	
 	free(sums);
@@ -406,7 +407,7 @@ void unweldVertices(Mesh* m) {
 	for(i = 0; i < m->indexCnt; i++) {
 		int vi;
 		
-		vi = m->indices[i]; 
+		vi = m->indices[i];
 		if(vusage[vi] > 1) {
 			// copy vertex
 			memcpy(&m->vertices[vi], &m->vertices[newVIndex], sizeof(MeshVertex));
@@ -455,8 +456,8 @@ MeshSlice* makeCircle(float radius, int divisions) {
 	ms = allocMeshSlice(divisions, divisions + 1);
 	
 	for(i = 0; i < divisions; i++) {
-		ms->vertices[i].v.x = radius * sin((i / divf) * F_2PI); 
-		ms->vertices[i].v.y = radius * cos((i / divf) * F_2PI); 
+		ms->vertices[i].v.x = radius * sin((i / divf) * F_2PI);
+		ms->vertices[i].v.y = radius * cos((i / divf) * F_2PI);
 		ms->vertices[i].v.z = 0;
 		vCopy(&ms->vertices[i].v, &ms->vertices[i].n);
 		ms->vertices[i].t.u = i / divf;
