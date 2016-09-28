@@ -65,6 +65,38 @@ void mgGenFlatPatch(short width, short height, IndexedPatch* out) {
 
 
 
+void genIcosahedronPointsf(float radius, Vector* out, int* count) {
+	int i;
+	
+	// scale factor for inscribed sphere
+	float a = 0.7557613140761707304801337020250013926384447888;
+	float r = radius / (a * 2); 
+	
+	// thos one has edge length 2
+	Vector points[] = {
+		{ F_GOLDEN, 0.0f, 1.0f},
+		{ 0.0f, 1.0f, F_GOLDEN},
+		{ 1.0f, F_GOLDEN, 0.0f},
+		
+		{ -F_GOLDEN, 0.0f, 1.0f},
+		{ 0.0f, 1.0f, -F_GOLDEN},
+		{ 1.0f, -F_GOLDEN, 0.0f},
+		
+		{ F_GOLDEN, 0.0f, -1.0f},
+		{ 0.0f, -1.0f, F_GOLDEN},
+		{ -1.0f, F_GOLDEN, 0.0f},
+		
+		{ -F_GOLDEN, 0.0f, -1.0f},
+		{ 0.0f, -1.0f, -F_GOLDEN},
+		{ -1.0f, -F_GOLDEN, 0.0f}
+	};
+	
+	*count = 12;
+	for(i = 0; i < 12; i++) {
+		vScale(&points[i], r, &out[i]);
+	}
+}
+
 
 
 float* genNoisef(short width, short height, float min, float max) {

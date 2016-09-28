@@ -406,6 +406,7 @@ void mCopy(Matrix* in, Matrix* out) {
 }
 
 
+// out cannot overlap with a or b
 void mFastMul(Matrix* a, Matrix* b, Matrix* out) {
 	int r, c;
 	
@@ -420,6 +421,7 @@ void mFastMul(Matrix* a, Matrix* b, Matrix* out) {
 	}
 }
 
+// out cannot overlap with a. make a copy first if you want to do weird stuff.
 void mMul(Matrix* a, Matrix* out) {
 	Matrix b;
 	
