@@ -72,32 +72,119 @@ void genIcosahedronPointsf(float radius, Vector* out, int* count) {
 	float a = 0.7557613140761707304801337020250013926384447888;
 	float r = radius / (a * 2); 
 	
-	// thos one has edge length 2
+	// this one has edge length 2
 	Vector points[] = {
-		{ F_GOLDEN, 0.0f, 1.0f},
-		{ 0.0f, 1.0f, F_GOLDEN},
-		{ 1.0f, F_GOLDEN, 0.0f},
+		{ 1.0f, 0.0f, F_GOLDEN}, // top edge along x axis
+		{ -1.0f, 0.0f, F_GOLDEN},
 		
-		{ -F_GOLDEN, 0.0f, 1.0f},
-		{ 0.0f, 1.0f, -F_GOLDEN},
-		{ 1.0f, -F_GOLDEN, 0.0f},
+		{ 0.0f, F_GOLDEN, 1.0f}, // triangle tips off that top edge
+		{ 0.0f, -F_GOLDEN, 1.0f},
 		
-		{ F_GOLDEN, 0.0f, -1.0f},
-		{ 0.0f, -1.0f, F_GOLDEN},
-		{ -1.0f, F_GOLDEN, 0.0f},
+		{ F_GOLDEN, 1.0f, 0.0f}, // waistline
+		{ F_GOLDEN, -1.0f, 0.0f},
+		{ -F_GOLDEN, 1.0f, 0.0f},
+		{ -F_GOLDEN, -1.0f, 0.0f},
 		
-		{ -F_GOLDEN, 0.0f, -1.0f},
-		{ 0.0f, -1.0f, -F_GOLDEN},
-		{ -1.0f, -F_GOLDEN, 0.0f}
+		{ 0.0f, F_GOLDEN, -1.0f}, // triangle tips off the bottom edge
+		{ 0.0f, -F_GOLDEN, -1.0f},
+		
+		{ 1.0f, 0.0f, -F_GOLDEN}, // bottom edge along x axis
+		{ -1.0f, 0.0f, -F_GOLDEN}
 	};
 	
-	*count = 12;
+	if(count) *count = 12;
 	for(i = 0; i < 12; i++) {
 		vScale(&points[i], r, &out[i]);
 	}
 }
 
+// top half
+void genHalfIcosahedronPointsf(float radius, Vector* out, int* count) {
+	int i;
+	
+	// scale factor for inscribed sphere
+	float a = 0.7557613140761707304801337020250013926384447888;
+	float r = radius / (a * 2); 
+	
+	// this one has edge length 2
+	Vector points[] = {
+		{ 1.0f, 0.0f, F_GOLDEN}, // top edge along x axis
+		{ -1.0f, 0.0f, F_GOLDEN},
+		
+		{ 0.0f, F_GOLDEN, 1.0f}, // triangle tips off that top edge
+		{ 0.0f, -F_GOLDEN, 1.0f},
+		
+		{ F_GOLDEN, 1.0f, 0.0f}, // icosahedral waistline
+		{ F_GOLDEN, -1.0f, 0.0f},
+		{ -F_GOLDEN, 1.0f, 0.0f},
+		{ -F_GOLDEN, -1.0f, 0.0f},
+		
+		{ 0.0f, F_GOLDEN, 0.0f}, // half way down the vertical edges
+		{ 0.0f, -F_GOLDEN, 0.0f}
+	};
+	
+	if(count) *count = 10;
+	for(i = 0; i < 10; i++) {
+		vScale(&points[i], r, &out[i]);
+	}
+}
 
+Mesh* genIcosahedronMesh(float radius) {
+	
+	Mesh* m;
+	
+	m = malloc(sizeof(Mesh));
+	m->vertices = malloc(sizeof(Vector) * 12);
+	m->indices = malloc(sizeof(short) * 20 * 3);
+	
+	m->szVertices = m->vertexCnt = 12;
+	m->szIndices = m->indexCnt = 20 * 3;
+	
+	genIcosahedronPointsf(radius, m->vertices, NULL);
+	
+	short indices[] = {
+		// top two triangles
+		0, 2, 1, 
+		1, 0, 3,
+		
+		// neighbors of those top two triangles
+		// signs are shared in x and y
+		2, 0, 4,
+		2, 1, 6,
+		3, 0, 5,
+		3, 1, 7,
+		
+		// standing triangle end caps
+		0, 5, 6,
+		1, 7, 8,
+		
+		// sideways triangles
+		// all y values share sign
+		3, 9, 5,
+		3, 9, 7,
+		2, 8, 4,
+		2, 8, 6,
+		
+		// inverted triangle end caps
+		10, 5, 6,
+		11, 7, 8,
+		
+		// neighbors of the two bottom triangles
+		// signs are shared in x and y
+		8, 10, 4,
+		8, 11, 6,
+		9, 10, 5,
+		9, 11, 7,
+		
+		// bottom two triangles
+		10, 8, 11, 
+		11, 10, 9
+	};
+	
+	memcpy(m->indices, indices, sizeof(short) * 20 * 3); 
+	
+	return m;
+}
 
 float* genNoisef(short width, short height, float min, float max) {
 	
