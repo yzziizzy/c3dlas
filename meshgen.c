@@ -185,8 +185,55 @@ Mesh* genIcosahedronMesh(float radius) {
 	
 	return m;
 }
+// centered, along z axis
+Mesh* genHollowCylinder(float innerRadius, float outerRadius, int segments, float length) {
+	Mesh* m;
+	int i, j;
+	float hlen = length / 2;
+	
+	m = malloc(sizeof(Mesh));
 
-// along z axis
+	// endcaps with two rows
+	m->szVertices = m->vertexCnt = segments * 2 * 2;
+	
+	// two end caps, and two triangles per wall quad, two walls
+	m->szIndices = m->indexCnt = 3 * (segments * (2 + 2 + 2 + 2));
+
+	m->vertices = malloc(sizeof(Vector) * m->szVertices);
+	m->indices = malloc(sizeof(short) * m->szIndices);
+	
+	j = 0;
+	// outside
+	for(i = 0; i < segments; i++) {
+		m->vertices[j].v.x = outerRadius * sin(D_2PI / i);
+		m->vertices[j].v.y = outerRadius * cos(D_2PI / i);
+		m->vertices[j++].v.z = -hlen;
+	}
+	for(i = 0; i < segments; i++) {
+		m->vertices[j].v.x = outerRadius * sin(D_2PI / i);
+		m->vertices[j].v.y = outerRadius * cos(D_2PI / i);
+		m->vertices[j++].v.z = hlen;
+	}
+	// inside
+	for(i = 0; i < segments; i++) {
+		m->vertices[j].v.x = innerRadius * sin(D_2PI / i);
+		m->vertices[j].v.y = innerRadius * cos(D_2PI / i);
+		m->vertices[j++].v.z = -hlen;
+	}
+	for(i = 0; i < segments; i++) {
+		m->vertices[j].v.x = innerRadius * sin(D_2PI / i);
+		m->vertices[j].v.y = innerRadius * cos(D_2PI / i);
+		m->vertices[j++].v.z = hlen;
+	}
+	
+	// indices
+	j = 0;
+	
+	// TODO
+}
+
+
+// centered, along z axis
 Mesh* genCylinder(float radius, int segments, float length) {
 	
 	Mesh* m;
@@ -224,20 +271,21 @@ Mesh* genCylinder(float radius, int segments, float length) {
 	m->vertices[segments * 2 + 1].v.z = hlen;
 
 	// indices
+	j = 0;
 	// first the starting disk
-	for(i = 0, j = 0; i < segments; i++) {
+	for(i = 0; i < segments; i++) {
 		m->indices[j++] = i;
 		m->indices[j++] = (i + 1) % segments;
 		m->indices[j++] = segments;
 	}
 	// then the second disk
-	for(i = 0, j = 0; i < segments; i++) {
+	for(i = 0; i < segments; i++) {
 		m->indices[j++] = segments + 1 + i;
 		m->indices[j++] = segments + 1 + ((i + 1) % segments);
 		m->indices[j++] = segments + 1 + segments;
 	}
 	//finally the walls
-	for(i = 0, j = 0; i < segments; i++) {
+	for(i = 0; i < segments; i++) {
 		m->indices[j++] = i;
 		m->indices[j++] = (i + 1) % segments;
 		m->indices[j++] = segments + 1 + ((i + 1) % segments);
