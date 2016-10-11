@@ -206,8 +206,8 @@ Mesh* genCylinder(float radius, int segments, float length) {
 
 	// vertices
 	for(i = 0; i < segments; i++) {
-		m->vertices[i].v.x = sin(i / D_2PI);
-		m->vertices[i].v.y = cos(i / D_2PI);
+		m->vertices[i].v.x = radius * sin(D_2PI / i);
+		m->vertices[i].v.y = radius * cos(D_2PI / i);
 		m->vertices[i].v.z = -hlen;
 	}
 	m->vertices[segments].v.x = 0.0f;
@@ -215,8 +215,8 @@ Mesh* genCylinder(float radius, int segments, float length) {
 	m->vertices[segments].v.z = -hlen;
 
 	for(i = 0; i < segments; i++) {
-		m->vertices[segments + 1 + i].v.x = sin(i / D_2PI);
-		m->vertices[segments + 1 + i].v.y = cos(i / D_2PI);
+		m->vertices[segments + 1 + i].v.x = radius * sin(D_2PI / i);
+		m->vertices[segments + 1 + i].v.y = radius * cos(D_2PI / i);
 		m->vertices[segments + 1 + i].v.z = hlen;
 	}
 	m->vertices[segments * 2 + 1].v.x = 0.0f;
