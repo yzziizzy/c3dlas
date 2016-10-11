@@ -186,6 +186,70 @@ Mesh* genIcosahedronMesh(float radius) {
 	return m;
 }
 
+// along z axis
+Mesh* genCylinder(float radius, int segments, float length) {
+	
+	Mesh* m;
+	int i, j;
+	float hlen = length / 2;
+	
+	m = malloc(sizeof(Mesh));
+
+	// endcaps plus center points
+	m->szVertices = m->vertexCnt = segments * 2 + 2;
+	
+	// two end caps, and two triangles per wall quad
+	m->szIndices = m->indexCnt = 3 * (segments * (2 + 2));
+
+	m->vertices = malloc(sizeof(Vector) * m->szVertices);
+	m->indices = malloc(sizeof(short) * m->szIndices);
+
+	// vertices
+	for(i = 0; i < segments; i++) {
+		m->vertices[i].v.x = sin(i / D_2PI);
+		m->vertices[i].v.y = cos(i / D_2PI);
+		m->vertices[i].v.z = -hlen;
+	}
+	m->vertices[segments].v.x = 0.0f;
+	m->vertices[segments].v.y = 0.0f;
+	m->vertices[segments].v.z = -hlen;
+
+	for(i = 0; i < segments; i++) {
+		m->vertices[segments + 1 + i].v.x = sin(i / D_2PI);
+		m->vertices[segments + 1 + i].v.y = cos(i / D_2PI);
+		m->vertices[segments + 1 + i].v.z = hlen;
+	}
+	m->vertices[segments * 2 + 1].v.x = 0.0f;
+	m->vertices[segments * 2 + 1].v.y = 0.0f;
+	m->vertices[segments * 2 + 1].v.z = hlen;
+
+	// indices
+	// first the starting disk
+	for(i = 0, j = 0; i < segments; i++) {
+		m->indices[j++] = i;
+		m->indices[j++] = (i + 1) % segments;
+		m->indices[j++] = segments;
+	}
+	// then the second disk
+	for(i = 0, j = 0; i < segments; i++) {
+		m->indices[j++] = segments + 1 + i;
+		m->indices[j++] = segments + 1 + ((i + 1) % segments);
+		m->indices[j++] = segments + 1 + segments;
+	}
+	//finally the walls
+	for(i = 0, j = 0; i < segments; i++) {
+		m->indices[j++] = i;
+		m->indices[j++] = (i + 1) % segments;
+		m->indices[j++] = segments + 1 + ((i + 1) % segments);
+		
+		m->indices[j++] = i;
+		m->indices[j++] = segments + 1 + ((i + 1) % segments);
+		m->indices[j++] = segments + 1 + segments;
+	}
+	
+	return m;
+}
+
 float* genNoisef(short width, short height, float min, float max) {
 	
 	int len, i;
