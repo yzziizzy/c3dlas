@@ -66,6 +66,12 @@ void vScale(Vector* v, float scalar, Vector* out) {
 	out->z = v->z * scalar;
 }
 
+void  vLerp(Vector* a, Vector* b, float t, Vector* out) { // Linear interpolation between two vectors
+	out->x = a->x + ((b->x - a->x) * t);
+	out->y = a->y + ((b->y - a->y) * t);
+	out->z = a->z + ((b->z - a->z) * t);
+}
+
 void vInverse(Vector* v, Vector* out) {
 	// yeah yeah yeah shut up. in games, pesky details are just annoying. this function does what you mean rather than sucking Gauss and Euclid.
 	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
@@ -163,7 +169,39 @@ void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out) {
 	vNorm(out, out);
 }
 
+// calculates a plane from a triangle
+void planeFromTriangle(Vector* v1, Vector* v2, Vector* v3, Plane* out) {
+	vTriFaceNormal(v1, v2, v3, &out->n);
+	out->d = vDot(&out->n, v1);
+}
 
+// copy a plane
+void planeCopy(Plane* in, Plane* out) {
+	vCopy(&in->n, &out->n);
+	out->d = in->d;
+}
+
+// reverses the plane's direction
+void planeInverse(Plane* in, Plane* out) {
+	vInverse(&in->n, &out->n);
+	out->d = -in->d;
+}
+
+// classifies a point by which side of the plane it's on, default espilon
+int planeClassifyPoint(Plane* p, Vector* pt) {
+	return planeClassifyPointEps(p, pt, FLT_CMP_EPSILON);
+}
+
+// classifies a point by which side of the plane it's on, custom espilon
+int planeClassifyPointEps(Plane* p, Vector* pt, float epsilon) {
+	float dist = vDot(&p->n, pt);
+	if(fabs(dist - p->d) < epsilon)
+		return C3DLAS_COPLANAR;
+	else if (dist < p->d)
+		return C3DLAS_BACK;
+	else
+		return C3DLAS_FRONT;
+}
 
 
 // 2d vector stuff

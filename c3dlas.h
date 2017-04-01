@@ -22,6 +22,10 @@
 
 #define FLT_CMP_EPSILON 0.000001
 
+#define C3DLAS_COPLANAR  (0)
+#define C3DLAS_FRONT     (1)
+#define C3DLAS_BACK      (2)
+
 
 #define MAX(a,b) ({ \
 	__typeof__ (a) _a = (a); \
@@ -149,6 +153,7 @@ void  vSwap(Vector* a, Vector* b); // swap two vectors
 void  vAdd(Vector* a, Vector* b, Vector* out); // add two vectors
 void  vSub(Vector* from, Vector* what, Vector* diff); // diff = from - what
 void  vScale(Vector* v, float scalar, Vector* out); // scalar muliplication
+void  vLerp(Vector* a, Vector* b, float t, Vector* out); // Linear interpolation between two vectors
 void  vInverse(Vector* v, Vector* out); // inverse
 float vMag(Vector* v); // return the magnitude
 float vDot(Vector* a, Vector* b); // dot product
@@ -166,6 +171,12 @@ void  vSet(float x, float y, float z, Vector* out);
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void  vReflectAcross(Vector* v, Vector* pivot, Vector* out);
 void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out); // returns a normalized face normal for the given triangle
+
+void  planeFromTriangle(Vector* v1, Vector* v2, Vector* v3, Plane* out); // calculates a plane form a triangle
+void  planeCopy(Plane* in, Plane* out); // copy a plane
+void  planeInverse(Plane* in, Plane* out); // flips the plane's direction
+int   planeClassifyPoint(Plane* p, Vector* pt); // classifies a point by which side of the plane it's on, default espilon
+int   planeClassifyPointEps(Plane* p, Vector* pt, float epsilon); // classifies a point by which side of the plane it's on, custom espilon
 
 
 // 2d vector stuff, same as 3d except one less d
