@@ -71,6 +71,10 @@ typedef struct {
 	Vector id; // inverse normalized direction (handy enough to keep around)
 } Ray;
 
+typedef struct {
+	Vector start, end;
+} LineSegment;
+
 
 typedef struct BezierSplineSegment {
 	Vector e, c; // end and control
