@@ -410,10 +410,10 @@ void vMatrixMul(Vector* in, Matrix* m, Vector* out) {
 void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out) {
 	Vector4 v;
 
-	v.x = x * m->m[0+0] + y * m->m[0+1] + z * m->m[0+2] + 1 * m->m[0+3];
-	v.y = x * m->m[4+0] + y * m->m[4+1] + z * m->m[4+2] + 1 * m->m[4+3];
-	v.z = x * m->m[8+0] + y * m->m[8+1] + z * m->m[8+2] + 1 * m->m[8+3];
-	v.w = x * m->m[12+0] + y * m->m[12+1] + z * m->m[12+2] + 1 * m->m[12+3];
+	v.x = x * m->m[0+0] + y * m->m[4+0] + z * m->m[8+0] + 1 * m->m[12+0];
+	v.y = x * m->m[0+1] + y * m->m[4+1] + z * m->m[8+1] + 1 * m->m[12+1];
+	v.z = x * m->m[0+2] + y * m->m[4+2] + z * m->m[8+2] + 1 * m->m[12+2];
+	v.w = x * m->m[0+3] + y * m->m[4+3] + z * m->m[8+3] + 1 * m->m[12+3];
 	
 	out->x = v.x / v.w;
 	out->y = v.y / v.w;
@@ -488,7 +488,7 @@ void mTrans3f(float x, float y, float z, Matrix* out) {
 
 
 void mScalev(Vector* v, Matrix* out) {
-	mTrans3f(v->x, v->y, v->z, out);
+	mScale3f(v->x, v->y, v->z, out);
 }
 
 void mScale3f(float x, float y, float z, Matrix* out) {
@@ -498,7 +498,7 @@ void mScale3f(float x, float y, float z, Matrix* out) {
 	t.m[0] = x;
 	t.m[5] = y;
 	t.m[10] = z;
-	
+
 	mMul(&t, out);
 }
 
@@ -555,19 +555,6 @@ void mRotZ(float theta, Matrix* out) {
 }
 
 
-void mTranspose(Matrix* in, Matrix* out) {
-	Matrix t;
-	int i;
-
-	for(i = 0; i < 4; i++) {
-		t.m[i]      = in->m[i * 4];
-		t.m[i + 4]  = in->m[(i * 4) + 1];
-		t.m[i + 8]  = in->m[(i * 4) + 2];
-		t.m[i + 12] = in->m[(i * 4) + 3];
-	}
-	
-	mCopy(&t, out);
-}
 
 void mTransposeFast(Matrix* in, Matrix* out) {
 	int i;
@@ -578,6 +565,16 @@ void mTransposeFast(Matrix* in, Matrix* out) {
 		out->m[i + 12] = in->m[(i * 4) + 3];
 	}
 }
+
+void mTranspose(Matrix* in, Matrix* out) {
+	Matrix t;
+	int i;
+	
+	mTransposeFast(in, &t);
+	
+	*out = t;
+}
+
 
 
 float mDeterminate(Matrix* m) {
