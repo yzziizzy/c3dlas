@@ -8,6 +8,40 @@
 #include "c3dlas.h"
 
 
+// utility
+
+
+inline float frand(float low, float high) {
+	return low + ((high - low) * ((float)rand() / (float)RAND_MAX));
+}
+
+inline float frandNorm() {
+	return ((float)rand() / (float)RAND_MAX);
+}
+
+inline double drand(double low, double high) {
+	return low + ((high - low) * ((double)rand() / (double)RAND_MAX));
+}
+
+inline double drandNorm() {
+	return ((double)rand() / (double)RAND_MAX);
+}
+
+inline float fclamp(float val, float min, float max) {
+	return fmin(max, fmax(min, val));
+}
+
+inline float fclampNorm(float val) {
+	return fclamp(val, 0.0f, 1.0f);
+}
+
+inline int iclamp(int val, int min, int max) {
+	return MIN(max, MAX(min, val));
+}
+
+inline int iclampNorm(int val) {
+	return iclamp(val, 0, 1);
+}
 
 
 // vector operations
@@ -147,6 +181,28 @@ void inline vSet(float x, float y, float z, Vector* out) {
 	out->x = x;
 	out->y = y;
 	out->z = z;
+}
+
+void vRandom(Vector* end1, Vector* end2, Vector* out) {
+	out->x = frand(fmin(end1->x, end2->x), fmax(end1->x, end2->x));
+	out->y = frand(fmin(end1->y, end2->y), fmax(end1->y, end2->y));
+	out->z = frand(fmin(end1->z, end2->z), fmax(end1->z, end2->z));
+}
+
+void vRandomNorm(Vector* out) {
+	float x = frand(-1, 1);
+	float y = frand(-1, 1);
+	float z = frand(-1, 1);
+	
+	float r = sqrt(x*x + y*y + z*z);
+	if(r == 0.0) {
+		vRandomNorm(out); // in the rare case of a zero-length vector, try again
+		return;
+	}
+	
+	out->x = x / r;
+	out->y = y / r;
+	out->z = z / r;
 }
 
 

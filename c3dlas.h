@@ -147,9 +147,17 @@ typedef struct AABB2i {
 
 extern const Matrix IDENT_MATRIX;
 
+// utilities
+inline float frand(float low, float high);
+inline float frandNorm();
+inline double drand(double low, double high);
+inline double drandNorm();
+inline float fclamp(float val, float min, float max);
+inline float fclampNorm(float val);\
+inline int iclamp(int val, int min, int max);
+inline int iclampNorm(int val);
 
-
-
+// vectors
 int   vEq(Vector* a, Vector* b); // safe equivalence, to FLT_CMP_EPSILON
 int   vEqEp(Vector* a, Vector* b, float epsilon); // safe equivalence, to arbitrary epsilon
 void  vCopy(const Vector* src, Vector* dst); // copy vector values
@@ -170,6 +178,9 @@ void  vProjectNorm(Vector* what, Vector* onto, Vector* out); // faster; onto mus
 void  vMin(Vector* a, Vector* b, Vector* out); // returns the minimum values of each component
 void  vMax(Vector* a, Vector* b, Vector* out); // returns the maximum values of each component
 void  vSet(float x, float y, float z, Vector* out);
+
+void vRandom(Vector* end1, Vector* end2, Vector* out);
+void vRandomNorm(Vector* out);
 
 // reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
