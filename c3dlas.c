@@ -1,47 +1,13 @@
 
-#include <stdlib.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include <float.h>
+#include <math.h>
 
 #include "c3dlas.h"
 
 
-// utility
-
-
-inline float frand(float low, float high) {
-	return low + ((high - low) * ((float)rand() / (float)RAND_MAX));
-}
-
-inline float frandNorm() {
-	return ((float)rand() / (float)RAND_MAX);
-}
-
-inline double drand(double low, double high) {
-	return low + ((high - low) * ((double)rand() / (double)RAND_MAX));
-}
-
-inline double drandNorm() {
-	return ((double)rand() / (double)RAND_MAX);
-}
-
-inline float fclamp(float val, float min, float max) {
-	return fmin(max, fmax(min, val));
-}
-
-inline float fclampNorm(float val) {
-	return fclamp(val, 0.0f, 1.0f);
-}
-
-inline int iclamp(int val, int min, int max) {
-	return MIN(max, MAX(min, val));
-}
-
-inline int iclampNorm(int val) {
-	return iclamp(val, 0, 1);
-}
 
 
 // vector operations

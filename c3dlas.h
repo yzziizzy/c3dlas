@@ -3,6 +3,9 @@
 #define __c3dlas_h__
 
 
+#include <stdlib.h> // rand() et al.
+
+
 #define F_PI ((float)3.1415926535897932384626433832795028841971693993751)
 #define D_PI ((double)3.1415926535897932384626433832795028841971693993751)
 #define F_2PI ((float)6.2831853071795864769252867665590057683943387987502)
@@ -148,14 +151,38 @@ typedef struct AABB2i {
 extern const Matrix IDENT_MATRIX;
 
 // utilities
-inline float frand(float low, float high);
-inline float frandNorm();
-inline double drand(double low, double high);
-inline double drandNorm();
-inline float fclamp(float val, float min, float max);
-inline float fclampNorm(float val);\
-inline int iclamp(int val, int min, int max);
-inline int iclampNorm(int val);
+
+static inline float frand(float low, float high) {
+	return low + ((high - low) * ((float)rand() / (float)RAND_MAX));
+}
+
+static inline float frandNorm() {
+	return ((float)rand() / (float)RAND_MAX);
+}
+
+static inline double drand(double low, double high) {
+	return low + ((high - low) * ((double)rand() / (double)RAND_MAX));
+}
+
+static inline double drandNorm() {
+	return ((double)rand() / (double)RAND_MAX);
+}
+
+static inline float fclamp(float val, float min, float max) {
+	return fmin(max, fmax(min, val));
+}
+
+static inline float fclampNorm(float val) {
+	return fclamp(val, 0.0f, 1.0f);
+}
+
+static inline int iclamp(int val, int min, int max) {
+	return MIN(max, MAX(min, val));
+}
+
+static inline int iclampNorm(int val) {
+	return iclamp(val, 0, 1);
+}
 
 // vectors
 int   vEq(Vector* a, Vector* b); // safe equivalence, to FLT_CMP_EPSILON
