@@ -161,6 +161,7 @@ void  vLerp(Vector* a, Vector* b, float t, Vector* out); // Linear interpolation
 void  vInverse(Vector* v, Vector* out); // inverse
 float vMag(Vector* v); // return the magnitude
 float vDot(Vector* a, Vector* b); // dot product
+float vDist(Vector* from, Vector* to); // distance from one point to another
 void  vNorm(Vector* v, Vector* out); // normalize the vector
 void  vUnit(Vector* v, Vector* out); // normalise the vector, alternate name
 void  vCross(Vector* a, Vector* b, Vector* out); // cross product: out = a x b
