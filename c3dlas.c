@@ -1,9 +1,9 @@
 
-#include <stdlib.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include <float.h>
+#include <math.h>
 
 #include "c3dlas.h"
 
@@ -152,6 +152,28 @@ void inline vSet(float x, float y, float z, Vector* out) {
 	out->x = x;
 	out->y = y;
 	out->z = z;
+}
+
+void vRandom(Vector* end1, Vector* end2, Vector* out) {
+	out->x = frand(fmin(end1->x, end2->x), fmax(end1->x, end2->x));
+	out->y = frand(fmin(end1->y, end2->y), fmax(end1->y, end2->y));
+	out->z = frand(fmin(end1->z, end2->z), fmax(end1->z, end2->z));
+}
+
+void vRandomNorm(Vector* out) {
+	float x = frand(-1, 1);
+	float y = frand(-1, 1);
+	float z = frand(-1, 1);
+	
+	float r = sqrt(x*x + y*y + z*z);
+	if(r == 0.0) {
+		vRandomNorm(out); // in the rare case of a zero-length vector, try again
+		return;
+	}
+	
+	out->x = x / r;
+	out->y = y / r;
+	out->z = z / r;
 }
 
 
@@ -415,10 +437,10 @@ void vMatrixMul(Vector* in, Matrix* m, Vector* out) {
 void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out) {
 	Vector4 v;
 
-	v.x = x * m->m[0+0] + y * m->m[0+1] + z * m->m[0+2] + 1 * m->m[0+3];
-	v.y = x * m->m[4+0] + y * m->m[4+1] + z * m->m[4+2] + 1 * m->m[4+3];
-	v.z = x * m->m[8+0] + y * m->m[8+1] + z * m->m[8+2] + 1 * m->m[8+3];
-	v.w = x * m->m[12+0] + y * m->m[12+1] + z * m->m[12+2] + 1 * m->m[12+3];
+	v.x = x * m->m[0+0] + y * m->m[4+0] + z * m->m[8+0] + 1 * m->m[12+0];
+	v.y = x * m->m[0+1] + y * m->m[4+1] + z * m->m[8+1] + 1 * m->m[12+1];
+	v.z = x * m->m[0+2] + y * m->m[4+2] + z * m->m[8+2] + 1 * m->m[12+2];
+	v.w = x * m->m[0+3] + y * m->m[4+3] + z * m->m[8+3] + 1 * m->m[12+3];
 	
 	out->x = v.x / v.w;
 	out->y = v.y / v.w;
@@ -493,7 +515,7 @@ void mTrans3f(float x, float y, float z, Matrix* out) {
 
 
 void mScalev(Vector* v, Matrix* out) {
-	mTrans3f(v->x, v->y, v->z, out);
+	mScale3f(v->x, v->y, v->z, out);
 }
 
 void mScale3f(float x, float y, float z, Matrix* out) {
@@ -503,7 +525,7 @@ void mScale3f(float x, float y, float z, Matrix* out) {
 	t.m[0] = x;
 	t.m[5] = y;
 	t.m[10] = z;
-	
+
 	mMul(&t, out);
 }
 
@@ -560,19 +582,6 @@ void mRotZ(float theta, Matrix* out) {
 }
 
 
-void mTranspose(Matrix* in, Matrix* out) {
-	Matrix t;
-	int i;
-
-	for(i = 0; i < 4; i++) {
-		t.m[i]      = in->m[i * 4];
-		t.m[i + 4]  = in->m[(i * 4) + 1];
-		t.m[i + 8]  = in->m[(i * 4) + 2];
-		t.m[i + 12] = in->m[(i * 4) + 3];
-	}
-	
-	mCopy(&t, out);
-}
 
 void mTransposeFast(Matrix* in, Matrix* out) {
 	int i;
@@ -583,6 +592,16 @@ void mTransposeFast(Matrix* in, Matrix* out) {
 		out->m[i + 12] = in->m[(i * 4) + 3];
 	}
 }
+
+void mTranspose(Matrix* in, Matrix* out) {
+	Matrix t;
+	int i;
+	
+	mTransposeFast(in, &t);
+	
+	*out = t;
+}
+
 
 
 float mDeterminate(Matrix* m) {
