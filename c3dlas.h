@@ -4,7 +4,7 @@
 
 
 #include <stdlib.h> // rand() et al.
-
+#include <math.h> // fmin/fmax
 
 #define F_PI ((float)3.1415926535897932384626433832795028841971693993751)
 #define D_PI ((double)3.1415926535897932384626433832795028841971693993751)
