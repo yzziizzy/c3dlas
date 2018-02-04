@@ -409,6 +409,14 @@ void inline vSet2i(int x, int y, Vector2i* out) {
 	out->y = y;
 }
 
+// returns the absolute distance between two vectors
+float vDist2i(Vector2i* a, Vector2i* b) {
+	float x = (float)a->x - (float)b->x;
+	float y = (float)a->y - (float)b->y;
+	return sqrt(x * x + y * y);
+}
+
+
 
 
 

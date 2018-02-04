@@ -258,6 +258,7 @@ int   vDot2i(Vector2i* a, Vector2i* b); // dot product
 void  vMin2i(Vector2i* a, Vector2i* b, Vector2i* out); // returns the minimum values of each component
 void  vMax2i(Vector2i* a, Vector2i* b, Vector2i* out); // returns the maximum values of each component
 void  vSet2i(int x, int y, Vector2i* out);
+float vDist2i(Vector2i* a, Vector2i* b); // returns the absolute distance between two vectors
 
 
 
