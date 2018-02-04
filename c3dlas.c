@@ -87,6 +87,11 @@ float vDot(Vector* a, Vector* b) {
 	return (float)((a->x * b->x) + (a->y * b->y) + (a->z * b->z));
 }
 
+// distance from one point to another
+float vDist(Vector* from, Vector* to) {
+	return sqrt((float)((from->x - to->x) + (from->y - to->y) + (from->z - to->z)));
+}
+
 
 void vNorm(Vector* v, Vector* out) {
 	vUnit(v, out);
