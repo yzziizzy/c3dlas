@@ -89,7 +89,11 @@ float vDot(Vector* a, Vector* b) {
 
 // distance from one point to another
 float vDist(Vector* from, Vector* to) {
-	return sqrt((float)((from->x - to->x) + (from->y - to->y) + (from->z - to->z)));
+	float dx = (from->x - to->x);
+	float dy = (from->y - to->y);
+	float dz = (from->z - to->z);
+	
+	return sqrt(dx*dx + dy*dy + dz*dz);
 }
 
 
