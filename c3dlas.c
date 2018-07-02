@@ -282,6 +282,17 @@ void vScale2(Vector2* v, float scalar, Vector2* out) {
 	out->y = v->y * scalar;
 }
 
+float vDist2(Vector2* a, Vector2* b) {
+	float x = a->x - b->x;
+	float y = a->y - b->y;
+	return sqrt(x * x + y * y);
+}
+
+void  vLerp2(Vector2* a, Vector2* b, float t, Vector2* out) {
+	out->x = a->x + ((b->x - a->x) * t);
+	out->y = a->y + ((b->y - a->y) * t);
+}
+
 void vInverse2(Vector2* v, Vector2* out) {
 	// see vInverse for snark
 	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;

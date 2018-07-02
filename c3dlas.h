@@ -227,6 +227,8 @@ void  vSwap2(Vector2* a, Vector2* b); // swap two vectors
 void  vAdd2(Vector2* a, Vector2* b, Vector2* out); // add two vectors
 void  vSub2(Vector2* from, Vector2* what, Vector2* diff); // diff = from - what
 void  vScale2(Vector2* v, float scalar, Vector2* out); // scalar muliplication
+float  vDist2(Vector2* a, Vector2* b); // distance between points
+void  vLerp2(Vector2* a, Vector2* b, float t, Vector2* out); // linear interpolation
 void  vInverse2(Vector2* v, Vector2* out); // inverse
 float vMag2(Vector2* v); // return the magnitude
 float vDot2(Vector2* a, Vector2* b); // dot product
