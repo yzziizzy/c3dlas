@@ -105,7 +105,7 @@ void vUnit(Vector* v, Vector* out) {
 	float n;
 	n = (v->x * v->x) + (v->y * v->y) + (v->z * v->z);
 	
-	if(n >= 1.0f - FLT_EPSILON || n >= 1.0f + FLT_EPSILON) return; // very exact here
+	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) return; // very exact here
 	
 	n = 1.0f / sqrtf(n);
 	out->x = v->x * n;
@@ -315,7 +315,7 @@ void vUnit2(Vector2* v, Vector2* out) {
 	float n;
 	n = (v->x * v->x) + (v->y * v->y);
 	
-	if(n >= 1.0f - FLT_EPSILON || n >= 1.0f + FLT_EPSILON) return; // very exact here
+	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) return; // very exact here
 	
 	n = 1.0f / sqrtf(n);
 	out->x = v->x * n;
