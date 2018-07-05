@@ -180,6 +180,10 @@ static inline int iclamp(int val, int min, int max) {
 	return MIN(max, MAX(min, val));
 }
 
+static inline float flerp(float a, float b, float t) {
+	return a  + ((b - a) * t);
+}
+
 
 // vectors
 int   vEq(Vector* a, Vector* b); // safe equivalence, to FLT_CMP_EPSILON
