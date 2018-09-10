@@ -211,6 +211,9 @@ void  vSet(float x, float y, float z, Vector* out);
 void vRandom(Vector* end1, Vector* end2, Vector* out);
 void vRandomNorm(Vector* out);
 
+void  vLerp4(Vector4* a, Vector4* b, float t, Vector4* out); // Linear interpolation between two vectors
+
+
 // reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void  vReflectAcross(Vector* v, Vector* pivot, Vector* out);
@@ -250,6 +253,9 @@ void  vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out);
 void  vRoundAway2(const Vector2* in, const Vector2* center, Vector2i* out);
 void  vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out);
 
+// returns the *signed* area of a triangle. useful for determining winding
+// positive values mean a clockwise triangle
+float triArea2(Vector2* a, Vector2* b, Vector2* c);
 
 // 2d integer vector stuff
 int   vEq2i(Vector2i* a, Vector2i* b);

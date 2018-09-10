@@ -181,6 +181,14 @@ void vRandomNorm(Vector* out) {
 }
 
 
+void  vLerp4(Vector4* a, Vector4* b, float t, Vector4* out) { // Linear interpolation between two vectors
+	out->x = a->x + ((b->x - a->x) * t);
+	out->y = a->y + ((b->y - a->y) * t);
+	out->z = a->z + ((b->z - a->z) * t);
+	out->w = a->w + ((b->w - a->w) * t);
+}
+
+
 // reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void vReflectAcross(Vector* v, Vector* pivot, Vector* out) {
@@ -370,6 +378,15 @@ void vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out) {
 	else out->y = ceilf(in->y);
 }
 
+
+// returns the *signed* area of a triangle. useful for determining winding
+// positive values mean a clockwise triangle
+float triArea2(Vector2* a, Vector2* b, Vector2* c) {
+	return 0.5 * (
+		((b->x - a->x) * (b->y + a->y)) +
+		((c->x - b->x) * (c->y + b->y)) +
+		((a->x - c->x) * (a->y + c->y)));
+}
 
 
 // 2d integer vector stuff
