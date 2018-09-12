@@ -389,6 +389,18 @@ float triArea2(Vector2* a, Vector2* b, Vector2* c) {
 }
 
 
+// determines if a point is inside a triangle
+int triPointInside2(Vector2* p, Vector2* a, Vector2* b, Vector2* c) {
+	int d = signbit((p->x - b->x) * (a->y - b->y) - (a->x - b->x) * (p->y - b->y));
+	int e = signbit((p->x - c->x) * (b->y - c->y) - (b->x - c->x) * (p->y - c->y));
+	if(d != e) return 0;
+	int f = signbit((p->x - a->x) * (c->y - a->y) - (c->x - a->x) * (p->y - a->y));
+	return e == f;
+}
+
+
+
+
 // 2d integer vector stuff
 
 int vEq2i(Vector2i* a, Vector2i* b) {

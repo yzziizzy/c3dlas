@@ -257,6 +257,9 @@ void  vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out);
 // positive values mean a clockwise triangle
 float triArea2(Vector2* a, Vector2* b, Vector2* c);
 
+// determines if a point is inside a triangle
+int triPointInside2(Vector2* p, Vector2* a, Vector2* b, Vector2* c);
+
 // 2d integer vector stuff
 int   vEq2i(Vector2i* a, Vector2i* b);
 void  vCopy2i(const Vector2i* src, Vector2i* dst); // copy vector values
