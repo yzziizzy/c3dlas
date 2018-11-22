@@ -1008,6 +1008,27 @@ void evalBezierNorm(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vec
 }
 
 
+// Quadratic bezier functions
+float evalQBezier1D(float e1, float e2, float c1, float t) {
+	float mt, mt2;
+	mt = 1 - t;
+	mt2 = mt * mt;
+	
+	return (mt2 * e1) + (2 * mt * t * c1) + (t * t * e2);
+}
+
+void evalQBezier2D(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out) {
+	out->x = evalQBezier1D(e1->x, e2->x, c1->x, t);
+	out->y = evalQBezier1D(e1->y, e2->y, c1->y, t);
+}
+
+void evalQBezier(Vector* e1, Vector* e2, Vector* c1, float t, Vector* out) {
+	out->x = evalQBezier1D(e1->x, e2->x, c1->x, t);
+	out->y = evalQBezier1D(e1->y, e2->y, c1->y, t);
+	out->z = evalQBezier1D(e1->z, e2->z, c1->z, t);
+}
+
+
 
 
 ///// bounding box functions

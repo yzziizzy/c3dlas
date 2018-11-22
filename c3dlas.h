@@ -353,12 +353,18 @@ void msOrtho(float left, float right, float top, float bottom, float near, float
 void msLookAt(Vector* eye, Vector* center, Vector* up, MatrixStack* ms);
 
 
+// cubic Bezier curves
 void evalBezier(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out);
 void evalBezierTangent(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out); // tangent vector; not normalized
 void evalBezierNorm(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out); // normal vector; not normalized
 float evalBezier1D(float e1, float e2, float c1, float c2, float t);
 float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t); // first derivative with respect to t
 float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t); // second derivative with respect to t
+
+// quadratic Bezier curves
+float evalQBezier1D(float e1, float e2, float c1, float t);
+void evalQBezier2D(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out);
+void evalQBezier(Vector* e1, Vector* e2, Vector* c1, float t, Vector* out);
 
 ///// bounding box functions
 
