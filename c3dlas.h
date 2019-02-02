@@ -6,6 +6,25 @@
 #include <stdlib.h> // rand() et al.
 #include <math.h> // fmin/fmax
 
+#define C3DLAS_USE_SIMD 1
+
+#define _0000b 0x00
+#define _0001b 0x01
+#define _0010b 0x02
+#define _0011b 0x03
+#define _0100b 0x04
+#define _0101b 0x05
+#define _0110b 0x06
+#define _0111b 0x07
+#define _1000b 0x08
+#define _1001b 0x09
+#define _1010b 0x0a
+#define _1011b 0x0b
+#define _1100b 0x0c
+#define _1101b 0x0d
+#define _1110b 0x0e
+#define _1111b 0x0f
+
 #define F_PI ((float)3.1415926535897932384626433832795028841971693993751)
 #define D_PI ((double)3.1415926535897932384626433832795028841971693993751)
 #define F_2PI ((float)6.2831853071795864769252867665590057683943387987502)
@@ -219,6 +238,9 @@ void  vLerp4(Vector4* a, Vector4* b, float t, Vector4* out); // Linear interpola
 void  vReflectAcross(Vector* v, Vector* pivot, Vector* out);
 void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out); // returns a normalized face normal for the given triangle
 
+void  vProjectOntoPlane(Vector* v, Plane* p, Vector* out);
+void  vProjectOntoPlaneNormalized(Vector* v, Plane* p, Vector* out);
+
 void  planeFromTriangle(Vector* v1, Vector* v2, Vector* v3, Plane* out); // calculates a plane form a triangle
 void  planeCopy(Plane* in, Plane* out); // copy a plane
 void  planeInverse(Plane* in, Plane* out); // flips the plane's direction
@@ -404,6 +426,11 @@ void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out);
 void quadCenter2(const Quad2* in, Vector2* out);
 void quadRoundOutward2(const Quad2* in, Quad2i* out);
 void quadRoundInward2(const Quad2* in, Quad2i* out);
+
+
+float   evalCubicHermite1D(float t, float p0, float p1, float m0, float m1);
+Vector2 evalCubicHermite2D(float t, Vector2 p0, Vector2 p1, Vector2 m0, Vector2 m1); 
+Vector  evalCubicHermite3D(float t, Vector p0, Vector p1, Vector m0, Vector m1);
 
 #endif // __c3dlas_h__
 

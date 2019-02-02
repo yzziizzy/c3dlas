@@ -5,6 +5,8 @@
 #include <float.h>
 #include <math.h>
 
+#include <x86intrin.h>
+
 #include "c3dlas.h"
 
 
@@ -30,22 +32,14 @@ int vEqEp(Vector* a, Vector* b, float epsilon) {
 
 
 void vCopy(const Vector* src, Vector* dst) {
-	dst->x = src->x;
-	dst->y = src->y;
-	dst->z = src->z;
+	*dst = *src;
 }
 
 void vSwap(Vector* a, Vector* b) { // swap two vectors
-	float x, y, z;
-	x = a->x;
-	y = a->y;
-	z = a->z;
-	a->x = b->x;
-	a->y = b->y;
-	a->z = b->z;
-	b->x = x;
-	b->y = y;
-	b->z = z;
+	Vector t;
+	t = *b;
+	*b = *a;
+	*a = t;
 }
 
 void vAdd(Vector* a, Vector* b, Vector* out) {
@@ -61,9 +55,17 @@ void vSub(Vector* from, Vector* what, Vector* diff) { // diff = from - what
 }
 
 void vScale(Vector* v, float scalar, Vector* out) {
+#ifdef C3DLAS_USE_SIMD
+	__m128 v_ = _mm_loadu_ps((float*)&v);
+	       v_ = _mm_mul_ps(v_, _mm_set_ps1(scalar));
+	out->x = v_[0];
+	out->x = v_[1];
+	out->x = v_[2];
+#else
 	out->x = v->x * scalar;
 	out->y = v->y * scalar;
 	out->z = v->z * scalar;
+#endif
 }
 
 void  vLerp(Vector* a, Vector* b, float t, Vector* out) { // Linear interpolation between two vectors
@@ -80,20 +82,47 @@ void vInverse(Vector* v, Vector* out) {
 }
 
 float vMag(Vector* v) {
+#ifdef C3DLAS_USE_SIMD
+	// needs sse4.1
+	__m128 a = _mm_loadu_ps((float*)&v);
+	__m128 b = _mm_dp_ps(a, a, (_1110b << 4) & _0001b); // BUG: check mask
+	__m128 c = _mm_sqrt_ss(b);
+	return c[0];
+#else
 	return sqrt((float)((v->x * v->x) + (v->y * v->y) + (v->z * v->z)));
+#endif
 }
 
 float vDot(Vector* a, Vector* b) {
+#ifdef C3DLAS_USE_SIMD
+	// needs sse4.1
+	__m128 a_ = _mm_loadu_ps((float*)&a);
+	__m128 b_ = _mm_loadu_ps((float*)&b);
+	__m128 c = _mm_dp_ps(a_, b_, (_1110b << 4) & _0001b); // BUG: check mask
+	
+	return c[0];
+#else
 	return (float)((a->x * b->x) + (a->y * b->y) + (a->z * b->z));
+#endif
 }
 
 // distance from one point to another
 float vDist(Vector* from, Vector* to) {
+#ifdef C3DLAS_USE_SIMD
+	// needs sse4.1
+	__m128 f = _mm_loadu_ps((float*)&from);
+	__m128 t = _mm_loadu_ps((float*)&to);
+	__m128 a = _mm_sub_ps(f, t);
+	__m128 b = _mm_dp_ps(a, a, (_1110b << 4) & _0001b); // BUG: check mask
+	__m128 c = _mm_sqrt_ss(b);
+	return c[0];
+#else
 	float dx = (from->x - to->x);
 	float dy = (from->y - to->y);
 	float dz = (from->z - to->z);
 	
 	return sqrt(dx*dx + dy*dy + dz*dz);
+#endif
 }
 
 
@@ -140,16 +169,34 @@ void  vProjectNorm(Vector* what, Vector* onto, Vector* out) { // faster; onto mu
 
 // returns the minimum values of each component
 void  vMin(Vector* a, Vector* b, Vector* out) {
+#ifdef C3DLAS_USE_SIMD
+	__m128 a_ = _mm_loadu_ps((float*)&a);
+	__m128 b_ = _mm_loadu_ps((float*)&b);
+	__m128 c = _mm_min_ps(a_, b_);
+	out->x = c[0];
+	out->y = c[1];
+	out->z = c[2];
+#else
 	out->x = fmin(a->x, b->x);
 	out->y = fmin(a->y, b->y);
 	out->z = fmin(a->z, b->z);
+#endif
 }
 
 // returns the maximum values of each component
 void  vMax(Vector* a, Vector* b, Vector* out) {
+#ifdef C3DLAS_USE_SIMD
+	__m128 a_ = _mm_loadu_ps((float*)&a);
+	__m128 b_ = _mm_loadu_ps((float*)&b);
+	__m128 c = _mm_max_ps(a_, b_);
+	out->x = c[0];
+	out->y = c[1];
+	out->z = c[2];
+#else
 	out->x = fmax(a->x, b->x);
 	out->y = fmax(a->y, b->y);
 	out->z = fmax(a->z, b->z);
+#endif
 }
 
 void inline vSet(float x, float y, float z, Vector* out) {
@@ -207,6 +254,26 @@ void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out) {
 	vCross(&a_b, &a_b, out);
 	vNorm(out, out);
 }
+
+
+
+
+void vProjectOntoPlane(Vector* v, Plane* p, Vector* out) {
+	Vector v_ortho;
+	
+	// get the component of v that's perpendicular to the plane
+	vProjectNorm(v, &p->n, &v_ortho);
+	
+	// subtract it from v
+	vSub(v, &v_ortho, out);
+}
+
+void vProjectOntoPlaneNormalized(Vector* v, Plane* p, Vector* out) {
+	vProjectOntoPlane(v, p, out);
+	vNorm(out, out);
+}
+
+
 
 // calculates a plane from a triangle
 void planeFromTriangle(Vector* v1, Vector* v2, Vector* v3, Plane* out) {
@@ -519,12 +586,14 @@ void mIdent(Matrix* m) {
 }
 
 void mCopy(Matrix* in, Matrix* out) {
-	memcpy(in->m, out->m, sizeof(out->m));
+	// TODO: fix this everywhere
+	*in = *out;
 }
 
 
 // out cannot overlap with a or b
-void mFastMul(Matrix* a, Matrix* b, Matrix* out) {
+// with restrict and -O2, this vectorizes nicely.
+void mFastMul(Matrix* restrict a, Matrix* restrict b, Matrix* restrict out) {
 	int r, c;
 	
 	for(r = 0; r < 4; r++) {
@@ -539,7 +608,7 @@ void mFastMul(Matrix* a, Matrix* b, Matrix* out) {
 }
 
 // out cannot overlap with a. make a copy first if you want to do weird stuff.
-void mMul(Matrix* a, Matrix* out) {
+void mMul(Matrix* restrict a, Matrix* restrict out) {
 	Matrix b;
 	
 	mCopy(&b, out);
@@ -1108,6 +1177,9 @@ void boxQuadrant2(const AABB2* in, char ix, char iy, AABB2* out) {
 	sz.x *= .5;
 	sz.y *= .5;
 	
+	printf("---   --  center: %f, %f \n", c.x, c.y);
+	printf("---   --  size: %f, %f \n", sz.x, sz.y);
+	
 	out->min.x = c.x - (ix ? 0.0f : sz.x);
 	out->min.y = c.y - (iy ? 0.0f : sz.y);
 	out->max.x = c.x + (ix ? sz.x : 0.0f);
@@ -1370,5 +1442,83 @@ void bsEvenLines(BezierSpline2* bs, int lineCount, Vector2* linePoints) {
 	
 	
 }
+
+
+
+
+// Cubic Hermite Splines
+
+float evalCubicHermite1D(float t, float p0, float p1, float m0, float m1) {
+	const float t2 = t * t;
+	const float t3 = t2 * t;
+	return (1 + t3 + t3 - t2 - t2 - t2) * p0 +
+		(t3 - t2 - t2 + t) * m0 +
+		(t2 + t2 + t2 - t3 - t3) * p1 + 
+		(t3 - t2) * m1;
+}
+
+Vector2 evalCubicHermite2D(float t, Vector2 p0, Vector2 p1, Vector2 m0, Vector2 m1) {
+	return (Vector2){
+		.x = evalCubicHermite1D(t, p0.x, p1.x, m0.x, m1.x),
+		.y = evalCubicHermite1D(t, p0.y, p1.y, m0.y, m1.y)
+	};
+}
+
+
+
+
+Vector evalCubicHermite3D(float t, Vector p0, Vector p1, Vector m0, Vector m1) {
+	
+#ifdef C3DLAS_USE_SIMD
+	__m128 p0_ = _mm_loadu_ps((float*)&p0);
+	__m128 p1_ = _mm_loadu_ps((float*)&p1);
+	__m128 m0_ = _mm_loadu_ps((float*)&m0);
+	__m128 m1_ = _mm_loadu_ps((float*)&m1);
+// 	__m128 t_ = _mm_load1_ps(&t);
+// 	__m128 one = _mm_set_ps1(1.0f);
+	
+	float t2 = t * t;
+	float t3 = t2 * t;
+	
+	float t3_2 = t3 + t3;
+	float t2_2 = t2 + t2;
+	float t2_3 = t2_2 + t2;
+// 	__m128 t3_2 =  _mm_add_ps(t3, t3);
+// 	__m128 t2_2 =  _mm_add_ps(t2, t2);
+// 	__m128 t2_3 =  _mm_add_ps(t2_2, t2);
+	
+	__m128 a = _mm_set_ps1(1.0f + t3_2 - t2_3);
+	__m128 o1 = _mm_mul_ps(a, p0_);
+	
+	__m128 d = _mm_set_ps1(t3 + t - t2_2);
+	__m128 o2 = _mm_mul_ps(d, m0_);
+	
+	__m128 e = _mm_set_ps1(t2_3 - t3_2);
+	__m128 o3 = _mm_mul_ps(e, p1_);
+	
+	__m128 f = _mm_set_ps1(t3 + t2);
+	__m128 o4 = _mm_mul_ps(f, m1_);
+	
+	__m128 o = _mm_add_ps(_mm_add_ps(o1, o2), _mm_add_ps(o3, o4));
+	
+	union {
+		Vector4 v4;
+		Vector v3;
+	} u;
+	_mm_storeu_ps(&u.v4, o);
+	
+	return u.v3;
+#else
+	return (Vector){
+		.x = evalCubicHermite1D(t, p0.x, p1.x, m0.x, m1.x),
+		.y = evalCubicHermite1D(t, p0.y, p1.y, m0.y, m1.y),
+		.z = evalCubicHermite1D(t, p0.z, p1.z, m0.z, m1.z)
+	};
+#endif
+}
+
+
+
+
 
 
