@@ -43,24 +43,39 @@ void vSwap(Vector* a, Vector* b) { // swap two vectors
 }
 
 void vAdd(Vector* a, Vector* b, Vector* out) {
+#ifdef C3DLAS_USE_SIMD
+	__m128 a_ = _mm_loadu_ps((float*)a);
+	__m128 b_ = _mm_loadu_ps((float*)b);
+	b_ = _mm_add_ps(a_, b_);
+	// requires avx
+	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), b_);
+#else
 	out->x = a->x + b->x;
 	out->y = a->y + b->y;
 	out->z = a->z + b->z;
+#endif
 }
 
 void vSub(Vector* from, Vector* what, Vector* diff) { // diff = from - what
+#ifdef C3DLAS_USE_SIMD
+	__m128 f_ = _mm_loadu_ps((float*)from);
+	__m128 w_ = _mm_loadu_ps((float*)what);
+	w_ = _mm_sub_ps(f_, w_);
+	
+ 	_mm_maskstore_ps((float*)diff, _mm_set_epi32(0, -1, -1, -1), w_);
+#else
 	diff->x = from->x - what->x;
 	diff->y = from->y - what->y;
 	diff->z = from->z - what->z;
+#endif
 }
 
 void vScale(Vector* v, float scalar, Vector* out) {
 #ifdef C3DLAS_USE_SIMD
 	__m128 v_ = _mm_loadu_ps((float*)&v);
 	       v_ = _mm_mul_ps(v_, _mm_set_ps1(scalar));
-	out->x = v_[0];
-	out->x = v_[1];
-	out->x = v_[2];
+	
+	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), v_);
 #else
 	out->x = v->x * scalar;
 	out->y = v->y * scalar;
@@ -69,9 +84,21 @@ void vScale(Vector* v, float scalar, Vector* out) {
 }
 
 void  vLerp(Vector* a, Vector* b, float t, Vector* out) { // Linear interpolation between two vectors
+#ifdef C3DLAS_USE_SIMD
+	__m128 a_ = _mm_loadu_ps((float*)&a);
+	__m128 b_ = _mm_loadu_ps((float*)&b);
+	__m128 t_ = _mm_set_ps1(t);
+	
+	__m128 q = _mm_sub_ps(b_, a_);
+	       q = _mm_mul_ps(q, t_);
+	       q = _mm_add_ps(q, a_);
+	
+	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), q);
+#else
 	out->x = a->x + ((b->x - a->x) * t);
 	out->y = a->y + ((b->y - a->y) * t);
 	out->z = a->z + ((b->z - a->z) * t);
+#endif
 }
 
 void vInverse(Vector* v, Vector* out) {
@@ -173,9 +200,7 @@ void  vMin(Vector* a, Vector* b, Vector* out) {
 	__m128 a_ = _mm_loadu_ps((float*)&a);
 	__m128 b_ = _mm_loadu_ps((float*)&b);
 	__m128 c = _mm_min_ps(a_, b_);
-	out->x = c[0];
-	out->y = c[1];
-	out->z = c[2];
+ 	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), c);
 #else
 	out->x = fmin(a->x, b->x);
 	out->y = fmin(a->y, b->y);
@@ -189,9 +214,8 @@ void  vMax(Vector* a, Vector* b, Vector* out) {
 	__m128 a_ = _mm_loadu_ps((float*)&a);
 	__m128 b_ = _mm_loadu_ps((float*)&b);
 	__m128 c = _mm_max_ps(a_, b_);
-	out->x = c[0];
-	out->y = c[1];
-	out->z = c[2];
+	
+	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), c);
 #else
 	out->x = fmax(a->x, b->x);
 	out->y = fmax(a->y, b->y);
@@ -229,10 +253,22 @@ void vRandomNorm(Vector* out) {
 
 
 void  vLerp4(Vector4* a, Vector4* b, float t, Vector4* out) { // Linear interpolation between two vectors
+#ifdef C3DLAS_USE_SIMD
+	__m128 a_ = _mm_loadu_ps((float*)&a);
+	__m128 b_ = _mm_loadu_ps((float*)&b);
+	__m128 t_ = _mm_set_ps1(t);
+	
+	__m128 q = _mm_sub_ps(b_, a_);
+	        q = _mm_mul_ps(q, t_);
+	        q = _mm_add_ps(q, a_);
+	
+	_mm_storeu_ps((float*)out, q);
+#else
 	out->x = a->x + ((b->x - a->x) * t);
 	out->y = a->y + ((b->y - a->y) * t);
 	out->z = a->z + ((b->z - a->z) * t);
 	out->w = a->w + ((b->w - a->w) * t);
+#endif
 }
 
 
@@ -549,11 +585,11 @@ float pvDist(Plane* p, Vector* v) {
 
 
 // multiply a vector by a matrix
-void vMatrixMul(Vector* in, Matrix* m, Vector* out) {
+void vMatrixMul(Vector* restrict in, Matrix* restrict m, Vector* restrict out) {
 	vMatrixMulf(in->x, in->y, in->z, m, out);
 }
 
-void vMatrixMulf(float x, float y, float z, Matrix* m, Vector* out) {
+void vMatrixMulf(float x, float y, float z, Matrix* restrict m, Vector* restrict out) {
 	Vector4 v;
 
 	v.x = x * m->m[0+0] + y * m->m[4+0] + z * m->m[8+0] + 1 * m->m[12+0];
@@ -586,8 +622,7 @@ void mIdent(Matrix* m) {
 }
 
 void mCopy(Matrix* in, Matrix* out) {
-	// TODO: fix this everywhere
-	*in = *out;
+	*out = *in;
 }
 
 
@@ -611,7 +646,7 @@ void mFastMul(Matrix* restrict a, Matrix* restrict b, Matrix* restrict out) {
 void mMul(Matrix* restrict a, Matrix* restrict out) {
 	Matrix b;
 	
-	mCopy(&b, out);
+	mCopy(out, &b);
 	
 	mFastMul(a, &b, out);
 }
@@ -746,7 +781,7 @@ float mDeterminate(Matrix* m) {
 // http://stackoverflow.com/a/7596981
 // matrix inversions suck. maybe one day i'll lift intel's super fast SSE one instead.
 // functions returns 0 if sucessful, 1 if there is no inverse
-int mInverse(Matrix* in, Matrix* out) {
+int mInverse(Matrix* restrict in, Matrix* restrict out) {
 	
 	float s0, s1, s2, s3, s4, s5;
 	float c0, c1, c2, c3, c4, c5;
@@ -945,7 +980,7 @@ int msPush(MatrixStack* ms) {
 	
 	ms->top++;
 	
-	mCopy(&ms->stack[ms->top], &ms->stack[ms->top - 1]);
+	mCopy(&ms->stack[ms->top - 1], &ms->stack[ms->top]);
 	
 	return 0;
 }
@@ -1106,7 +1141,6 @@ void evalQBezier(Vector* e1, Vector* e2, Vector* c1, float t, Vector* out) {
 // 3D versions
 
 int boxDisjoint(const AABB* a, const AABB* b) {
-
 	return a->max.x < b->min.x || b->max.x < a->min.x
 		|| a->max.y < b->min.y || b->max.y < a->min.y
 		|| a->max.z < b->min.z || b->max.z < a->min.z;
