@@ -72,7 +72,7 @@ void vSub(Vector* from, Vector* what, Vector* diff) { // diff = from - what
 
 void vScale(Vector* v, float scalar, Vector* out) {
 #ifdef C3DLAS_USE_SIMD
-	__m128 v_ = _mm_loadu_ps((float*)&v);
+	__m128 v_ = _mm_loadu_ps((float*)v);
 	       v_ = _mm_mul_ps(v_, _mm_set_ps1(scalar));
 	
 	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), v_);
@@ -135,40 +135,42 @@ float vDot(Vector* a, Vector* b) {
 
 // distance from one point to another
 float vDist(Vector* from, Vector* to) {
-#ifdef C3DLAS_USE_SIMD
-	// needs sse4.1
-	__m128 f = _mm_loadu_ps((float*)&from);
-	__m128 t = _mm_loadu_ps((float*)&to);
-	__m128 a = _mm_sub_ps(f, t);
-	__m128 b = _mm_dp_ps(a, a, (_1110b << 4) & _0001b); // BUG: check mask
-	__m128 c = _mm_sqrt_ss(b);
-	return c[0];
-#else
+// #ifdef C3DLAS_USE_SIMD
+// 	// needs sse4.1
+// 	__m128 f = _mm_loadu_ps((float*)&from);
+// 	__m128 t = _mm_loadu_ps((float*)&to);
+// 	__m128 a = _mm_sub_ps(f, t);
+// 	
+// 	float b = a[1] + a[2] + a[3];
+// 	return sqrt(b);
+// // 	__m128 c = _mm_sqrt_ss(b);
+// // 	return c[0];
+// #else
 	float dx = (from->x - to->x);
 	float dy = (from->y - to->y);
 	float dz = (from->z - to->z);
 	
 	return sqrt(dx*dx + dy*dy + dz*dz);
-#endif
+// #endif
 }
 
 
 // squared distance from one point to another
 float vDistSq(Vector* from, Vector* to) {
-#ifdef C3DLAS_USE_SIMD
-	// needs sse4.1
-	__m128 f = _mm_loadu_ps((float*)&from);
-	__m128 t = _mm_loadu_ps((float*)&to);
-	__m128 a = _mm_sub_ps(f, t);
-	__m128 b = _mm_dp_ps(a, a, (_1110b << 4) & _0001b); // BUG: check mask
-	return b[0];
-#else
+// #ifdef C3DLAS_USE_SIMD
+// 	// needs sse4.1
+// 	__m128 f = _mm_loadu_ps((float*)&from);
+// 	__m128 t = _mm_loadu_ps((float*)&to);
+// 	__m128 a = _mm_sub_ps(f, t);
+// 	__m128 b = _mm_dp_ps(a, a, (_1110b << 4) & _0001b); // BUG: check mask
+// 	return b[0];
+// #else
 	float dx = (from->x - to->x);
 	float dy = (from->y - to->y);
 	float dz = (from->z - to->z);
 	
 	return dx*dx + dy*dy + dz*dz;
-#endif
+// #endif
 }
 
 
@@ -414,10 +416,25 @@ void frustumBoundingSphere(Frustum* f, Sphere* out) {
 	
 	float Dn2 = vDistSq(&n0, &f->points[0]); 
 	float Df2 = vDistSq(&f0, &f->points[4]);
+	
+	 // check for ortho
+	if(Dn2 - Df2 < 0.00001) {
+		frustumCenter(f, &out->center);
+		out->r = vDist(&out->center, &f->points[0]); 
+		return;
+	}
+	
 	float Dnf = vDist(&f0, &n0);
 	float Dnc = (Dn2 - Df2 - Df2) / (2 * Dnf);
 	
-	if(Dnc < Dnf) {
+// 	printf("\n f: %f,%f,%f\n", f->points[4].x,f->points[4].y,f->points[4].z);
+// 	printf(" n: %f,%f,%f\n", f->points[0].x,f->points[0].y,f->points[0].z);
+// 	printf(" f0: %f,%f,%f\n", f0.x,f0.y,f0.z);
+// 	printf(" n0: %f,%f,%f\n", n0.x,n0.y,n0.z);
+// 	printf(" dn2, df2, dnf, dnc: %f,%f,%f,%f\n", Dn2, Df2, Dnf, Dnc);
+	
+	
+	if(Dnc > 0 && Dnc < Dnf) {
 		vLerp(&f0, &n0, Dnc / Dnf, &out->center);
 		out->r = sqrt(Dnc * Dnc + Dn2);
 	}
@@ -1022,13 +1039,12 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out) {
 	Matrix m;
 	
-	
-	float right = s->r;
-	float left = -s->r;
+	float right = -s->r ;
+	float left = s->r;
 	float top = s->r;
 	float bottom = -s->r;
-	float near = 0;
-	float far = s->r * 2;
+	float near = -s->r;
+	float far = s->r;
 	
 	// this is the ortho projection matrix
 	m = IDENT_MATRIX;
@@ -1040,16 +1056,30 @@ void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out) {
 	m.m[14] = -(far + near) / (far - near);
 	m.m[15] = 1;
 	
+	Vector d;
+	vSub(&s->center, eyePos, &d);
+	vNorm(&d, &d);
 	
-	Vector up = {0,0,1};
+	Matrix m2;
 	
-	Matrix view;
-	mLookAt(eyePos, &s->center, &up, &view); 
+	m2 = IDENT_MATRIX;
+	mRotX(asin(d.y), &m2);
+	mMul(&m2, &m);
 	
-	mFastMul(&m, &view, out);
+	m2 = IDENT_MATRIX;
+	mRotZ(atan2(d.x, d.z), &m2);
+	mMul(&m2, &m);
+	
+	m2 = IDENT_MATRIX;
+	Vector ic;
+	vScale(&s->center, -1, &ic);
+	mTransv(&ic, &m2);
+	
+	mFastMul(&m2, &m, out);
 }
 
 // analgous to gluLookAt
+// BUG: very broken apparently
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
 void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out) {
 	
@@ -1085,7 +1115,7 @@ void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out) {
 	m.m[13] = 0;
 	m.m[14] = 0;
 	m.m[15] = 1;
-
+	
 	mTrans3f(-eye->x, -eye->y, -eye->z, &m2);
 	mFastMul(&m, &m2, out);
 }

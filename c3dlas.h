@@ -365,6 +365,9 @@ void mPerspective(double fov, float aspect, float near, float far, Matrix* out);
 // same div/0 warnings.
 void mOrtho(float left, float right, float top, float bottom, float near, float far, Matrix* out);
 
+// calculates an orthographic matrix that encloses the sphere, looking from eyePos
+void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out);
+
 // analgous to gluLookAt
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
 void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out);
