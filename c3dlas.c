@@ -62,7 +62,7 @@ void vSub(Vector* from, Vector* what, Vector* diff) { // diff = from - what
 	__m128 w_ = _mm_loadu_ps((float*)what);
 	w_ = _mm_sub_ps(f_, w_);
 	
- 	_mm_maskstore_ps((float*)diff, _mm_set_epi32(0, -1, -1, -1), w_);
+	_mm_maskstore_ps((float*)diff, _mm_set_epi32(0, -1, -1, -1), w_);
 #else
 	diff->x = from->x - what->x;
 	diff->y = from->y - what->y;
@@ -153,6 +153,25 @@ float vDist(Vector* from, Vector* to) {
 }
 
 
+// squared distance from one point to another
+float vDistSq(Vector* from, Vector* to) {
+#ifdef C3DLAS_USE_SIMD
+	// needs sse4.1
+	__m128 f = _mm_loadu_ps((float*)&from);
+	__m128 t = _mm_loadu_ps((float*)&to);
+	__m128 a = _mm_sub_ps(f, t);
+	__m128 b = _mm_dp_ps(a, a, (_1110b << 4) & _0001b); // BUG: check mask
+	return b[0];
+#else
+	float dx = (from->x - to->x);
+	float dy = (from->y - to->y);
+	float dz = (from->z - to->z);
+	
+	return dx*dx + dy*dy + dz*dz;
+#endif
+}
+
+
 void vNorm(Vector* v, Vector* out) {
 	vUnit(v, out);
 }
@@ -200,7 +219,7 @@ void  vMin(Vector* a, Vector* b, Vector* out) {
 	__m128 a_ = _mm_loadu_ps((float*)&a);
 	__m128 b_ = _mm_loadu_ps((float*)&b);
 	__m128 c = _mm_min_ps(a_, b_);
- 	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), c);
+	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), c);
 #else
 	out->x = fmin(a->x, b->x);
 	out->y = fmin(a->y, b->y);
@@ -345,6 +364,105 @@ int planeClassifyPointEps(Plane* p, Vector* pt, float epsilon) {
 		return C3DLAS_FRONT;
 }
 
+
+
+void frustumFromMatrix(Matrix* m, Frustum* out) {
+	
+	Matrix inv;
+	
+	mInverse(m, &inv);
+	
+	// first the points
+	// these MUST be in this order
+	// near
+	vMatrixMulf(-1,-1,-1, &inv, &out->points[0]);
+	vMatrixMulf(-1, 1,-1, &inv, &out->points[1]);
+	vMatrixMulf( 1,-1,-1, &inv, &out->points[2]);
+	vMatrixMulf( 1, 1,-1, &inv, &out->points[3]);
+	// far
+	vMatrixMulf(-1,-1, 1, &inv, &out->points[4]);
+	vMatrixMulf(-1, 1, 1, &inv, &out->points[5]);
+	vMatrixMulf( 1,-1, 1, &inv, &out->points[6]);
+	vMatrixMulf( 1, 1, 1, &inv, &out->points[7]);
+	
+	// now the planes
+	// near and far
+	planeFromTriangle(&out->points[0], &out->points[1], &out->points[2], &out->planes[0]);
+	planeFromTriangle(&out->points[4], &out->points[5], &out->points[6], &out->planes[1]);
+	// sides
+	planeFromTriangle(&out->points[0], &out->points[4], &out->points[1], &out->planes[2]);
+	planeFromTriangle(&out->points[0], &out->points[4], &out->points[2], &out->planes[3]);
+	planeFromTriangle(&out->points[3], &out->points[7], &out->points[1], &out->planes[4]);
+	planeFromTriangle(&out->points[3], &out->points[7], &out->points[2], &out->planes[5]);
+}
+
+
+void frustumCenter(Frustum* f, Vector* out) {
+	Vector sum = {0.0f,0.0f,0.0f};
+	
+	for(int i = 0; i < 8; i++) vAdd(&f->points[i], &sum, &sum);
+	vScale(&sum, 1.0f/8.0f, out);
+}
+
+// General idea of the algorithm:
+// https://lxjk.github.io/2017/04/15/Calculate-Minimal-Bounding-Sphere-of-Frustum.html
+// http://archive.is/YACj2
+void frustumBoundingSphere(Frustum* f, Sphere* out) {
+	Vector f0, n0;
+	vPointAvg(&f->points[0], &f->points[3], &n0);
+	vPointAvg(&f->points[4], &f->points[7], &f0);
+	
+	float Dn2 = vDistSq(&n0, &f->points[0]); 
+	float Df2 = vDistSq(&f0, &f->points[4]);
+	float Dnf = vDist(&f0, &n0);
+	float Dnc = (Dn2 - Df2 - Df2) / (2 * Dnf);
+	
+	if(Dnc < Dnf) {
+		vLerp(&f0, &n0, Dnc / Dnf, &out->center);
+		out->r = sqrt(Dnc * Dnc + Dn2);
+	}
+	else {
+		out->center = f0;
+		out->r = sqrt(Df2);
+	}
+}
+
+
+void frustumInscribeSphere(Frustum* f, Sphere* out) {
+	Vector fx, nx;
+	vPointAvg(&f->points[0], &f->points[3], &nx);
+	vPointAvg(&f->points[4], &f->points[7], &fx);
+	
+/*	
+	float Dn2 = vDistSq(&n0, &f->points[0]); 
+	float Df2 = vDistSq(&f0, &f->points[4]);
+	float Dnf = vDist(&f0, n0);
+	float Dnc = (Dn2 - Df2 - Df2) / (2 * Dnf);*/
+
+}
+
+
+
+void quadCenterp(Vector* a, Vector* b, Vector* c, Vector* d, Vector* out) {
+	Vector sum;
+	vAdd(a, b, &sum);
+	vAdd(&sum, c, &sum);
+	vAdd(&sum, d, &sum);
+	vScale(&sum, 0.25f, out);
+}
+
+// closest distance from an arbitrary point to the plane 
+float planePointDist(Plane* pl, Vector* p) {
+	Vector a;
+	vScale(&pl->n, pl->d, &a);
+	return fabs(vDot(&a, p));
+} 
+
+void vPointAvg(Vector* a, Vector* b, Vector* out) {
+	Vector sum;
+	vAdd(a, b, &sum);
+	vScale(&sum, 0.5f, out);
+} 
 
 // 2d vector stuff
 
@@ -900,6 +1018,37 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 	mMul(&m, out);
 }
 
+
+void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out) {
+	Matrix m;
+	
+	
+	float right = s->r;
+	float left = -s->r;
+	float top = s->r;
+	float bottom = -s->r;
+	float near = 0;
+	float far = s->r * 2;
+	
+	// this is the ortho projection matrix
+	m = IDENT_MATRIX;
+	m.m[0] = 2 / (right - left);
+	m.m[5] = 2 / (top - bottom);
+	m.m[10] = -2 / (far - near);
+	m.m[12] = -(right + left) / (right - left);
+	m.m[13] = -(top + bottom) / (top - bottom);
+	m.m[14] = -(far + near) / (far - near);
+	m.m[15] = 1;
+	
+	
+	Vector up = {0,0,1};
+	
+	Matrix view;
+	mLookAt(eyePos, &s->center, &up, &view); 
+	
+	mFastMul(&m, &view, out);
+}
+
 // analgous to gluLookAt
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
 void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out) {
@@ -1328,7 +1477,15 @@ void makeRay(Vector* origin, Vector* direction, Ray* out) {
 	out->o.z = origin->z;
 	
 	vNorm(direction, &out->d);
-	vInverse(&out->d, &out->id);
+}
+
+// ray stuff
+void makeRay2(Vector2* origin, Vector2* direction, Ray2* out) {
+	
+	out->o.x = origin->x;
+	out->o.y = origin->y;
+	
+	vNorm2(direction, &out->d);
 }
 
 // this version has no branching, but only answers yes or no.
@@ -1337,23 +1494,48 @@ void makeRay(Vector* origin, Vector* direction, Ray* out) {
 int boxRayIntersectFast(const AABB* b, const Ray* r) {
 	Vector t1, t2;
 	float tmin, tmax;
+	Vector id;
 	
-	t1.x = (b->min.x - r->o.x) * r->id.x;
-	t2.x = (b->max.x - r->o.x) * r->id.x;
+	vInverse(&r->d, &id);
+	
+	t1.x = (b->min.x - r->o.x) * id.x;
+	t2.x = (b->max.x - r->o.x) * id.x;
 	tmin = fmin(t1.x, t2.x);
 	tmax = fmax(t1.x, t2.x);
 	
-	t1.y = (b->min.y - r->o.y) * r->id.y;
-	t2.y = (b->max.y - r->o.y) * r->id.y;
+	t1.y = (b->min.y - r->o.y) * id.y;
+	t2.y = (b->max.y - r->o.y) * id.y;
 	tmin = fmax(tmin, fmin(t1.y, t2.y));
 	tmax = fmin(tmax, fmax(t1.y, t2.y));
 	
-	t1.z = (b->min.z - r->o.z) * r->id.z;
-	t2.z = (b->max.z - r->o.z) * r->id.z;
+	t1.z = (b->min.z - r->o.z) * id.z;
+	t2.z = (b->max.z - r->o.z) * id.z;
 	tmin = fmax(tmin, fmin(t1.z, t2.z));
 	tmax = fmin(tmax, fmax(t1.z, t2.z));
 
-	return tmax >= tmin;
+	return tmax >= tmin && tmax > 0.0f;
+}
+
+// this version has no branching, but only answers yes or no.
+// http://tavianator.com/fast-branchless-raybounding-box-intersections/
+int boxRayIntersectFast2(const AABB2* b, const Ray2* r) {
+	Vector2 t1, t2;
+	float tmin, tmax;
+	Vector2 id;
+	
+	vInverse(&r->d, &id);
+	
+	t1.x = (b->min.x - r->o.x) * id.x;
+	t2.x = (b->max.x - r->o.x) * id.x;
+	tmin = fmin(t1.x, t2.x);
+	tmax = fmax(t1.x, t2.x);
+	
+	t1.y = (b->min.y - r->o.y) * id.y;
+	t2.y = (b->max.y - r->o.y) * id.y;
+	tmin = fmax(tmin, fmin(t1.y, t2.y));
+	tmax = fmin(tmax, fmax(t1.y, t2.y));
+	
+	return tmax >= tmin && tmax > 0.0f;
 }
 
 
@@ -1361,21 +1543,23 @@ int boxRayIntersectFast(const AABB* b, const Ray* r) {
 // algorithm explanation here. hopefully my extrapolation into 3 dimensions is correct.
 // http://tavianator.com/fast-branchless-raybounding-box-intersections/
 int boxRayIntersect(const AABB* b, const Ray* r, Vector* ipoint, float* idist) {
-	Vector t1, t2;
+	Vector t1, t2, id;
 	float tmin, tmax;
 	
-	t1.x = (b->min.x - r->o.x) * r->id.x;
-	t2.x = (b->max.x - r->o.x) * r->id.x;
+	vInverse(&r->d, &id);
+		
+	t1.x = (b->min.x - r->o.x) * id.x;
+	t2.x = (b->max.x - r->o.x) * id.x;
 	tmin = fmin(t1.x, t2.x);
 	tmax = fmax(t1.x, t2.x);
 	
-	t1.y = (b->min.y - r->o.y) * r->id.y;
-	t2.y = (b->max.y - r->o.y) * r->id.y;
+	t1.y = (b->min.y - r->o.y) * id.y;
+	t2.y = (b->max.y - r->o.y) * id.y;
 	tmin = fmax(tmin, fmin(t1.y, t2.y));
 	tmax = fmin(tmax, fmax(t1.y, t2.y));
 	
-	t1.z = (b->min.z - r->o.z) * r->id.z;
-	t2.z = (b->max.z - r->o.z) * r->id.z;
+	t1.z = (b->min.z - r->o.z) * id.z;
+	t2.z = (b->max.z - r->o.z) * id.z;
 	tmin = fmax(tmin, fmin(t1.z, t2.z));
 	tmax = fmin(tmax, fmax(t1.z, t2.z));
 	

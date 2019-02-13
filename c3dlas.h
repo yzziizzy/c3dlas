@@ -90,8 +90,12 @@ typedef struct Vector2i {
 typedef struct {
 	Vector o; // origin
 	Vector d; // normalized direction
-	Vector id; // inverse normalized direction (handy enough to keep around)
 } Ray;
+
+typedef struct {
+	Vector2 o; // origin
+	Vector2 d; // normalized direction
+} Ray2;
 
 typedef struct {
 	Vector start, end;
@@ -124,6 +128,16 @@ typedef struct {
 	Vector n; // normal
 	float d; // distance along normal to the origin
 } Plane;
+
+typedef struct {
+	Vector center;
+	float r;
+} Sphere;
+
+typedef struct {
+	Plane planes[6]; // near, far, sides[4]
+	Vector points[8]; // near then far
+} Frustum;
 
 typedef struct { // does not have to be coplanar
 	Vector v[4];
@@ -217,6 +231,7 @@ void  vInverse(Vector* v, Vector* out); // inverse
 float vMag(Vector* v); // return the magnitude
 float vDot(Vector* a, Vector* b); // dot product
 float vDist(Vector* from, Vector* to); // distance from one point to another
+float vDistSq(Vector* from, Vector* to); // squared distance from one point to another
 void  vNorm(Vector* v, Vector* out); // normalize the vector
 void  vUnit(Vector* v, Vector* out); // normalise the vector, alternate name
 void  vCross(Vector* a, Vector* b, Vector* out); // cross product: out = a x b
@@ -226,6 +241,7 @@ void  vProjectNorm(Vector* what, Vector* onto, Vector* out); // faster; onto mus
 void  vMin(Vector* a, Vector* b, Vector* out); // returns the minimum values of each component
 void  vMax(Vector* a, Vector* b, Vector* out); // returns the maximum values of each component
 void  vSet(float x, float y, float z, Vector* out);
+void  vPointAvg(Vector* a, Vector* b, Vector* out);
 
 void vRandom(Vector* end1, Vector* end2, Vector* out);
 void vRandomNorm(Vector* out);
@@ -246,7 +262,17 @@ void  planeCopy(Plane* in, Plane* out); // copy a plane
 void  planeInverse(Plane* in, Plane* out); // flips the plane's direction
 int   planeClassifyPoint(Plane* p, Vector* pt); // classifies a point by which side of the plane it's on, default espilon
 int   planeClassifyPointEps(Plane* p, Vector* pt, float epsilon); // classifies a point by which side of the plane it's on, custom espilon
+// closest distance from an arbitrary point to the plane 
+float planePointDist(Plane* pl, Vector* p);
 
+void frustumCenter(Frustum* f, Vector* out);
+void frustumBoundingSphere(Frustum* f, Sphere* out);
+
+void quadCenterp(Vector* a, Vector* b, Vector* c, Vector* d, Vector* out);
+
+void frustumFromMatrix(Matrix* m, Frustum* out);
+void frustumInnerBoundingSphere(Frustum* f, Sphere* out);
+void frustumOuterBoundingSphere(Frustum* f, Sphere* out);
 
 // 2d vector stuff, same as 3d except one less d
 int   vEq2(Vector2* a, Vector2* b); // safe equivalence, to FLT_CMP_EPSILON
