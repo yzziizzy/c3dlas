@@ -185,6 +185,10 @@ extern const Matrix IDENT_MATRIX;
 
 // utilities
 
+uint32_t bitReverse32(uint32_t x);
+
+float pcg_f(uint64_t* state, uint64_t stream);
+
 static inline float frand(float low, float high) {
 	return low + ((high - low) * ((float)rand() / (float)RAND_MAX));
 }

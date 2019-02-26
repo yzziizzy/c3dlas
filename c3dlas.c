@@ -12,6 +12,79 @@
 
 
 
+// utilities
+
+uint32_t bitReverse32(uint32_t x) {
+	x = (((x & 0xaaaaaaaa) >> 1) | ((x & 0x55555555) << 1));
+	x = (((x & 0xcccccccc) >> 2) | ((x & 0x33333333) << 2));
+	x = (((x & 0xf0f0f0f0) >> 4) | ((x & 0x0f0f0f0f) << 4));
+	x = (((x & 0xff00ff00) >> 8) | ((x & 0x00ff00ff) << 8));
+	return ((x >> 16) | (x << 16));
+}
+
+
+
+
+
+// random numbers
+
+// returns a random number in (-1, 1) uninclusive
+float pcg_f(uint64_t* state, uint64_t stream) {
+	uint64_t last = *state;
+	*state = (last * 6364136223846793005ULL) + (stream | 1);
+	uint32_t xs = ((last >> 18) ^ last) >> 27;
+	uint32_t rot = last >> 59;
+	uint32_t f = (((xs >> rot) | (xs << ((-rot) & 31))) & 0x807fffff) | 0x3f000000;
+	return *(float*)&f;
+}
+
+
+// BUG: totally untested
+// SIMD and C versions do not return the same values. 
+void pcg_f8(uint64_t* state, uint64_t stream, float* out) {
+	
+#if defined(C3DLAS_USE_SIMD)
+	__m256i s1, s2, xs1, xs2, xs, r, nra, q, f;
+	
+	s1 = _mm256_add_epi64(_mm256_set1_epi64x(*state), _mm256_set_epi64x(1,2,3,4));
+	s2 = _mm256_add_epi64(_mm256_set1_epi64x(*state), _mm256_set_epi64x(5,6,7,8));
+	
+	// cycle the state
+	*state = (*state * 6364136223846793005ULL) + (stream | 1);
+	
+	xs1 = _mm256_srli_epi64(_mm256_xor_si256(_mm256_srli_epi64(s1, 18), s1), 27);
+	xs2 = _mm256_srli_epi64(_mm256_xor_si256(_mm256_srli_epi64(s2, 18), s2), 27);
+	
+	xs = _mm256_unpacklo_epi32(xs1, xs2);
+	
+	r = _mm256_srai_epi32(xs, 59);
+	nra = _mm256_and_si256(_mm256_sign_epi32(r, _mm256_set1_epi32(-1)), _mm256_set1_epi32(31));
+	
+	q = _mm256_or_si256(_mm256_srav_epi32(xs, r), _mm256_sllv_epi32(xs, nra)); 
+	
+	// q is full of random 32bit integers now
+	
+	// convert to (-1, 1) floats by jamming in some exponent info
+	f = _mm256_or_si256(_mm256_and_si256(q, _mm256_set1_epi32(0x807fffff)), _mm256_set1_epi32(0x3f000000));
+	 
+	_mm256_storeu_si256((__m256i*)out, f); 
+	
+#else
+	out[0] = pcg_f(state, stream);
+	out[1] = pcg_f(state, stream);
+	out[2] = pcg_f(state, stream);
+	out[3] = pcg_f(state, stream);
+	out[4] = pcg_f(state, stream);
+	out[5] = pcg_f(state, stream);
+	out[6] = pcg_f(state, stream);
+	out[7] = pcg_f(state, stream);
+#endif
+}
+
+
+
+
+
 // vector operations
 
 int vEq(Vector* a, Vector* b) {
@@ -1061,15 +1134,19 @@ void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out) {
 	vNorm(&d, &d);
 	
 	Matrix m2;
+
+	
 	
 	m2 = IDENT_MATRIX;
-	mRotX(asin(d.y), &m2);
+// 	mRotX(asin(d.z) + (F_PI / 4)  , &m2);
+	mRotY(atan2(d.z, d.x) + (F_PI / 2)  , &m2);
 	mMul(&m2, &m);
-	
+
 	m2 = IDENT_MATRIX;
-	mRotZ(atan2(d.x, d.z), &m2);
+	mRotZ(asin(d.y), &m2);
 	mMul(&m2, &m);
 	
+
 	m2 = IDENT_MATRIX;
 	Vector ic;
 	vScale(&s->center, -1, &ic);
