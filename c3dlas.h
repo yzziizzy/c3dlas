@@ -4,6 +4,7 @@
 
 
 #include <stdlib.h> // rand() et al.
+#include <stdint.h> 
 #include <math.h> // fmin/fmax
 
 #define C3DLAS_USE_SIMD 1
@@ -186,6 +187,7 @@ extern const Matrix IDENT_MATRIX;
 // utilities
 
 uint32_t bitReverse32(uint32_t x);
+uint32_t reverseBits(uint32_t n, int len);
 
 float pcg_f(uint64_t* state, uint64_t stream);
 

@@ -230,6 +230,7 @@ Mesh* genHollowCylinder(float innerRadius, float outerRadius, int segments, floa
 	j = 0;
 	
 	// TODO
+	return m;
 }
 
 
@@ -349,7 +350,7 @@ Mesh* extrudeAlongVector(Vector* lineStrip, int lineCount, Vector* v) {
 	
 	
 	
-	
+	return m;
 }
 
 
@@ -533,6 +534,8 @@ Mesh* makeCuboid(Vector* p1, Vector* p2) {
 	vSet(max.x, max.y, min.z, &m->vertices[i++].v);
 	
 	m->vertexCnt = i;
+	
+	return m;
 }
 
 

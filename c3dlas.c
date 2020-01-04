@@ -14,6 +14,7 @@
 
 // utilities
 
+// reverses the argument
 uint32_t bitReverse32(uint32_t x) {
 	x = (((x & 0xaaaaaaaa) >> 1) | ((x & 0x55555555) << 1));
 	x = (((x & 0xcccccccc) >> 2) | ((x & 0x33333333) << 2));
@@ -23,7 +24,12 @@ uint32_t bitReverse32(uint32_t x) {
 }
 
 
-
+// reverses the least significant (len) bits, zeroing the top
+uint32_t reverseBits(uint32_t n, int len) {
+	uint32_t rn = bitReverse32(n);
+	
+	return rn >> (32 - len);
+}
 
 
 // random numbers
@@ -116,17 +122,17 @@ void vSwap(Vector* a, Vector* b) { // swap two vectors
 }
 
 void vAdd(Vector* a, Vector* b, Vector* out) {
-#ifdef C3DLAS_USE_SIMD
-	__m128 a_ = _mm_loadu_ps((float*)a);
-	__m128 b_ = _mm_loadu_ps((float*)b);
-	b_ = _mm_add_ps(a_, b_);
+// #ifdef C3DLAS_USE_SIMD
+// 	__m128 a_ = _mm_loadu_ps((float*)a);
+// 	__m128 b_ = _mm_loadu_ps((float*)b);
+// 	b_ = _mm_add_ps(a_, b_);
 	// requires avx
-	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), b_);
-#else
+// 	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), b_);
+// #else
 	out->x = a->x + b->x;
 	out->y = a->y + b->y;
 	out->z = a->z + b->z;
-#endif
+// #endif
 }
 
 void vSub(Vector* from, Vector* what, Vector* diff) { // diff = from - what
@@ -144,16 +150,16 @@ void vSub(Vector* from, Vector* what, Vector* diff) { // diff = from - what
 }
 
 void vScale(Vector* v, float scalar, Vector* out) {
-#ifdef C3DLAS_USE_SIMD
-	__m128 v_ = _mm_loadu_ps((float*)v);
-	       v_ = _mm_mul_ps(v_, _mm_set_ps1(scalar));
-	
-	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), v_);
-#else
+// #ifdef C3DLAS_USE_SIMD
+// 	__m128 v_ = _mm_loadu_ps((float*)v);
+// 	       v_ = _mm_mul_ps(v_, _mm_set_ps1(scalar));
+// 	
+// 	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), v_);
+// #else
 	out->x = v->x * scalar;
 	out->y = v->y * scalar;
 	out->z = v->z * scalar;
-#endif
+// #endif
 }
 
 void  vLerp(Vector* a, Vector* b, float t, Vector* out) { // Linear interpolation between two vectors
@@ -1466,9 +1472,6 @@ void boxQuadrant2(const AABB2* in, char ix, char iy, AABB2* out) {
 	boxSize2(in, &sz);
 	sz.x *= .5;
 	sz.y *= .5;
-	
-	printf("---   --  center: %f, %f \n", c.x, c.y);
-	printf("---   --  size: %f, %f \n", sz.x, sz.y);
 	
 	out->min.x = c.x - (ix ? 0.0f : sz.x);
 	out->min.y = c.y - (iy ? 0.0f : sz.y);
