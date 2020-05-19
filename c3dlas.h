@@ -50,6 +50,7 @@
 #define C3DLAS_BACK      (2)
 #define C3DLAS_INTERSECT (3)
 #define C3DLAS_DISJOINT  (4)
+#define C3DLAS_PARALLEL  (5)
 
 static const char* c3dlas_EnumString(int e) {
 	switch(e) {
@@ -58,6 +59,7 @@ static const char* c3dlas_EnumString(int e) {
 		case 2: return "C3DLAS_BACK";
 		case 3: return "C3DLAS_INTERSECT";
 		case 4: return "C3DLAS_DISJOINT";
+		case 5: return "C3DLAS_PARALLEL";
 		default: return "Unknown Code";
 	}
 }
@@ -290,12 +292,12 @@ float planePointDistSigned(Plane* pl, Vector* p);
 // C3DLAS_INTERSECT, _COPLANAR or _DISJOINT
 int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out);
 
-// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
-int triPlaneTestIntersect(Vector* pTri, Plane* pl);
-
 // Assumes full proper intersection.
 // C3DLAS_INTERSECT
 int planeLineFindIntersectFast(Plane* pl, Vector* la, Vector* lb, Vector* out);
+
+// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
+int triPlaneTestIntersect(Vector* pTri, Plane* pl);
 
 // C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
 int triPlaneClip(
@@ -303,6 +305,18 @@ int triPlaneClip(
 	Plane* pl, 
 	Vector* aboveOut, 
 	Vector* belowOut, 
+	int* aboveCnt,
+	int* belowCnt
+);
+
+// C3DLAS_COPLANAR, _PARALLEL, _INTERSECT, or _DISJOINT
+// aboveCnt and belowCnt are always set.
+int linePlaneClip(
+	Vector* la, 
+	Vector* lb, 
+	Plane* pl, 
+	Vector* aboveOut, 
+	Vector* belowOut,
 	int* aboveCnt,
 	int* belowCnt
 );

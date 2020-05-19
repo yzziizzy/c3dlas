@@ -460,7 +460,7 @@ int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out) {
 	
 	vSub(lb, la, &ldir);
 	
-	da = vDot(&la, &pl->n) - pl->d;
+	da = vDot(la, &pl->n) - pl->d;
 	
 	// bail if the line and plane are parallel
 	if(fabs(vDot(&pl->n, &ldir)) < FLT_CMP_EPSILON) {
@@ -474,12 +474,12 @@ int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out) {
 	}
 	
 
-	db = vDot(&lb, &pl->n) - pl->d;
+	db = vDot(lb, &pl->n) - pl->d;
 	
 	// check if one of the points is on the plane
 	if(fabs(da) < FLT_CMP_EPSILON) {
 		*out = *la;
-		return C3DLAS_INTERSECT; // the end is on the plane, so the other is too
+		return C3DLAS_INTERSECT;
 	}
 	if(fabs(db) < FLT_CMP_EPSILON) {
 		*out = *lb;
@@ -525,6 +525,122 @@ int planeLineFindIntersectFast(Plane* pl, Vector* la, Vector* lb, Vector* out) {
 	return C3DLAS_INTERSECT;
 }
 
+
+// C3DLAS_COPLANAR, _PARALLEL, _INTERSECT, or _DISJOINT
+// aboveCnt and belowCnt are always set.
+int linePlaneClip(
+	Vector* la, 
+	Vector* lb, 
+	Plane* pl, 
+	Vector* aboveOut, 
+	Vector* belowOut,
+	int* aboveCnt,
+	int* belowCnt
+) {
+	Vector ldir, c;
+	float da, db;
+	
+	vSub(lb, la, &ldir);
+	
+	da = vDot(la, &pl->n) - pl->d;
+	
+	// bail if the line and plane are parallel
+	if(fabs(vDot(&pl->n, &ldir)) < FLT_CMP_EPSILON) {
+		*aboveCnt = 0;
+		*belowCnt = 0;
+			
+		// check coplanarity
+		if(fabs(da) < FLT_CMP_EPSILON) {
+			return C3DLAS_COPLANAR; // the end is on the plane, so the other is too
+		}
+		
+		return C3DLAS_PARALLEL;
+	}
+	
+
+	db = vDot(lb, &pl->n) - pl->d;
+	
+	// check if one of the points is on the plane
+	if(fabs(da) < FLT_CMP_EPSILON) {
+		if(db > 0) {
+			aboveOut[0] = *la; // correct ordering
+			aboveOut[1] = *lb;
+			*aboveCnt = 1;
+			*belowCnt = 0;
+		}
+		else {
+			belowOut[0] = *la; // correct ordering
+			belowOut[1] = *lb;
+			*aboveCnt = 0;
+			*belowCnt = 1;
+		}
+		
+		return C3DLAS_INTERSECT;
+	}
+	if(fabs(db) < FLT_CMP_EPSILON) {
+		if(da > 0) {
+			aboveOut[0] = *la; // correct ordering
+			aboveOut[1] = *lb;
+			*aboveCnt = 1;
+			*belowCnt = 0;
+		}
+		else {
+			belowOut[0] = *la; // correct ordering
+			belowOut[1] = *lb;
+			*aboveCnt = 0;
+			*belowCnt = 1;
+		}
+		
+		return C3DLAS_INTERSECT;
+	}
+	
+	// calculate itnersection point, c
+	Vector p0, g, j;
+	vScale(&pl->n, pl->d, &p0);
+	vSub(&p0, la, &g);
+	float h = vDot(&g, &pl->n);
+	float i = vDot(&ldir, &pl->n);
+	float d = i != 0 ? h / i : 0;
+	
+	// check if the plane intersects outside the two points
+	if(d < 0 || d > vDist(la, lb)) {
+		if(da > 0) {
+			aboveOut[0] = *la; // correct ordering
+			aboveOut[1] = *lb;
+			*aboveCnt = 1;
+			*belowCnt = 0;
+		}
+		else {
+			belowOut[0] = *la; // correct ordering
+			belowOut[1] = *lb;
+			*aboveCnt = 0;
+			*belowCnt = 1;
+		}
+		
+		return C3DLAS_DISJOINT;
+	}
+	
+	vScale(&ldir, d, &j);
+	vAdd(la, &j, &c);
+	
+	if(da > 0) {
+		aboveOut[0] = *la; // correct ordering
+		aboveOut[1] = c;
+		belowOut[0] = c;
+		belowOut[1] = *lb;
+	}
+	else {
+		belowOut[0] = *la; // correct ordering
+		belowOut[1] = c;
+		aboveOut[0] = c;
+		aboveOut[1] = *lb;
+	}
+	
+	*aboveCnt = 1;
+	*belowCnt = 1;
+	
+	return C3DLAS_INTERSECT;
+}
 
 
 // C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
@@ -1945,8 +2061,9 @@ void quadRoundInward2(const Quad2* in, Quad2i* out) {
 
 int quadIsPoint2i(const Quad2i* q) {
 	return (
-		q->v[0].x == q->v[1].x == q->v[2].x == q->v[3].x &&
-		q->v[0].y == q->v[1].y == q->v[2].y == q->v[3].y);
+		(q->v[0].x == q->v[1].x) && (q->v[1].x == q->v[2].x) && (q->v[2].x == q->v[3].x) &&
+		(q->v[0].y == q->v[1].y) && (q->v[1].y == q->v[2].y) && (q->v[2].y == q->v[3].y)
+	);
 }
 
 int quadIsAARect2i(const Quad2i* q) {

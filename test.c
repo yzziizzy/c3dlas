@@ -9,24 +9,40 @@
 
 
 
-int main(int argc, char* argv) {
 
-	return 0;
+
+
+
+
+void checklinePlaneClip() {
+
+	Plane pl = {
+		{0,0,1}, 1,
+	};
+	
+	Vector line[] = {
+		{0,0, -3},
+		{0,0, -4},
+	};
+	
+	Vector o1[] = {
+		{99,99,99},
+		{99,99,99},
+	};
+	Vector o2[] = {
+		{99,99,99},
+		{99,99,99},
+	};
+	
+	int ret, i1, i2;
+	
+	ret = linePlaneClip(line, line+1, &pl, o1, o2, &i1, &i2);
+	
+	printf("%s\n", c3dlas_EnumString(ret));
+	printf("  above1 %d: % .1f,% .1f,% .1f - % .1f,% .1f,% .1f\n", i1, o1[0].x, o1[0].y, o1[0].z, o1[1].x, o1[1].y, o1[1].z);
+	printf("  below1 %d: % .1f,% .1f,% .1f - % .1f,% .1f,% .1f\n", i2, o2[0].x, o2[0].y, o2[0].z, o2[1].x, o2[1].y, o2[1].z);
+	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -80,9 +96,9 @@ void checkTriPlaneClip() {
 	ret = triPlaneClip(tri3, &pl, o1, o2, &i1, &i2);
 	
 	printf("%s\n", c3dlas_EnumString(ret));
-	printf("  above1 %d: % .1f,% .1f,% .1f - % .1f,% .1f,% .1f - % .1f,% .1f,% .1f \n", i1, o1[0].x, o1[0].y, o1[0].z, o1[1].x, o1[1].y, o1[2].z, o1[2].x, o1[2].y, o1[2].z);
+	printf("  above1 %d: % .1f,% .1f,% .1f - % .1f,% .1f,% .1f - % .1f,% .1f,% .1f \n", i1, o1[0].x, o1[0].y, o1[0].z, o1[1].x, o1[1].y, o1[1].z, o1[2].x, o1[2].y, o1[2].z);
 	printf("  above2 %d: % .1f,% .1f,% .1f - % .1f,% .1f,% .1f - % .1f,% .1f,% .1f - %f \n", i1, o1[3].x, o1[3].y, o1[3].z, o1[4].x, o1[4].y, o1[4].z, o1[5].x, o1[5].y, o1[5].z, o1[6].x );
-	printf("  below1 %d: % .1f,% .1f,% .1f - % .1f,% .1f,% .1f - % .1f,% .1f,% .1f \n", i2, o2[0].x, o2[0].y, o2[0].z, o2[1].x, o2[1].y, o2[2].z, o2[2].x, o2[2].y, o2[2].z);
+	printf("  below1 %d: % .1f,% .1f,% .1f - % .1f,% .1f,% .1f - % .1f,% .1f,% .1f \n", i2, o2[0].x, o2[0].y, o2[0].z, o2[1].x, o2[1].y, o2[1].z, o2[2].x, o2[2].y, o2[2].z);
 	printf("  below2 %d: % .1f,% .1f,% .1f - % .1f,% .1f,% .1f - % .1f,% .1f,% .1f - %f \n", i2, o2[3].x, o2[3].y, o2[3].z, o2[4].x, o2[4].y, o2[4].z, o2[5].x, o2[5].y, o2[5].z, o2[6].x );
 	
 	
@@ -103,3 +119,11 @@ void checkTriPlaneClip() {
 	
 }
 
+
+
+
+
+int main(int argc, char* argv) {
+	checklinePlaneClip();
+	return 0;
+}
