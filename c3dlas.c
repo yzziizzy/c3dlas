@@ -384,12 +384,17 @@ void vReflectAcross(Vector* v, Vector* pivot, Vector* out) {
 
 // calculate a unit vector normal to a triangle's face.
 void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out) {
-	Vector a_b, a_c;
+	Vector b_a, c_a;
 	
-	vSub(a, b, &a_b);
-	vSub(a, c, &a_c);
-	vCross(&a_b, &a_b, out);
+	vSub(b, a, &b_a);
+	vSub(c, a, &c_a);
+	vCross(&b_a, &c_a, out);
 	vNorm(out, out);
+}
+
+// calculate a unit vector normal to a triangle's face.
+void  vpTriFaceNormal(Vector* tri, Vector* out) {
+	vTriFaceNormal(tri+0, tri+1, tri+2, out);
 }
 
 
@@ -471,7 +476,7 @@ int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out) {
 
 	db = vDot(&lb, &pl->n) - pl->d;
 	
-	// check if one of the points if on the plane
+	// check if one of the points is on the plane
 	if(fabs(da) < FLT_CMP_EPSILON) {
 		*out = *la;
 		return C3DLAS_INTERSECT; // the end is on the plane, so the other is too
@@ -492,6 +497,27 @@ int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out) {
 	if(d < 0 || d > vDist(la, lb)) {
 		return C3DLAS_DISJOINT;
 	}
+	
+	vScale(&ldir, d, &j);
+	vAdd(la, &j, out);
+	
+	return C3DLAS_INTERSECT;
+}
+
+
+// Assumes full proper intersection.
+// C3DLAS_INTERSECT
+int planeLineFindIntersectFast(Plane* pl, Vector* la, Vector* lb, Vector* out) {
+	Vector ldir, p0, g, j;
+	float h, i, d;
+	
+	vSub(lb, la, &ldir);
+	
+	vScale(&pl->n, pl->d, &p0);
+	vSub(&p0, la, &g);
+	h = vDot(&g, &pl->n);
+	i = vDot(&ldir, &pl->n);
+	d = i != 0 ? h / i : 0;
 	
 	vScale(&ldir, d, &j);
 	vAdd(la, &j, out);
@@ -533,39 +559,258 @@ int triPlaneTestIntersect(Vector* pTri, Plane* pl) {
 
 
 // C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
-int triPlaneFindIntersect(Vector* pTri, Plane* pl, Vector* pOut, unsigned char* lineMask) {
-	Vector a, b, c;
-	float da, db, dc;
+int triPlaneClip(
+	Vector* pTri, 
+	Plane* pl, 
+	Vector* aboveOut, 
+	Vector* belowOut, 
+	int* aboveCnt,
+	int* belowCnt
+) {
 	
+	Vector v0, v1, v2;
+	float vp_d0, vp_d1, vp_d2;
+	
+	v0 = pTri[0];
+	v1 = pTri[1];
+	v2 = pTri[2];
+
 	// get distance of each vertex from the plane
-	// bail early if any of them are coplanar
-	a = pTri[0];
-	da = vDot(&a, &pl->n) - pl->d;
-	if(fabs(da) < FLT_CMP_EPSILON) {
-		return C3DLAS_COPLANAR;
+	vp_d0 = vDot(&v0, &pl->n) - pl->d;
+	vp_d1 = vDot(&v1, &pl->n) - pl->d;
+	vp_d2 = vDot(&v2, &pl->n) - pl->d;
+	
+	
+	// bail early if just one is coplanar
+	// split in half with single-edge intersections
+	if(fabs(vp_d0) < FLT_CMP_EPSILON) {
+		if( // single edge intersection
+			signbit(vp_d1) != signbit(vp_d2) && 
+			fabs(vp_d1) > FLT_CMP_EPSILON &&
+			fabs(vp_d2) > FLT_CMP_EPSILON
+		) {
+			// get intersection point
+			Vector c;
+			planeLineFindIntersectFast(pl, &v1, &v2, &c);
+			
+			if(vp_d1 > 0) { // v1 is above the plane
+				aboveOut[0] = c; // correct winding
+				aboveOut[1] = v0;
+				aboveOut[2] = v1;
+				belowOut[0] = c;
+				belowOut[1] = v2;
+				belowOut[2] = v0;
+			}
+			else {
+				belowOut[0] = c; // correct winding
+				belowOut[1] = v0;
+				belowOut[2] = v1;
+				aboveOut[0] = c;
+				aboveOut[1] = v2;
+				aboveOut[2] = v0;
+			}
+			
+			*aboveCnt = 1;
+			*belowCnt = 1;
+			
+			return C3DLAS_INTERSECT;
+		}
+		
+		return C3DLAS_COPLANAR; // one vertex is on the plane, the others all above or below
 	}
 	
-	b = pTri[1];
-	db = vDot(&b, &pl->n) - pl->d;
-	if(fabs(db) < FLT_CMP_EPSILON) {
-		return C3DLAS_COPLANAR;
+	if(fabs(vp_d1) < FLT_CMP_EPSILON) {
+		if( // single edge intersection
+			signbit(vp_d0) != signbit(vp_d2) && 
+			fabs(vp_d0) > FLT_CMP_EPSILON &&
+			fabs(vp_d2) > FLT_CMP_EPSILON
+		) {
+			// get intersection point
+			Vector c;
+			planeLineFindIntersectFast(pl, &v0, &v2, &c);
+			
+			if(vp_d0 > 0) { // v0 is above the plane
+				aboveOut[0] = c; // correct winding
+				aboveOut[1] = v0;
+				aboveOut[2] = v1;
+				belowOut[0] = c;
+				belowOut[1] = v1;
+				belowOut[2] = v2;
+			}
+			else {
+				belowOut[0] = c; // correct winding
+				belowOut[1] = v0;
+				belowOut[2] = v1;
+				aboveOut[0] = c;
+				aboveOut[1] = v1;
+				aboveOut[2] = v2;
+			}
+			
+			*aboveCnt = 1;
+			*belowCnt = 1;
+			
+			return C3DLAS_INTERSECT;
+		}
+		
+		return C3DLAS_COPLANAR; // one vertex is on the plane, the others all above or below
 	}
 	
-	c = pTri[2];
-	dc = vDot(&c, &pl->n) - pl->d;
-	if(fabs(dc) < FLT_CMP_EPSILON) {
-		return C3DLAS_COPLANAR;
+	if(fabs(vp_d2) < FLT_CMP_EPSILON) {
+		if( // single edge intersection
+			signbit(vp_d0) != signbit(vp_d1) && 
+			fabs(vp_d0) > FLT_CMP_EPSILON &&
+			fabs(vp_d1) > FLT_CMP_EPSILON
+		) {
+			// get intersection point
+			Vector c;
+			planeLineFindIntersectFast(pl, &v0, &v1, &c);
+			
+			if(vp_d0 > 0) { // v0 is above the plane
+				aboveOut[0] = c; // correct winding
+				aboveOut[1] = v2;
+				aboveOut[2] = v0;
+				belowOut[0] = c;
+				belowOut[1] = v1;
+				belowOut[2] = v2;
+			}
+			else {
+				belowOut[0] = c; // correct winding
+				belowOut[1] = v2;
+				belowOut[2] = v0;
+				aboveOut[0] = c;
+				aboveOut[1] = v1;
+				aboveOut[2] = v2;
+			}
+			
+			*aboveCnt = 1;
+			*belowCnt = 1;
+			
+			return C3DLAS_INTERSECT;
+		}
+		
+		return C3DLAS_COPLANAR; // one vertex is on the plane, the others all above or below
 	}
+	
 	
 	// the triangle intersects if the sign of all the distances does not match,
 	// ie, on vertex is on the opposite side of the plane from the others
 	// bail if disjoint
-	if(signbit(da) == signbit(db) && signbit(db) == signbit(dc)) { 
+	if(signbit(vp_d0) == signbit(vp_d1) && signbit(vp_d1) == signbit(vp_d2)) {
 		return C3DLAS_DISJOINT;
 	}
 	
 	
-	
+	// split on which edges intersect the plane
+	if(signbit(vp_d0) == signbit(vp_d1)) {
+		// vertex 2 is isolated; edges 0,2 and 1,2 intersect
+		
+		Vector c0, c1;
+		planeLineFindIntersectFast(pl, &v0, &v2, &c0);
+		planeLineFindIntersectFast(pl, &v1, &v2, &c1);
+		
+		if(vp_d2 > 0) { // v2 is above the plane
+			aboveOut[0] = v2; // correct winding
+			aboveOut[1] = c0;
+			aboveOut[2] = c1;
+			belowOut[0] = c1;
+			belowOut[1] = v0;
+			belowOut[2] = v1;
+			belowOut[3] = c1;
+			belowOut[4] = c0;
+			belowOut[5] = v1;
+			
+			*aboveCnt = 1;
+			*belowCnt = 2;
+		}
+		else {
+			belowOut[0] = v2; // correct winding
+			belowOut[1] = c0;
+			belowOut[2] = c1;
+			aboveOut[0] = c1;
+			aboveOut[1] = v0;
+			aboveOut[2] = v1;
+			aboveOut[3] = c1;
+			aboveOut[4] = c0;
+			aboveOut[5] = v1;
+			
+			*aboveCnt = 2;
+			*belowCnt = 1;
+		}
+		
+	}
+	else if(signbit(vp_d1) == signbit(vp_d2)) {
+		// vertex 0 is isolated; edges 1,0 and 2,0 intersect
+		
+		Vector c0, c1;
+		planeLineFindIntersectFast(pl, &v1, &v0, &c0);
+		planeLineFindIntersectFast(pl, &v2, &v0, &c1);
+		
+		if(vp_d0 > 0) { // v0 is above the plane
+			aboveOut[0] = v0; // correct winding
+			aboveOut[1] = c0;
+			aboveOut[2] = c1;
+			belowOut[0] = c1;
+			belowOut[1] = v1;
+			belowOut[2] = v2;
+			belowOut[3] = c1;
+			belowOut[4] = c0;
+			belowOut[5] = v1;
+			
+			*aboveCnt = 1;
+			*belowCnt = 2;
+		}
+		else {
+			belowOut[0] = v0; // correct winding
+			belowOut[1] = c0;
+			belowOut[2] = c1;
+			aboveOut[0] = c1;
+			aboveOut[1] = v1;
+			aboveOut[2] = v2;
+			aboveOut[3] = c1;
+			aboveOut[4] = c0;
+			aboveOut[5] = v1;
+			
+			*aboveCnt = 2;
+			*belowCnt = 1;
+		}
+		
+	}
+	else {
+		// vertex 1 is isolated; edges 0,1 and 2,1 intersect
+		
+		Vector c0, c1;
+		planeLineFindIntersectFast(pl, &v0, &v1, &c0);
+		planeLineFindIntersectFast(pl, &v2, &v1, &c1);
+		
+		if(vp_d1 > 0) { // v1 is above the plane
+			aboveOut[0] = v1; // correct winding
+			aboveOut[1] = c1;
+			aboveOut[2] = c0;
+			belowOut[0] = c1;
+			belowOut[1] = v2;
+			belowOut[2] = v0;
+			belowOut[3] = c0;
+			belowOut[4] = c1;
+			belowOut[5] = v0;
+			
+			*aboveCnt = 1;
+			*belowCnt = 2;
+		}
+		else {
+			belowOut[0] = v1; // correct winding
+			belowOut[1] = c1;
+			belowOut[2] = c0;
+			aboveOut[0] = c1;
+			aboveOut[1] = v2;
+			aboveOut[2] = v0;
+			aboveOut[3] = c0;
+			aboveOut[4] = c1;
+			aboveOut[5] = v0;
+			
+			*aboveCnt = 2;
+			*belowCnt = 1;
+		}
+	}
 	
 	
 	return C3DLAS_INTERSECT;

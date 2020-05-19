@@ -33,3 +33,5 @@
 
 .deps/
 .dirstamp
+
+test_c3dlas

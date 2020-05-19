@@ -272,6 +272,7 @@ void  vLerp4(Vector4* a, Vector4* b, float t, Vector4* out); // Linear interpola
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void  vReflectAcross(Vector* v, Vector* pivot, Vector* out);
 void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out); // returns a normalized face normal for the given triangle
+void  vpTriFaceNormal(Vector* tri, Vector* out); // returns a normalized face normal for the given triangle
 
 void  vProjectOntoPlane(Vector* v, Plane* p, Vector* out);
 void  vProjectOntoPlaneNormalized(Vector* v, Plane* p, Vector* out);
@@ -291,6 +292,20 @@ int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out);
 
 // C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
 int triPlaneTestIntersect(Vector* pTri, Plane* pl);
+
+// Assumes full proper intersection.
+// C3DLAS_INTERSECT
+int planeLineFindIntersectFast(Plane* pl, Vector* la, Vector* lb, Vector* out);
+
+// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
+int triPlaneClip(
+	Vector* pTri, 
+	Plane* pl, 
+	Vector* aboveOut, 
+	Vector* belowOut, 
+	int* aboveCnt,
+	int* belowCnt
+);
 
 void frustumCenter(Frustum* f, Vector* out);
 void frustumBoundingSphere(Frustum* f, Sphere* out);
