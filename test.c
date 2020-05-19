@@ -35,16 +35,20 @@ int main(int argc, char* argv) {
 	Vector l[] = {
 		{3, 3, -4},
 		{4, 4, 5},
-		{4, 4, 9},
+		{4, 4, -9},
 	};
 	
 	Vector o = {999,999, 999};
+	int ret;
 	
-	printf("%s, %f,%f,%f\n", c3dlas_EnumString(planeLineFindIntersect(&pl, &l[0], &l[1], &o)), o.x, o.y, o.z);
+	ret = planeLineFindIntersect(&pl, &l[0], &l[1], &o);
+	
+	printf("%s, %f,%f,%f\n", c3dlas_EnumString(ret), o.x, o.y, o.z);
 	
 	o = (Vector){999,999, 999};
+	ret = planeLineFindIntersect(&pl, &l[1], &l[2], &o);
 
-	printf("%s, %f,%f,%f\n", c3dlas_EnumString(planeLineFindIntersect(&pl, &l[1], &l[2], &o)), o.x, o.y, o.z);
+	printf("%s, %f,%f,%f\n", c3dlas_EnumString(ret), o.x, o.y, o.z);
 
 	return 0;
 }

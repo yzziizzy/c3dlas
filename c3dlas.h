@@ -48,6 +48,19 @@
 #define C3DLAS_COPLANAR  (0)
 #define C3DLAS_FRONT     (1)
 #define C3DLAS_BACK      (2)
+#define C3DLAS_INTERSECT (3)
+#define C3DLAS_DISJOINT  (4)
+
+static const char* c3dlas_EnumString(int e) {
+	switch(e) {
+		case 0: return "C3DLAS_COPLANAR";
+		case 1: return "C3DLAS_FRONT";
+		case 2: return "C3DLAS_BACK";
+		case 3: return "C3DLAS_INTERSECT";
+		case 4: return "C3DLAS_DISJOINT";
+		default: return "Unknown Code";
+	}
+}
 
 
 #define MAX(a,b) ({ \
@@ -270,6 +283,14 @@ int   planeClassifyPoint(Plane* p, Vector* pt); // classifies a point by which s
 int   planeClassifyPointEps(Plane* p, Vector* pt, float epsilon); // classifies a point by which side of the plane it's on, custom espilon
 // closest distance from an arbitrary point to the plane 
 float planePointDist(Plane* pl, Vector* p);
+// signed closest distance from an arbitrary point to the plane 
+float planePointDistSigned(Plane* pl, Vector* p);
+
+// C3DLAS_INTERSECT, _COPLANAR or _DISJOINT
+int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out);
+
+// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
+int triPlaneTestIntersect(Vector* pTri, Plane* pl);
 
 void frustumCenter(Frustum* f, Vector* out);
 void frustumBoundingSphere(Frustum* f, Sphere* out);

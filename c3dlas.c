@@ -200,8 +200,9 @@ float vMag(Vector* v) {
 }
 
 float vDot(Vector* a, Vector* b) {
-#ifdef C3DLAS_USE_SIMD
+#ifdef broken_C3DLAS_USE_SIMD
 	// needs sse4.1
+	// BUG does not work
 	__m128 a_ = _mm_loadu_ps((float*)&a);
 	__m128 b_ = _mm_loadu_ps((float*)&b);
 	__m128 c = _mm_dp_ps(a_, b_, (_1110b << 4) & _0001b); // BUG: check mask
@@ -447,6 +448,130 @@ int planeClassifyPointEps(Plane* p, Vector* pt, float epsilon) {
 
 
 
+// C3DLAS_INTERSECT, _COPLANAR or _DISJOINT
+int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out) {
+	Vector ldir;
+	float da, db;
+	
+	vSub(lb, la, &ldir);
+	
+	da = vDot(&la, &pl->n) - pl->d;
+	
+	// bail if the line and plane are parallel
+	if(fabs(vDot(&pl->n, &ldir)) < FLT_CMP_EPSILON) {
+		
+		// check coplanarity
+		if(fabs(da) < FLT_CMP_EPSILON) {
+			return C3DLAS_COPLANAR; // the end is on the plane, so the other is too
+		}
+		
+		return C3DLAS_DISJOINT;
+	}
+	
+
+	db = vDot(&lb, &pl->n) - pl->d;
+	
+	// check if one of the points if on the plane
+	if(fabs(da) < FLT_CMP_EPSILON) {
+		*out = *la;
+		return C3DLAS_INTERSECT; // the end is on the plane, so the other is too
+	}
+	if(fabs(db) < FLT_CMP_EPSILON) {
+		*out = *lb;
+		return C3DLAS_INTERSECT;
+	}
+	
+	Vector p0, g, j;
+	vScale(&pl->n, pl->d, &p0);
+	vSub(&p0, la, &g);
+	float h = vDot(&g, &pl->n);
+	float i = vDot(&ldir, &pl->n);
+	float d = i != 0 ? h / i : 0;
+	
+	// check if the plane intersects outside the two points
+	if(d < 0 || d > vDist(la, lb)) {
+		return C3DLAS_DISJOINT;
+	}
+	
+	vScale(&ldir, d, &j);
+	vAdd(la, &j, out);
+	
+	return C3DLAS_INTERSECT;
+}
+
+
+
+// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
+int triPlaneTestIntersect(Vector* pTri, Plane* pl) {
+	Vector a, b, c;
+	float da, db, dc;
+	
+	// get distance of each vertex from the plane
+	// bail early if any of them are coplanar
+	a = pTri[0];
+	da = vDot(&a, &pl->n) - pl->d;
+	if(fabs(da) < FLT_CMP_EPSILON) {
+		return C3DLAS_COPLANAR;
+	}
+	
+	b = pTri[1];
+	db = vDot(&b, &pl->n) - pl->d;
+	if(fabs(db) < FLT_CMP_EPSILON) {
+		return C3DLAS_COPLANAR;
+	}
+	
+	c = pTri[2];
+	dc = vDot(&c, &pl->n) - pl->d;
+	if(fabs(dc) < FLT_CMP_EPSILON) {
+		return C3DLAS_COPLANAR;
+	}
+	
+	// the triangle intersects if the sign of all the distances does not match,
+	// ie, on vertex is on the opposite side of the plane from the others
+	return (signbit(da) == signbit(db) && signbit(db) == signbit(dc)) ? C3DLAS_DISJOINT : C3DLAS_INTERSECT;
+}
+
+
+// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
+int triPlaneFindIntersect(Vector* pTri, Plane* pl, Vector* pOut, unsigned char* lineMask) {
+	Vector a, b, c;
+	float da, db, dc;
+	
+	// get distance of each vertex from the plane
+	// bail early if any of them are coplanar
+	a = pTri[0];
+	da = vDot(&a, &pl->n) - pl->d;
+	if(fabs(da) < FLT_CMP_EPSILON) {
+		return C3DLAS_COPLANAR;
+	}
+	
+	b = pTri[1];
+	db = vDot(&b, &pl->n) - pl->d;
+	if(fabs(db) < FLT_CMP_EPSILON) {
+		return C3DLAS_COPLANAR;
+	}
+	
+	c = pTri[2];
+	dc = vDot(&c, &pl->n) - pl->d;
+	if(fabs(dc) < FLT_CMP_EPSILON) {
+		return C3DLAS_COPLANAR;
+	}
+	
+	// the triangle intersects if the sign of all the distances does not match,
+	// ie, on vertex is on the opposite side of the plane from the others
+	// bail if disjoint
+	if(signbit(da) == signbit(db) && signbit(db) == signbit(dc)) { 
+		return C3DLAS_DISJOINT;
+	}
+	
+	
+	
+	
+	
+	return C3DLAS_INTERSECT;
+}
+
+
 void frustumFromMatrix(Matrix* m, Frustum* out) {
 	
 	Matrix inv;
@@ -552,6 +677,13 @@ float planePointDist(Plane* pl, Vector* p) {
 	Vector a;
 	vScale(&pl->n, pl->d, &a);
 	return fabs(vDot(&a, p));
+} 
+
+// signed closest distance from an arbitrary point to the plane 
+float planePointDistSigned(Plane* pl, Vector* p) {
+	Vector a;
+	vScale(&pl->n, pl->d, &a);
+	return vDot(&a, p);
 } 
 
 void vPointAvg(Vector* a, Vector* b, Vector* out) {
