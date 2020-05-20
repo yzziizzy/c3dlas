@@ -932,6 +932,47 @@ int triPlaneClip(
 	return C3DLAS_INTERSECT;
 }
 
+// http://geomalgorithms.com/a07-_distance.html
+// _PARALLEL with no output on parallel lines
+// _INTERSECT with one point of output on intersection
+// _DISJOINT with two outputs otherwise
+int shortestLineFromRayToRay(Ray* r1, Ray* r2, Vector* pOut) {
+	
+	Vector u, v, w, ps, pt;
+	float a, b, c, d, e, s, t;
+	
+	u = r1->d;
+	v = r2->d;
+	vSub(&r1->o, &r2->o, &w);
+	
+	a = vDot(&u, &u); 
+	b = vDot(&u, &v); 
+	c = vDot(&v, &v); 
+	d = vDot(&u, &w); 
+	e = vDot(&v, &w); 
+	
+	float ac_bb = a * c - b * b;
+	if(fabs(ac_bb) < FLT_CMP_EPSILON) {
+		return C3DLAS_PARALLEL;
+	}
+	
+	s = (b * e - c * d) / ac_bb;
+	t = (a * e - b * d) / ac_bb;
+	
+	vScale(&u, s, &ps);
+	vScale(&v, s, &pt);
+	vAdd(&r1->o, &ps, &ps);
+	vAdd(&r2->o, &pt, &pt);
+	
+	pOut[0] = ps;
+	pOut[1] = pt;
+	
+	if(vDistSq(&ps, &pt) < FLT_CMP_EPSILON_SQ) {
+		return C3DLAS_INTERSECT;
+	}
+	
+	return C3DLAS_DISJOINT;
+}
 
 void frustumFromMatrix(Matrix* m, Frustum* out) {
 	
@@ -1587,6 +1628,25 @@ void mPerspective(double fov, float aspect, float near, float far, Matrix* out) 
 }
 
 
+
+// extract the near and far planes from a prespective matrix
+void mPerspExtractNF(Matrix* m, double* near, double* far) {
+	
+	// perspective computations can be sensitive to precision.
+	double a = m->m[10];
+	double b = m->m[14];
+	
+	*far = b / (1.0 + a);
+	*near = (-a * b) / (a - 1.0);
+// 	printf("a: %f, b: %f, f: %f, n: %f\n", a, b, f, n);
+}
+
+
+// set the near and far planes for an existing prespective matrix
+void mPerspSetNF(Matrix* m, float near, float far) {
+	m->m[10] = -(far + near) / (far - near);
+	m->m[14] = (-2.0 * far * near) / (far - near);
+}
 
 
 // orthographic projection. use this for a "2D" look.

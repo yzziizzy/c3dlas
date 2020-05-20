@@ -14,6 +14,35 @@
 
 
 
+void checklinelineline() {
+
+	
+	Ray r1 = {
+		.o = { 0, 0, 3},
+		.d = { 0, 2, 0},
+	};
+	
+	Ray r2 = {
+		.o = { 0, 0, 1},
+		.d = { 0, 2, 0},
+	};
+
+	
+	Vector o1[] = {
+		{99,99,99},
+		{99,99,99},
+	};
+	
+	int ret;
+	
+	ret = shortestLineFromRayToRay(&r1, &r2, o1);
+	
+	printf("%s\n", c3dlas_EnumString(ret));
+	printf("  out: % .1f,% .1f,% .1f - % .1f,% .1f,% .1f\n", o1[0].x, o1[0].y, o1[0].z, o1[1].x, o1[1].y, o1[1].z);
+	
+}
+
+
 void checklinePlaneClip() {
 
 	Plane pl = {
@@ -124,6 +153,6 @@ void checkTriPlaneClip() {
 
 
 int main(int argc, char* argv) {
-	checklinePlaneClip();
+	checklinelineline();
 	return 0;
 }

@@ -44,6 +44,7 @@
 #define DEG2RAD (0.0174532925199432957692369076848861271344287188854172545609719144)
 
 #define FLT_CMP_EPSILON 0.000001
+#define FLT_CMP_EPSILON_SQ (FLT_CMP_EPSILON * FLT_CMP_EPSILON)
 
 #define C3DLAS_COPLANAR  (0)
 #define C3DLAS_FRONT     (1)
@@ -270,6 +271,12 @@ void vRandomNorm(Vector* out);
 void  vLerp4(Vector4* a, Vector4* b, float t, Vector4* out); // Linear interpolation between two vectors
 
 
+// http://geomalgorithms.com/a07-_distance.html
+// _PARALLEL with no output on parallel lines
+// _INTERSECT with one point of output on intersection
+// _DISJOINT with two outputs otherwise
+int shortestLineFromRayToRay(Ray* r1, Ray* r2, Vector* pOut);
+
 // reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
 void  vReflectAcross(Vector* v, Vector* pivot, Vector* out);
@@ -416,6 +423,12 @@ void mFrustum(float left, float right, float top, float bottom, float near, floa
 // https://www.opengl.org/archives/resources/faq/technical/transformations.htm
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
 void mPerspective(double fov, float aspect, float near, float far, Matrix* out);
+
+// extract the near and far planes from a prespective matrix
+void mPerspExtractNF(Matrix* m, double* near, double* far);
+
+// set the near and far planes for an existing prespective matrix
+void mPerspSetNF(Matrix* m, float near, float far);
 
 // orthographic projection. use this for a "2D" look.
 // same div/0 warnings.
