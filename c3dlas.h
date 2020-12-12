@@ -7,7 +7,7 @@
 #include <stdint.h> 
 #include <math.h> // fmin/fmax
 
-#define C3DLAS_USE_SIMD 1
+//#define C3DLAS_USE_SIMD 1
 
 #define _0000b 0x00
 #define _0001b 0x01
@@ -211,7 +211,7 @@ static inline float frand(float low, float high) {
 	return low + ((high - low) * ((float)rand() / (float)RAND_MAX));
 }
 
-static inline float frandNorm() {
+static inline float frandNorm(void) {
 	return ((float)rand() / (float)RAND_MAX);
 }
 
@@ -219,7 +219,7 @@ static inline double drand(double low, double high) {
 	return low + ((high - low) * ((double)rand() / (double)RAND_MAX));
 }
 
-static inline double drandNorm() {
+static inline double drandNorm(void) {
 	return ((double)rand() / (double)RAND_MAX);
 }
 
@@ -239,6 +239,12 @@ static inline float flerp(float a, float b, float t) {
 	return a  + ((b - a) * t);
 }
 
+static inline float flerp2D(float xx, float xy, float yx, float yy, float xt, float yt) {
+	float a = xx  + ((xy - xx) * yt);
+	float b = yx  + ((yy - yx) * yt);
+	return a  + ((b - a) * xt);
+}
+
 
 // vectors
 int   vEq(Vector* a, Vector* b); // safe equivalence, to FLT_CMP_EPSILON
@@ -249,9 +255,9 @@ void  vAdd(Vector* a, Vector* b, Vector* out); // add two vectors
 void  vSub(Vector* from, Vector* what, Vector* diff); // diff = from - what
 void  vScale(Vector* v, float scalar, Vector* out); // scalar muliplication
 void  vLerp(Vector* a, Vector* b, float t, Vector* out); // Linear interpolation between two vectors
-void  vInverse(Vector* v, Vector* out); // inverse
-float vMag(Vector* v); // return the magnitude
-float vDot(Vector* a, Vector* b); // dot product
+void  vInverse(const Vector* v, Vector* out); // inverse
+float vMag(const Vector* v); // return the magnitude
+float vDot(const Vector* a, const Vector* b); // dot product
 float vDist(Vector* from, Vector* to); // distance from one point to another
 float vDistSq(Vector* from, Vector* to); // squared distance from one point to another
 void  vNorm(Vector* v, Vector* out); // normalize the vector
@@ -347,7 +353,7 @@ void  vSub2(Vector2* from, Vector2* what, Vector2* diff); // diff = from - what
 void  vScale2(Vector2* v, float scalar, Vector2* out); // scalar muliplication
 float  vDist2(Vector2* a, Vector2* b); // distance between points
 void  vLerp2(Vector2* a, Vector2* b, float t, Vector2* out); // linear interpolation
-void  vInverse2(Vector2* v, Vector2* out); // inverse
+void  vInverse2(const Vector2* v, Vector2* out); // inverse
 float vMag2(Vector2* v); // return the magnitude
 float vDot2(Vector2* a, Vector2* b); // dot product
 void  vNorm2(Vector2* v, Vector2* out); // normalize the vector
@@ -436,6 +442,10 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 
 // calculates an orthographic matrix that encloses the sphere, looking from eyePos
 void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out);
+
+// extract the planes from an orthographic projection matrix.
+void mOrthoExtractPlanes(Matrix* m, float* left, float* right, float* top, float* bottom, float* near, float* far);
+
 
 // analgous to gluLookAt
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml

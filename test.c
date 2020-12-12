@@ -153,6 +153,17 @@ void checkTriPlaneClip() {
 
 
 int main(int argc, char* argv) {
-	checklinelineline();
+	
+	Matrix m = IDENT_MATRIX;
+	
+	mOrtho(-2.2, 3.3, 4.4, -5.5, 0.66, 7.7, &m);
+	
+	float a,b,c,d,e,f;
+	
+	mOrthoExtractPlanes(&m, &a, &b, &c, &d, &e, &f);
+	
+	printf("%f,%f,%f,%f,%f,%f\n", a, b,c,d,e,f);
+	
+	
 	return 0;
 }

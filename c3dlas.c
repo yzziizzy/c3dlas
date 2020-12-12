@@ -180,14 +180,14 @@ void  vLerp(Vector* a, Vector* b, float t, Vector* out) { // Linear interpolatio
 #endif
 }
 
-void vInverse(Vector* v, Vector* out) {
+void vInverse(const Vector* v, Vector* out) {
 	// yeah yeah yeah shut up. in games, pesky details are just annoying. this function does what you mean rather than sucking Gauss and Euclid.
 	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
 	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
 	out->z = v->z == 0.0f ? FLT_MAX : 1.0f / v->z;
 }
 
-float vMag(Vector* v) {
+float vMag(const Vector* v) {
 #ifdef C3DLAS_USE_SIMD
 	// needs sse4.1
 	__m128 a = _mm_loadu_ps((float*)&v);
@@ -199,7 +199,7 @@ float vMag(Vector* v) {
 #endif
 }
 
-float vDot(Vector* a, Vector* b) {
+float vDot(const Vector* a, const Vector* b) {
 #ifdef broken_C3DLAS_USE_SIMD
 	// needs sse4.1
 	// BUG does not work
@@ -324,7 +324,7 @@ void  vMax(Vector* a, Vector* b, Vector* out) {
 #endif
 }
 
-void inline vSet(float x, float y, float z, Vector* out) {
+inline void vSet(float x, float y, float z, Vector* out) {
 	out->x = x;
 	out->y = y;
 	out->z = z;
@@ -1152,7 +1152,7 @@ void  vLerp2(Vector2* a, Vector2* b, float t, Vector2* out) {
 	out->y = a->y + ((b->y - a->y) * t);
 }
 
-void vInverse2(Vector2* v, Vector2* out) {
+void vInverse2(const Vector2* v, Vector2* out) {
 	// see vInverse for snark
 	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
 	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
@@ -1193,7 +1193,7 @@ void  vMax2(Vector2* a, Vector2* b, Vector2* out) {
 	out->y = fmax(a->y, b->y);
 }
 
-void inline vSet2(float x, float y, Vector2* out) {
+inline void vSet2(float x, float y, Vector2* out) {
 	out->x = x;
 	out->y = y;
 }
@@ -1304,7 +1304,7 @@ void  vMax2i(Vector2i* a, Vector2i* b, Vector2i* out) {
 	out->y = MAX(a->y, b->y);
 }
 
-void inline vSet2i(int x, int y, Vector2i* out) {
+inline void vSet2i(int x, int y, Vector2i* out) {
 	out->x = x;
 	out->y = y;
 }
@@ -1713,6 +1713,18 @@ void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out) {
 	
 	mFastMul(&m2, &m, out);
 }
+
+// extract the planes from an orthographic projection matrix.
+void mOrthoExtractPlanes(Matrix* m, float* left, float* right, float* top, float* bottom, float* near, float* far) {
+	
+	*left = (m->m[12] + 1) / -m->m[0]; 
+	*right = (-m->m[12] + 1) / m->m[0]; 
+	*bottom = (m->m[13] + 1) / m->m[5]; 
+	*top = (-m->m[13] + 1) / m->m[5]; 
+	*near = (m->m[14] + 1) / m->m[10];
+	*far = (m->m[14] - 1) / m->m[10];
+}
+
 
 // analgous to gluLookAt
 // BUG: very broken apparently
@@ -2187,7 +2199,7 @@ int boxRayIntersectFast2(const AABB2* b, const Ray2* r) {
 	float tmin, tmax;
 	Vector2 id;
 	
-	vInverse(&r->d, &id);
+	vInverse2(&r->d, &id);
 	
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
