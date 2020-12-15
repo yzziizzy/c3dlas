@@ -247,6 +247,8 @@ static inline float flerp2D(float xx, float xy, float yx, float yy, float xt, fl
 	return a  + ((b - a) * xt);
 }
 
+
+
 //
 // Vectors
 //
@@ -282,10 +284,6 @@ int vEqEp2p(Vector2* a, Vector2* b, float epsilon);
 int vEqEp3p(Vector3* a, Vector3* b, float epsilon);
 int vEqEp4p(Vector4* a, Vector4* b, float epsilon);
 
-
-void vCopy3p(const Vector3* src, Vector3* dst); // copy vector values
-
-
 // Swap two vectors
 void vSwap2ip(Vector2i* a, Vector2i* b);
 void vSwap2p(Vector2* a, Vector2* b);
@@ -319,6 +317,24 @@ void     vScale2ip(Vector2i* v, float scalar, Vector2i* out);
 void     vScale2p(Vector2* v, float scalar, Vector2* out);
 void     vScale3p(Vector3* v, float scalar, Vector3* out);
 
+// Dot product (inner product)
+double vDot2i(const Vector2i a, const Vector2i b);
+float  vDot2(const Vector2 a, const Vector2 b);
+float  vDot3(const Vector3 a, const Vector3 b);
+float  vDot4(const Vector4 a, const Vector4 b);
+double vDot2ip(const Vector2i* a, const Vector2i* b);
+float  vDot2p(const Vector2* a, const Vector2* b);
+float  vDot3p(const Vector3* a, const Vector3* b);
+float  vDot4p(const Vector4* a, const Vector4* b);
+
+// Cross product: out = a x b
+Vector3 vCross3(Vector3 a, Vector3 b);
+void  vCross3p(Vector3* a, Vector3* b, Vector3* out); 
+
+// Scalar triple product: a . (b x c)
+float vScalarTriple3(Vector3 a, Vector3 b, Vector3 c);
+float vScalarTriple3p(Vector3* a, Vector3* b, Vector3* c);
+
 // Linear interpolation between two vectors
 Vector2  vLerp2(Vector2 a, Vector2 b, float t);
 Vector3  vLerp3(Vector3 a, Vector3 b, float t);
@@ -334,7 +350,6 @@ Vector4 vInverse4(const Vector4 v);
 void    vInverse2p(const Vector2* v, Vector2* out); 
 void    vInverse3p(const Vector3* v, Vector3* out); 
 void    vInverse4p(const Vector4* v, Vector4* out); 
-
 
 // Vector magnitude (length)
 double vMag2i(const Vector2i v);
@@ -365,7 +380,6 @@ double vDist2ip(Vector2i* a, Vector2i* b);
 float  vDist2p(Vector2* a, Vector2* b); 
 float  vDist3p(Vector3* a, Vector3* b); 
 float  vDist4p(Vector4* a, Vector4* b); 
-
 
 // Vector normalize (scale to unit length)
 Vector2 vNorm2(Vector2 v);
@@ -403,9 +417,8 @@ void     vMax3p(Vector3* a, Vector3* b, Vector3* out);
 void     vMax4p(Vector4* a, Vector4* b, Vector4* out);
 
 
-float vDot3p(const Vector3* a, const Vector3* b); // dot product
-void  vCross3p(Vector3* a, Vector3* b, Vector3* out); // cross product: out = a x b
-float vScalarTriple3p(Vector3* a, Vector3* b, Vector3* c); // scalar triple product: a . (b x c)
+
+
 void  vProject3p(Vector3* what, Vector3* onto, Vector3* out); // slower; onto may not be normalized
 void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out); // faster; onto must be normalized
 void  vPointAvg3p(Vector3* a, Vector3* b, Vector3* out);
@@ -481,9 +494,6 @@ void frustumFromMatrix(Matrix* m, Frustum* out);
 void frustumInnerBoundingSphere(Frustum* f, Sphere* out);
 void frustumOuterBoundingSphere(Frustum* f, Sphere* out);
 
-// 2d vector stuff, same as 3d except one less d
-void  vCopy2p(const Vector2* src, Vector2* dst); // copy vector values
-float vDot2p(Vector2* a, Vector2* b); // dot product
 
 // reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
@@ -500,8 +510,6 @@ float triArea2p(Vector2* a, Vector2* b, Vector2* c);
 // determines if a point is inside a triangle
 int triPointInside2p(Vector2* p, Vector2* a, Vector2* b, Vector2* c);
 
-// 2d integer vector stuff
-int   vDot2ip(Vector2i* a, Vector2i* b); // dot product
 
 
 

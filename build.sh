@@ -12,10 +12,11 @@ MATH_CFLAGS="\
 
 # flags for first-gen Ryzen
 # change if your cpu is different
-CPU_CFLAGS="-msse4.1 -mavx -mavx2"
+CPU_CFLAGS="-march=native -mtune=native"
 
 ERR_CFLAGS="\
 	-Wall \
+	-Wextra \
 	-Wno-unused-result \
 	-Wno-unused-function \
 	-Werror-implicit-function-declaration \

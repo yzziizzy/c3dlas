@@ -386,6 +386,59 @@ void vScale3p(Vector3* v, float scalar, Vector3* out) {
 
 
 
+// Dot product (inner product)
+
+double vDot2i(const Vector2i a, const Vector2i b) { return vDot2ip(&a, &b); }
+float vDot2(const Vector2 a, const Vector2 b) { return vDot2p(&a, &b); }
+float vDot3(const Vector3 a, const Vector3 b) { return vDot3p(&a, &b); }
+float vDot4(const Vector4 a, const Vector4 b) { return vDot4p(&a, &b); }
+
+double vDot2ip(const Vector2i* a, const Vector2i* b) {
+	return ((double)a->x * (double)b->x) + ((double)a->y * (double)b->y);
+}
+float vDot2p(const Vector2* a, const Vector2* b) {
+	return (a->x * b->x) + (a->y * b->y);
+}
+float vDot3p(const Vector3* a, const Vector3* b) {
+	return (a->x * b->x) + (a->y * b->y) + (a->z * b->z);
+}
+float vDot4p(const Vector4* a, const Vector4* b) {
+	return (a->x * b->x) + (a->y * b->y) + (a->z * b->z) + (a->w * b->w);
+}
+
+
+
+
+// Cross product: out = a x b
+// Cross products only exist in 3 and 7 dimensions
+Vector3 vCross3(Vector3 a, Vector3 b) {
+	Vector3 out;
+	vCross3p(&a, &b, &out);
+	return out;
+}
+
+void vCross3p(Vector3* a, Vector3* b, Vector3* out) {
+	out->x = (a->y * b->z) - (a->z * b->y);
+	out->y = (a->z * b->x) - (a->x * b->z);
+	out->z = (a->x * b->y) - (a->y * b->x);
+}
+
+
+
+
+// Scalar triple product: a . (b x c)
+float vScalarTriple3(Vector3 a, Vector3 b, Vector3 c) {
+	return vScalarTriple3p(&a, &b, &c);
+}
+
+float vScalarTriple3p(Vector3* a, Vector3* b, Vector3* c) {
+	return (float)((a->x * b->y * c->z) - (a->x * b->z * c->y) - (a->y * b->x * c->z)
+				 + (a->z * b->x * c->y) + (a->y * b->z * c->x) - (a->z * b->y * c->x));
+}
+
+
+
+
 // Linear interpolation between two vectors
 
 Vector2 vLerp2(Vector2 a, Vector2 b, float t) {
@@ -520,19 +573,6 @@ float vMag4p(const Vector4* v) {
 }
 
 
-float vDot3p(const Vector3* a, const Vector3* b) {
-#ifdef broken_C3DLAS_USE_SIMD
-	// needs sse4.1
-	// BUG does not work
-	__m128 a_ = _mm_loadu_ps((float*)&a);
-	__m128 b_ = _mm_loadu_ps((float*)&b);
-	__m128 c = _mm_dp_ps(a_, b_, (_1110b << 4) & _0001b); // BUG: check mask
-	
-	return c[0];
-#else
-	return (float)((a->x * b->x) + (a->y * b->y) + (a->z * b->z));
-#endif
-}
 
 
 
@@ -544,7 +584,7 @@ float  vDistSq3(Vector3 a, Vector3 b) { return vDistSq3p(&a, &b); }
 float  vDistSq4(Vector4 a, Vector4 b) { return vDistSq4p(&a, &b); }
 
 double vDistSq2ip(Vector2i* a, Vector2i* b) {
-	double x, y, z;
+	double x, y;
 	
 	x = a->x - b->x;
 	y = a->y - b->y;
@@ -553,7 +593,7 @@ double vDistSq2ip(Vector2i* a, Vector2i* b) {
 }
 
 float vDistSq2p(Vector2* a, Vector2* b) {
-	float x, y, z;
+	float x, y;
 	
 	x = a->x - b->x;
 	y = a->y - b->y;
@@ -788,16 +828,7 @@ void vMax4p(Vector4* a, Vector4* b, Vector4* out) {
 
 
 
-void vCross3p(Vector3* a, Vector3* b, Vector3* out) { // c = a x b
-	out->x = (a->y * b->z) - (a->z * b->y);
-	out->y = (a->z * b->x) - (a->x * b->z);
-	out->z = (a->x * b->y) - (a->y * b->x);
-}
 
-float vScalarTriple3p(Vector3* a, Vector3* b, Vector3* c) { // a . (b x c)
-	return (float)((a->x * b->y * c->z) - (a->x * b->z * c->y) - (a->y * b->x * c->z)
-				 + (a->z * b->x * c->y) + (a->y * b->z * c->x) - (a->z * b->y * c->x));
-}
 
 
 // feeding a zero vector into this will cause div/0 and you will deserve it
@@ -1425,7 +1456,7 @@ int shortestLineFromRayToRay3p(Ray3* r1, Ray3* r2, Vector3* pOut) {
 	t = (a * e - b * d) / ac_bb;
 	
 	vScale3p(&u, s, &ps);
-	vScale3p(&v, s, &pt);
+	vScale3p(&v, t, &pt);
 	vAdd3p(&r1->o, &ps, &ps);
 	vAdd3p(&r2->o, &pt, &pt);
 	
@@ -1559,21 +1590,6 @@ void vPointAvg3p(Vector3* a, Vector3* b, Vector3* out) {
 	vScale3p(&sum, 0.5f, out);
 } 
 
-// 2d vector stuff
-
-
-void vCopy2p(const Vector2* src, Vector2* dst) {
-	dst->x = src->x;
-	dst->y = src->y;
-}
-
-
-
-
-float vDot2p(Vector2* a, Vector2* b) {
-	return (float)((a->x * b->x) + (a->y * b->y));
-}
-
 
 
 
@@ -1626,22 +1642,6 @@ int triPointInside2p(Vector2* p, Vector2* a, Vector2* b, Vector2* c) {
 	int f = signbit((p->x - a->x) * (c->y - a->y) - (c->x - a->x) * (p->y - a->y));
 	return e == f;
 }
-
-
-
-
-// 2d integer vector stuff
-
-void vCopy2ip(const Vector2i* src, Vector2i* dst) {
-	dst->x = src->x;
-	dst->y = src->y;
-}
-
-
-int vDot2ip(Vector2i* a, Vector2i* b) {
-	return ((a->x * b->x) + (a->y * b->y));
-}
-
 
 
 
@@ -1826,7 +1826,6 @@ void mTransposeFast(Matrix* in, Matrix* out) {
 
 void mTranspose(Matrix* in, Matrix* out) {
 	Matrix t;
-	int i;
 	
 	mTransposeFast(in, &t);
 	
@@ -2097,7 +2096,7 @@ void mLookAt(Vector3* eye, Vector3* center, Vector3* up, Matrix* out) {
 
 
 void mPrint(Matrix* m, FILE* f) {
-	int r, c;
+	int r;
 	
 	if(!f) f = stdout;
 	
@@ -2652,13 +2651,13 @@ void bsEvalPoint2(BezierSpline2* bs, float normalT, Vector2* out) {
 // subdivide a spline into a set of line segments. linePoints must be allocated externally.
 // this function is faster than more accurate ones.
 void bsEvenLines(BezierSpline2* bs, int lineCount, Vector2* linePoints) {
-	
+	/*
 	float tIncrement;
 	
 	
 	tIncrement = (float)(bs->length - (!bs->isLoop)) / (float)lineCount;
 	
-	
+	*/
 	
 	
 	
