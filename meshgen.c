@@ -337,7 +337,7 @@ Mesh* extrudeAlongVector(Vector3* lineStrip, int lineCount, Vector3* v) {
 	
 	// fill in vertices
 	for(i = 0; i <= lineCount; i++) {
-		vCopy3p(&lineStrip[i], &m->vertices[i*2].v);
+//		vCopy3p(&lineStrip[i], &m->vertices[i*2].v);
 		vAdd3p(&lineStrip[i], v, &m->vertices[(i*2)+1].v);
 	}
 	
@@ -414,9 +414,10 @@ void appendTriangleFast(Mesh* m, Vector3* v0, Vector3* v1, Vector3* v2) {
 	m->indices[j++] = i;
 	m->indices[j++] = i+1;
 	m->indices[j++] = i+2;
-	vCopy3p(v0, &m->vertices[i++].v);
-	vCopy3p(v1, &m->vertices[i++].v);
-	vCopy3p(v2, &m->vertices[i++].v);
+	
+//	vCopy3p(v0, &m->vertices[i++].v);
+//	vCopy3p(v1, &m->vertices[i++].v);
+//	vCopy3p(v2, &m->vertices[i++].v);
 	
 	m->vertexCnt = i;
 	m->indexCnt = j;
@@ -485,7 +486,7 @@ Mesh* makeCube(Matrix* mat, int flat) {
 
 
 Mesh* makeCuboid(Vector3* p1, Vector3* p2) {
-	
+/*	
 	Mesh* m;
 	Vector3 min, max;
 	int i, n;
@@ -536,6 +537,8 @@ Mesh* makeCuboid(Vector3* p1, Vector3* p2) {
 	m->vertexCnt = i;
 	
 	return m;
+*/	
+	return NULL;
 }
 
 
@@ -556,9 +559,9 @@ void calcFlatNormals(Mesh* m) {
 		i3 = m->indices[j+2];
 		
 		vTriFaceNormal3p(&m->vertices[i1].v, &m->vertices[i2].v, &m->vertices[i3].v, &n);
-		vCopy3p(&n, &m->vertices[i1].n);
-		vCopy3p(&n, &m->vertices[i2].n);
-		vCopy3p(&n, &m->vertices[i3].n);
+//		vCopy3p(&n, &m->vertices[i1].n);
+//		vCopy3p(&n, &m->vertices[i2].n);
+//		vCopy3p(&n, &m->vertices[i3].n);
 	}
 }
 
@@ -693,7 +696,7 @@ MeshSlice* makeCircle(float radius, int divisions) {
 		ms->vertices[i].v.x = radius * sin((i / divf) * F_2PI);
 		ms->vertices[i].v.y = radius * cos((i / divf) * F_2PI);
 		ms->vertices[i].v.z = 0;
-		vCopy3p(&ms->vertices[i].v, &ms->vertices[i].n);
+//		vCopy3p(&ms->vertices[i].v, &ms->vertices[i].n);
 		ms->vertices[i].t.u = i / divf;
 		ms->vertices[i].t.v = 0;
 		
