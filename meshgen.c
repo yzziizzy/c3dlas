@@ -26,14 +26,14 @@ void mgGenFlatPatch(short width, short height, IndexedPatch* out) {
 	out->width = width;
 	out->height = height;
 	
-	out->vertices = (Vector*)malloc(cnt * sizeof(Vector));
-	out->normals = (Vector*)malloc(cnt * sizeof(Vector));
+	out->vertices = (Vector3*)malloc(cnt * sizeof(Vector3));
+	out->normals = (Vector3*)malloc(cnt * sizeof(Vector3));
 	out->indices = (short*)malloc(cnt * sizeof(short) * 6); // too big but we'll fix that later
 	
 	// fill in the vertices and normals
 	for(y = 0; y < height + 1; y++) {
 		for(x = 0; x < width + 1; x++) {
-			Vector* v, *n;
+			Vector3* v, *n;
 			v = &out->vertices[x+(y*(width+1))];
 			n = &out->normals[x+(y*(width+1))];
 			
@@ -65,7 +65,7 @@ void mgGenFlatPatch(short width, short height, IndexedPatch* out) {
 
 
 
-void genIcosahedronPointsf(float radius, Vector* out, int* count) {
+void genIcosahedronPointsf(float radius, Vector3* out, int* count) {
 	int i;
 	
 	// scale factor for inscribed sphere
@@ -73,7 +73,7 @@ void genIcosahedronPointsf(float radius, Vector* out, int* count) {
 	float r = radius / (a * 2); 
 	
 	// this one has edge length 2
-	Vector points[] = {
+	Vector3 points[] = {
 		{ 1.0f, 0.0f, F_GOLDEN}, // top edge along x axis
 		{ -1.0f, 0.0f, F_GOLDEN},
 		
@@ -94,12 +94,12 @@ void genIcosahedronPointsf(float radius, Vector* out, int* count) {
 	
 	if(count) *count = 12;
 	for(i = 0; i < 12; i++) {
-		vScale(&points[i], r, &out[i]);
+		vScale3p(&points[i], r, &out[i]);
 	}
 }
 
 // top half
-void genHalfIcosahedronPointsf(float radius, Vector* out, int* count) {
+void genHalfIcosahedronPointsf(float radius, Vector3* out, int* count) {
 	int i;
 	
 	// scale factor for inscribed sphere
@@ -107,7 +107,7 @@ void genHalfIcosahedronPointsf(float radius, Vector* out, int* count) {
 	float r = radius / (a * 2); 
 	
 	// this one has edge length 2
-	Vector points[] = {
+	Vector3 points[] = {
 		{ 1.0f, 0.0f, F_GOLDEN}, // top edge along x axis
 		{ -1.0f, 0.0f, F_GOLDEN},
 		
@@ -125,7 +125,7 @@ void genHalfIcosahedronPointsf(float radius, Vector* out, int* count) {
 	
 	if(count) *count = 10;
 	for(i = 0; i < 10; i++) {
-		vScale(&points[i], r, &out[i]);
+		vScale3p(&points[i], r, &out[i]);
 	}
 }
 
@@ -134,7 +134,7 @@ Mesh* genIcosahedronMesh(float radius) {
 	Mesh* m;
 	
 	m = malloc(sizeof(Mesh));
-	m->vertices = malloc(sizeof(Vector) * 12);
+	m->vertices = malloc(sizeof(Vector3) * 12);
 	m->indices = malloc(sizeof(short) * 20 * 3);
 	
 	m->szVertices = m->vertexCnt = 12;
@@ -199,7 +199,7 @@ Mesh* genHollowCylinder(float innerRadius, float outerRadius, int segments, floa
 	// two end caps, and two triangles per wall quad, two walls
 	m->szIndices = m->indexCnt = 3 * (segments * (2 + 2 + 2 + 2));
 
-	m->vertices = malloc(sizeof(Vector) * m->szVertices);
+	m->vertices = malloc(sizeof(Vector3) * m->szVertices);
 	m->indices = malloc(sizeof(short) * m->szIndices);
 	
 	j = 0;
@@ -249,7 +249,7 @@ Mesh* genCylinder(float radius, int segments, float length) {
 	// two end caps, and two triangles per wall quad
 	m->szIndices = m->indexCnt = 3 * (segments * (2 + 2));
 
-	m->vertices = malloc(sizeof(Vector) * m->szVertices);
+	m->vertices = malloc(sizeof(Vector3) * m->szVertices);
 	m->indices = malloc(sizeof(short) * m->szIndices);
 
 	// vertices
@@ -321,7 +321,7 @@ float* genNoisef(short width, short height, float min, float max) {
 
 
 
-Mesh* extrudeAlongVector(Vector* lineStrip, int lineCount, Vector* v) {
+Mesh* extrudeAlongVector(Vector3* lineStrip, int lineCount, Vector3* v) {
 	
 	int i;
 	Mesh* m;
@@ -332,13 +332,13 @@ Mesh* extrudeAlongVector(Vector* lineStrip, int lineCount, Vector* v) {
 	m->vertexCnt = (lineCount + 1) * 2;
 	m->indexCnt = 3 * m->vertexCnt;
 	
-	m->vertices = malloc(sizeof(Vector) * m->vertexCnt);
+	m->vertices = malloc(sizeof(Vector3) * m->vertexCnt);
 	m->indices = malloc(sizeof(short) * m->indexCnt);
 	
 	// fill in vertices
 	for(i = 0; i <= lineCount; i++) {
-		vCopy(&lineStrip[i], &m->vertices[i*2].v);
-		vAdd(&lineStrip[i], v, &m->vertices[(i*2)+1].v);
+		vCopy3p(&lineStrip[i], &m->vertices[i*2].v);
+		vAdd3p(&lineStrip[i], v, &m->vertices[(i*2)+1].v);
 	}
 	
 	// fill in indices
@@ -407,22 +407,22 @@ void checkGrowMesh(Mesh* m, int newVertices, int newIndices) {
 
 
 // doesn't check mesh allocation size. Real Programmers(TM) already know how much memory there is.
-void appendTriangleFast(Mesh* m, Vector* v0, Vector* v1, Vector* v2) {
+void appendTriangleFast(Mesh* m, Vector3* v0, Vector3* v1, Vector3* v2) {
 	int i = m->vertexCnt;
 	int j = m->indexCnt;
 	
 	m->indices[j++] = i;
 	m->indices[j++] = i+1;
 	m->indices[j++] = i+2;
-	vCopy(v0, &m->vertices[i++].v);
-	vCopy(v1, &m->vertices[i++].v);
-	vCopy(v2, &m->vertices[i++].v);
+	vCopy3p(v0, &m->vertices[i++].v);
+	vCopy3p(v1, &m->vertices[i++].v);
+	vCopy3p(v2, &m->vertices[i++].v);
 	
 	m->vertexCnt = i;
 	m->indexCnt = j;
 }
 
-void appendTriangle(Mesh* m, Vector* v0, Vector* v1, Vector* v2) {
+void appendTriangle(Mesh* m, Vector3* v0, Vector3* v1, Vector3* v2) {
 	
 	checkGrowMesh(m, 3, 3);
 	
@@ -432,7 +432,7 @@ void appendTriangle(Mesh* m, Vector* v0, Vector* v1, Vector* v2) {
 
 // appends a face of vnct vertices to the mesh
 // CW winding, convex polygons only. will be tesselated as a fan pivoting around v[0].
-void appendFace(Mesh* m, Vector* v, int vcnt) {
+void appendFace(Mesh* m, Vector3* v, int vcnt) {
 	int i;
 	
 	checkGrowMesh(m, vcnt, 3 * (vcnt - 2));
@@ -448,7 +448,7 @@ Mesh* makeCube(Matrix* mat, int flat) {
 	Mesh* m;
 	int i;
 	
-	static Vector vertices[] = {
+	static Vector3 vertices[] = {
 		// front face
 		{-.5, -.5,  .5},
 		{-.5,  .5,  .5},
@@ -474,7 +474,7 @@ Mesh* makeCube(Matrix* mat, int flat) {
 	
 	// transform the vertices
 	for(i = 0; i < 8; i++)
-		vMatrixMul(&vertices[i], mat, &m->vertices[i].v);
+		vMatrixMul3p(&vertices[i], mat, &m->vertices[i].v);
 	
 	// fill the index buffer
 	memcpy(m->indices, indices, sizeof(indices));
@@ -484,54 +484,54 @@ Mesh* makeCube(Matrix* mat, int flat) {
 }
 
 
-Mesh* makeCuboid(Vector* p1, Vector* p2) {
+Mesh* makeCuboid(Vector3* p1, Vector3* p2) {
 	
 	Mesh* m;
-	Vector min, max;
+	Vector3 min, max;
 	int i, n;
 	
-	vMin(p1, p2, &min);
-	vMax(p1, p2, &max);
+	vMin3p(p1, p2, &min);
+	vMax3p(p1, p2, &max);
 	
 	m = allocMesh(6 * 2);
 	
 	i = 0;
 	n = 0;
 	// x+ face
-	vSet(max.x, min.y, min.z, &m->vertices[i++].v);
-	vSet(max.x, min.y, max.z, &m->vertices[i++].v);
-	vSet(max.x, max.y, min.z, &m->vertices[i++].v);
-	vSet(max.x, max.y, max.z, &m->vertices[i++].v);
+	vSet3p(max.x, min.y, min.z, &m->vertices[i++].v);
+	vSet3p(max.x, min.y, max.z, &m->vertices[i++].v);
+	vSet3p(max.x, max.y, min.z, &m->vertices[i++].v);
+	vSet3p(max.x, max.y, max.z, &m->vertices[i++].v);
 
 	// x- face
-	vSet(min.x, min.y, min.z, &m->vertices[i++].v);
-	vSet(min.x, min.y, max.z, &m->vertices[i++].v);
-	vSet(min.x, max.y, min.z, &m->vertices[i++].v);
-	vSet(min.x, max.y, max.z, &m->vertices[i++].v);
+	vSet3p(min.x, min.y, min.z, &m->vertices[i++].v);
+	vSet3p(min.x, min.y, max.z, &m->vertices[i++].v);
+	vSet3p(min.x, max.y, min.z, &m->vertices[i++].v);
+	vSet3p(min.x, max.y, max.z, &m->vertices[i++].v);
 
 	// y+ face
-	vSet(min.x, max.y, min.z, &m->vertices[i++].v);
-	vSet(min.x, max.y, max.z, &m->vertices[i++].v);
-	vSet(max.x, max.y, min.z, &m->vertices[i++].v);
-	vSet(max.x, max.y, max.z, &m->vertices[i++].v);
+	vSet3p(min.x, max.y, min.z, &m->vertices[i++].v);
+	vSet3p(min.x, max.y, max.z, &m->vertices[i++].v);
+	vSet3p(max.x, max.y, min.z, &m->vertices[i++].v);
+	vSet3p(max.x, max.y, max.z, &m->vertices[i++].v);
 
 	// y- face
-	vSet(min.x, min.y, min.z, &m->vertices[i++].v);
-	vSet(min.x, min.y, max.z, &m->vertices[i++].v);
-	vSet(max.x, min.y, min.z, &m->vertices[i++].v);
-	vSet(max.x, min.y, max.z, &m->vertices[i++].v);
+	vSet3p(min.x, min.y, min.z, &m->vertices[i++].v);
+	vSet3p(min.x, min.y, max.z, &m->vertices[i++].v);
+	vSet3p(max.x, min.y, min.z, &m->vertices[i++].v);
+	vSet3p(max.x, min.y, max.z, &m->vertices[i++].v);
 
 	// z+ face
-	vSet(min.x, min.y, max.z, &m->vertices[i++].v);
-	vSet(max.x, min.y, max.z, &m->vertices[i++].v);
-	vSet(min.x, max.y, max.z, &m->vertices[i++].v);
-	vSet(max.x, max.y, max.z, &m->vertices[i++].v);
+	vSet3p(min.x, min.y, max.z, &m->vertices[i++].v);
+	vSet3p(max.x, min.y, max.z, &m->vertices[i++].v);
+	vSet3p(min.x, max.y, max.z, &m->vertices[i++].v);
+	vSet3p(max.x, max.y, max.z, &m->vertices[i++].v);
 
 	// z- face
-	vSet(min.x, min.y, min.z, &m->vertices[i++].v);
-	vSet(max.x, min.y, min.z, &m->vertices[i++].v);
-	vSet(min.x, max.y, min.z, &m->vertices[i++].v);
-	vSet(max.x, max.y, min.z, &m->vertices[i++].v);
+	vSet3p(min.x, min.y, min.z, &m->vertices[i++].v);
+	vSet3p(max.x, min.y, min.z, &m->vertices[i++].v);
+	vSet3p(min.x, max.y, min.z, &m->vertices[i++].v);
+	vSet3p(max.x, max.y, min.z, &m->vertices[i++].v);
 	
 	m->vertexCnt = i;
 	
@@ -546,7 +546,7 @@ Mesh* makeCuboid(Vector* p1, Vector* p2) {
 // assumes vertices are not shared
 void calcFlatNormals(Mesh* m) {
 	int j, i1, i2, i3;
-	Vector n;
+	Vector3 n;
 	
 	
 	for(j = 0; j < m->indexCnt; j += 3) {
@@ -555,10 +555,10 @@ void calcFlatNormals(Mesh* m) {
 		i2 = m->indices[j+1];
 		i3 = m->indices[j+2];
 		
-		vTriFaceNormal(&m->vertices[i1].v, &m->vertices[i2].v, &m->vertices[i3].v, &n);
-		vCopy(&n, &m->vertices[i1].n);
-		vCopy(&n, &m->vertices[i2].n);
-		vCopy(&n, &m->vertices[i3].n);
+		vTriFaceNormal3p(&m->vertices[i1].v, &m->vertices[i2].v, &m->vertices[i3].v, &n);
+		vCopy3p(&n, &m->vertices[i1].n);
+		vCopy3p(&n, &m->vertices[i2].n);
+		vCopy3p(&n, &m->vertices[i3].n);
 	}
 }
 
@@ -566,26 +566,26 @@ void calcFlatNormals(Mesh* m) {
 // only works if vertices are welded first.
 void calcSmoothNormals(Mesh* m) {
 	
-	Vector* sums;
+	Vector3* sums;
 	int i, vi0, vi1, vi2;
-	Vector n;
+	Vector3 n;
 	
-	sums = calloc(1, m->vertexCnt * sizeof(Vector));
+	sums = calloc(1, m->vertexCnt * sizeof(Vector3));
 	
 	for(i = 0; i < m->indexCnt; i += 3) {
 		vi0 = m->indices[i];
 		vi1 = m->indices[i];
 		vi2 = m->indices[i];
 		
-		vTriFaceNormal(&m->vertices[vi0].v, &m->vertices[vi1].v, &m->vertices[vi2].v, &n);
+		vTriFaceNormal3p(&m->vertices[vi0].v, &m->vertices[vi1].v, &m->vertices[vi2].v, &n);
 		
-		vAdd(&n, &sums[vi0], &sums[vi0]);
-		vAdd(&n, &sums[vi1], &sums[vi1]);
-		vAdd(&n, &sums[vi2], &sums[vi2]);
+		vAdd3p(&n, &sums[vi0], &sums[vi0]);
+		vAdd3p(&n, &sums[vi1], &sums[vi1]);
+		vAdd3p(&n, &sums[vi2], &sums[vi2]);
 	};
 	
 	for(i = 0; i < m->vertexCnt; i++) {
-		vNorm(&sums[i], &m->vertices[i].n);
+		vNorm3p(&sums[i], &m->vertices[i].n);
 	}
 	
 	free(sums);
@@ -693,7 +693,7 @@ MeshSlice* makeCircle(float radius, int divisions) {
 		ms->vertices[i].v.x = radius * sin((i / divf) * F_2PI);
 		ms->vertices[i].v.y = radius * cos((i / divf) * F_2PI);
 		ms->vertices[i].v.z = 0;
-		vCopy(&ms->vertices[i].v, &ms->vertices[i].n);
+		vCopy3p(&ms->vertices[i].v, &ms->vertices[i].n);
 		ms->vertices[i].t.u = i / divf;
 		ms->vertices[i].t.v = 0;
 		
@@ -712,7 +712,7 @@ MeshSlice* makeCircle(float radius, int divisions) {
 }
 
 
-void appendBezierSpline(MeshSlice* ms, BezierSpline* bs, float tolerance, int connectToEnd) {
+void appendBezierSpline(MeshSlice* ms, BezierSpline3* bs, float tolerance, int connectToEnd) {
 	
 	
 	

@@ -6,8 +6,8 @@
 
 
 typedef struct {
-	Vector* vertices;
-	Vector* normals;
+	Vector3* vertices;
+	Vector3* normals;
 	short* indices;
 	int nElements;
 	int nVertices;
@@ -22,7 +22,7 @@ typedef struct {
 
 
 typedef struct MeshVertex {
-	Vector v, n;
+	Vector3 v, n;
 	struct {
 		unsigned short u, v;
 	} t;

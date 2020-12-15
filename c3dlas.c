@@ -90,52 +90,229 @@ void pcg_f8(uint64_t* state, uint64_t stream, float* out) {
 
 
 
+int vEq2i(Vector2i a, Vector2i b) { return vEq2ip(&a, &b); }
+int vEqExact2i(Vector2i a, Vector2i b) { return vEqExact2ip(&a, &b); } 
+int vEqExact2(Vector2 a, Vector2 b) { return vEqExact2p(&a, &b); } 
+int vEqExact3(Vector3 a, Vector3 b) { return vEqExact3p(&a, &b); } 
+int vEqExact4(Vector4 a, Vector4 b) { return vEqExact4p(&a, &b); } 
 
-// vector operations
-
-int vEq(Vector* a, Vector* b) {
-	return vEqEp(a, b, FLT_CMP_EPSILON);
+int vEq2ip(Vector2i* a, Vector2i* b) { return vEqExact2ip(a, b); } 
+int vEqExact2ip(Vector2i* a, Vector2i* b)  {
+	return a->x == b->x && a->y == b->y;
+}
+ 
+int vEqExact2p(Vector2* a, Vector2* b) {
+	return a->x == b->x && a->y == b->y;
+}
+ 
+int vEqExact3p(Vector3* a, Vector3* b) {
+	return a->x == b->x && a->y == b->y && a->z == b->z;
+}
+ 
+int vEqExact4p(Vector4* a, Vector4* b) {
+	return a->x == b->x && a->y == b->y && a->z == b->z && a->w == b->w;
 }
 
-int vEqEp(Vector* a, Vector* b, float epsilon) {
+int vEq2(Vector2 a, Vector2 b) { return vEq2p(&a, &b); } 
+int vEq3(Vector3 a, Vector3 b) { return vEq3p(&a, &b); } 
+int vEq4(Vector4 a, Vector4 b) { return vEq4p(&a, &b); }
+
+int vEq2p(Vector2* a, Vector2* b) {
+	return vEqEp2p(a, b, FLT_CMP_EPSILON);
+}
+
+int vEq3p(Vector3* a, Vector3* b) {
+	return vEqEp3p(a, b, FLT_CMP_EPSILON);
+}
+
+int vEq4p(Vector4* a, Vector4* b) {
+	return vEqEp4p(a, b, FLT_CMP_EPSILON);
+}
+
+int vEqEp2i(Vector2i a, Vector2i b, double epsilon) { return vEqEp2ip(&a, &b, epsilon); }
+int vEqEp2(Vector2 a, Vector2 b, float epsilon) { return vEqEp2p(&a, &b, epsilon); }
+int vEqEp3(Vector3 a, Vector3 b, float epsilon) { return vEqEp3p(&a, &b, epsilon); }
+int vEqEp4(Vector4 a, Vector4 b, float epsilon) { return vEqEp4p(&a, &b, epsilon); }
+
+int vEqEp2ip(Vector2i* a, Vector2i* b, double epsilon) {
+	double x, y, n;
+	
+	x = (double)a->x - (double)b->x;
+	y = (double)a->y - (double)b->y;
+	
+	n = fabs(x * x + y * y);
+	
+	return n <= epsilon * epsilon;
+}
+
+int vEqEp2p(Vector2* a, Vector2* b, float epsilon) {
+	float x, y, n;
+	
+	x = a->x - b->x;
+	y = a->y - b->y;
+	
+	n = fabsf(x * x + y * y);
+	
+	return n <= epsilon * epsilon;
+}
+
+int vEqEp3p(Vector3* a, Vector3* b, float epsilon) {
 	float x, y, z, n;
 	
 	x = a->x - b->x;
 	y = a->y - b->y;
 	z = a->z - b->z;
 	
-	n = fabs(x * x + y * y + z * z);
+	n = fabsf(x * x + y * y + z * z);
+	
+	return n <= epsilon * epsilon;
+}
+
+int vEqEp4p(Vector4* a, Vector4* b, float epsilon) {
+	float x, y, z, w, n;
+	
+	x = a->x - b->x;
+	y = a->y - b->y;
+	z = a->z - b->z;
+	w = a->w - b->w;
+	
+	n = fabsf(x * x + y * y + z * z + w * w);
 	
 	return n <= epsilon * epsilon;
 }
 
 
-void vCopy(const Vector* src, Vector* dst) {
+void vCopy3p(const Vector3* src, Vector3* dst) {
 	*dst = *src;
 }
 
-void vSwap(Vector* a, Vector* b) { // swap two vectors
-	Vector t;
+
+
+
+// swap two vectors
+
+void vSwap2ip(Vector2i* a, Vector2i* b) {
+	Vector2i t;
 	t = *b;
 	*b = *a;
 	*a = t;
 }
 
-void vAdd(Vector* a, Vector* b, Vector* out) {
-// #ifdef C3DLAS_USE_SIMD
-// 	__m128 a_ = _mm_loadu_ps((float*)a);
-// 	__m128 b_ = _mm_loadu_ps((float*)b);
-// 	b_ = _mm_add_ps(a_, b_);
-	// requires avx
-// 	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), b_);
-// #else
-	out->x = a->x + b->x;
-	out->y = a->y + b->y;
-	out->z = a->z + b->z;
-// #endif
+void vSwap2p(Vector2* a, Vector2* b) {
+	Vector2 t;
+	t = *b;
+	*b = *a;
+	*a = t;
 }
 
-void vSub(Vector* from, Vector* what, Vector* diff) { // diff = from - what
+void vSwap3p(Vector3* a, Vector3* b) {
+	Vector3 t;
+	t = *b;
+	*b = *a;
+	*a = t;
+}
+
+void vSwap4p(Vector4* a, Vector4* b) {
+	Vector4 t;
+	t = *b;
+	*b = *a;
+	*a = t;
+}
+
+
+
+
+// Vector addition
+
+Vector2i vAdd2i(Vector2i a, Vector2i b) {
+	Vector2i out;
+	vSub2ip(&a, &b, &out);
+	return out;
+}
+
+void vAdd2ip(Vector2i* a, Vector2i* b, Vector2i* sum) {
+	sum->x = a->x + b->x;
+	sum->y = a->y + b->y;
+}
+
+Vector2 vAdd2(Vector2 a, Vector2 b) {
+	Vector2 out;
+	vAdd2p(&a, &b, &out);
+	return out;
+}
+
+void vAdd2p(Vector2* a, Vector2* b, Vector2* sum) {
+	sum->x = a->x + b->x;
+	sum->y = a->y + b->y;
+}
+
+Vector3 vAdd3(Vector3 a, Vector3 b) {
+	Vector3 out;
+	vAdd3p(&a, &b, &out);
+	return out;
+}
+
+void vAdd3p(Vector3* a, Vector3* b, Vector3* sum) {
+#ifdef C3DLAS_USE_SIMD
+	__m128 f_ = _mm_loadu_ps((float*)a);
+	__m128 w_ = _mm_loadu_ps((float*)b);
+	w_ = _mm_add_ps(f_, w_);
+	
+	_mm_maskstore_ps((float*)sum, _mm_set_epi32(0, -1, -1, -1), w_);
+#else
+	sum->x = a->x + b->x;
+	sum->y = a->y + b->y;
+	sum->z = a->z + b->z;
+#endif
+}
+
+Vector4 vAdd4(Vector4 a, Vector4 b) {
+	Vector4 out;
+	vAdd4p(&a, &b, &out);
+	return out;
+}
+
+void vAdd4p(Vector4* a, Vector4* b, Vector4* sum) {
+	sum->x = a->x + b->x;
+	sum->y = a->y + b->y;
+	sum->z = a->z + b->z;
+	sum->w = a->w + b->w;
+}
+
+
+
+
+// Vector subtraction. diff = from - what
+
+Vector2i vSub2i(Vector2i from, Vector2i what) {
+	Vector2i out;
+	vSub2ip(&from, &what, &out);
+	return out;
+}
+
+void vSub2ip(Vector2i* from, Vector2i* what, Vector2i* diff) {
+	diff->x = from->x - what->x;
+	diff->y = from->y - what->y;
+}
+
+Vector2 vSub2(Vector2 from, Vector2 what) {
+	Vector2 out;
+	vSub2p(&from, &what, &out);
+	return out;
+}
+
+void vSub2p(Vector2* from, Vector2* what, Vector2* diff) {
+	diff->x = from->x - what->x;
+	diff->y = from->y - what->y;
+}
+
+Vector3 vSub3(Vector3 from, Vector3 what) {
+	Vector3 out;
+	vSub3p(&from, &what, &out);
+	return out;
+}
+
+void vSub3p(Vector3* from, Vector3* what, Vector3* diff) {
 #ifdef C3DLAS_USE_SIMD
 	__m128 f_ = _mm_loadu_ps((float*)from);
 	__m128 w_ = _mm_loadu_ps((float*)what);
@@ -149,7 +326,52 @@ void vSub(Vector* from, Vector* what, Vector* diff) { // diff = from - what
 #endif
 }
 
-void vScale(Vector* v, float scalar, Vector* out) {
+Vector4 vSub4(Vector4 from, Vector4 what) {
+	Vector4 out;
+	vSub4p(&from, &what, &out);
+	return out;
+}
+
+void vSub4p(Vector4* from, Vector4* what, Vector4* diff) {
+	diff->x = from->x - what->x;
+	diff->y = from->y - what->y;
+	diff->z = from->z - what->z;
+	diff->w = from->w - what->w;
+}
+
+
+
+// scalar muliplication
+
+Vector2i vScale2i(Vector2i v, float scalar) {
+	Vector2i out;
+	vScale2ip(&v, scalar, &out);
+	return out;
+}
+
+void vScale2ip(Vector2i* v, float scalar, Vector2i* out) {
+	out->x = (float)v->x * scalar;
+	out->y = (float)v->y * scalar;
+}
+
+Vector2 vScale2(Vector2 v, float scalar) {
+	Vector2 out;
+	vScale2p(&v, scalar, &out);
+	return out;
+}
+
+void vScale2p(Vector2* v, float scalar, Vector2* out) {
+	out->x = v->x * scalar;
+	out->y = v->y * scalar;
+}
+
+Vector3 vScale3(Vector3 v, float scalar) {
+	Vector3 out;
+	vScale3p(&v, scalar, &out);
+	return out;
+}
+
+void vScale3p(Vector3* v, float scalar, Vector3* out) {
 // #ifdef C3DLAS_USE_SIMD
 // 	__m128 v_ = _mm_loadu_ps((float*)v);
 // 	       v_ = _mm_mul_ps(v_, _mm_set_ps1(scalar));
@@ -162,10 +384,31 @@ void vScale(Vector* v, float scalar, Vector* out) {
 // #endif
 }
 
-void  vLerp(Vector* a, Vector* b, float t, Vector* out) { // Linear interpolation between two vectors
+
+
+// Linear interpolation between two vectors
+
+Vector2 vLerp2(Vector2 a, Vector2 b, float t) {
+	Vector2 out;
+	vLerp2p(&a, &b, t, &out);
+	return out;
+}
+
+void vLerp2p(Vector2* a, Vector2* b, float t, Vector2* out) {
+	out->x = a->x + ((b->x - a->x) * t);
+	out->y = a->y + ((b->y - a->y) * t);
+}
+
+Vector3 vLerp3(Vector3 a, Vector3 b, float t) {
+	Vector3 out;
+	vLerp3p(&a, &b, t, &out);
+	return out;	
+}
+
+void vLerp3p(Vector3* a, Vector3* b, float t, Vector3* out) {
 #ifdef C3DLAS_USE_SIMD
-	__m128 a_ = _mm_loadu_ps((float*)&a);
-	__m128 b_ = _mm_loadu_ps((float*)&b);
+	__m128 a_ = _mm_loadu_ps((float*)a);
+	__m128 b_ = _mm_loadu_ps((float*)b);
 	__m128 t_ = _mm_set_ps1(t);
 	
 	__m128 q = _mm_sub_ps(b_, a_);
@@ -180,26 +423,104 @@ void  vLerp(Vector* a, Vector* b, float t, Vector* out) { // Linear interpolatio
 #endif
 }
 
-void vInverse(const Vector* v, Vector* out) {
-	// yeah yeah yeah shut up. in games, pesky details are just annoying. this function does what you mean rather than sucking Gauss and Euclid.
+
+Vector4 vLerp4(Vector4 a, Vector4 b, float t) {
+	Vector4 out; // the compiler seems to properly inline this way but not the other way around
+	vLerp4p(&a, &b, t, &out);
+	return out;
+}
+
+void vLerp4p(Vector4* a, Vector4* b, float t, Vector4* out) {
+
+#ifdef C3DLAS_HAS_SSE1
+	// seems to be equivalent to the best compiler-generated code. 
+	__m128 a_ = _mm_loadu_ps((float*)a);
+	__m128 b_ = _mm_loadu_ps((float*)b);
+	__m128 t_ = _mm_set_ps1(t);
+	
+	__m128 q = _mm_sub_ps(b_, a_);
+	       q = _mm_mul_ps(q, t_);
+	       q = _mm_add_ps(q, a_);
+	
+	_mm_storeu_ps((float*)out, q);
+#else
+	out->x = a->x + ((b->x - a->x) * t);
+	out->y = a->y + ((b->y - a->y) * t);
+	out->z = a->z + ((b->z - a->z) * t);
+	out->w = a->w + ((b->w - a->w) * t);
+#endif
+}
+
+
+
+
+// Vector Inverse. Returns FLT_MAX on div/0
+
+Vector2 vInverse2(const Vector2 v) {
+	Vector2 out;
+	vInverse2p(&v, &out);
+	return out;
+}
+
+void vInverse2p(const Vector2* v, Vector2* out) {
+	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
+	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
+}
+
+Vector3 vInverse3(const Vector3 v) {
+	Vector3 out;
+	vInverse3p(&v, &out);
+	return out;
+}
+
+void vInverse3p(const Vector3* v, Vector3* out) {
+	// yeah yeah yeah shut up. In games, pedeantic details are just annoying. 
+	// This function does what you mean rather than sucking off the IEEE Standards Committee
 	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
 	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
 	out->z = v->z == 0.0f ? FLT_MAX : 1.0f / v->z;
 }
 
-float vMag(const Vector* v) {
-#ifdef C3DLAS_USE_SIMD
-	// needs sse4.1
-	__m128 a = _mm_loadu_ps((float*)&v);
-	__m128 b = _mm_dp_ps(a, a, (_1110b << 4) & _0001b); // BUG: check mask
-	__m128 c = _mm_sqrt_ss(b);
-	return c[0];
-#else
-	return sqrt((float)((v->x * v->x) + (v->y * v->y) + (v->z * v->z)));
-#endif
+Vector4 vInverse4(const Vector4 v) {
+	Vector4 out;
+	vInverse4p(&v, &out);
+	return out;
 }
 
-float vDot(const Vector* a, const Vector* b) {
+void vInverse4p(const Vector4* v, Vector4* out) {
+	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
+	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
+	out->z = v->z == 0.0f ? FLT_MAX : 1.0f / v->z;
+	out->w = v->w == 0.0f ? FLT_MAX : 1.0f / v->w;
+}
+
+
+
+// Vector magnitude (length)
+
+double vMag2i(const Vector2i v) { return vMag2ip(&v); }
+float  vMag2(const Vector2 v) { return vMag2p(&v); }
+float  vMag3(const Vector3 v) { return vMag3p(&v); }
+float  vMag4(const Vector4 v) { return vMag4p(&v); }
+
+double vMag2ip(const Vector2i* v) {
+	return sqrt((double)v->x * (double)v->x + (double)v->y * (double)v->y);
+}
+
+float vMag2p(const Vector2* v) {
+	return sqrtf((v->x * v->x) + (v->y * v->y));
+}
+
+float vMag3p(const Vector3* v) {
+	return sqrtf((v->x * v->x) + (v->y * v->y) + (v->z * v->z));
+}
+
+float vMag4p(const Vector4* v) {
+	return sqrtf((v->x * v->x) + (v->y * v->y) + (v->z * v->z) + (v->w * v->w));
+}
+
+
+float vDot3p(const Vector3* a, const Vector3* b) {
 #ifdef broken_C3DLAS_USE_SIMD
 	// needs sse4.1
 	// BUG does not work
@@ -213,56 +534,121 @@ float vDot(const Vector* a, const Vector* b) {
 #endif
 }
 
-// distance from one point to another
-float vDist(Vector* from, Vector* to) {
-// #ifdef C3DLAS_USE_SIMD
-// 	// needs sse4.1
-// 	__m128 f = _mm_loadu_ps((float*)&from);
-// 	__m128 t = _mm_loadu_ps((float*)&to);
-// 	__m128 a = _mm_sub_ps(f, t);
-// 	
-// 	float b = a[1] + a[2] + a[3];
-// 	return sqrt(b);
-// // 	__m128 c = _mm_sqrt_ss(b);
-// // 	return c[0];
-// #else
-	float dx = (from->x - to->x);
-	float dy = (from->y - to->y);
-	float dz = (from->z - to->z);
+
+
+// Squared distance from one point to another
+
+double vDistSq2i(Vector2i a, Vector2i b) { return vDistSq2ip(&a, &b); } 
+float  vDistSq2(Vector2 a, Vector2 b) { return vDistSq2p(&a, &b); } 
+float  vDistSq3(Vector3 a, Vector3 b) { return vDistSq3p(&a, &b); }
+float  vDistSq4(Vector4 a, Vector4 b) { return vDistSq4p(&a, &b); }
+
+double vDistSq2ip(Vector2i* a, Vector2i* b) {
+	double x, y, z;
 	
-	return sqrt(dx*dx + dy*dy + dz*dz);
-// #endif
-}
-
-
-// squared distance from one point to another
-float vDistSq(Vector* from, Vector* to) {
-// #ifdef C3DLAS_USE_SIMD
-// 	// needs sse4.1
-// 	__m128 f = _mm_loadu_ps((float*)&from);
-// 	__m128 t = _mm_loadu_ps((float*)&to);
-// 	__m128 a = _mm_sub_ps(f, t);
-// 	__m128 b = _mm_dp_ps(a, a, (_1110b << 4) & _0001b); // BUG: check mask
-// 	return b[0];
-// #else
-	float dx = (from->x - to->x);
-	float dy = (from->y - to->y);
-	float dz = (from->z - to->z);
+	x = a->x - b->x;
+	y = a->y - b->y;
 	
-	return dx*dx + dy*dy + dz*dz;
-// #endif
+	return x*x + y*y;
+}
+
+float vDistSq2p(Vector2* a, Vector2* b) {
+	float x, y, z;
+	
+	x = a->x - b->x;
+	y = a->y - b->y;
+	
+	return x*x + y*y;
+}
+
+float vDistSq3p(Vector3* a, Vector3* b) {
+	float x, y, z;
+	
+	x = a->x - b->x;
+	y = a->y - b->y;
+	z = a->z - b->z;
+	
+	return x*x + y*y + z*z;
+}
+
+float vDistSq4p(Vector4* a, Vector4* b) {
+	float x, y, z, w;
+	
+	x = a->x - b->x;
+	y = a->y - b->y;
+	z = a->z - b->z;
+	w = a->w - b->w;
+	
+	return x*x + y*y + z*z + w*w;
 }
 
 
-void vNorm(Vector* v, Vector* out) {
-	vUnit(v, out);
+
+// Distance from one point to another
+
+double vDist2i(Vector2i a, Vector2i b) { return vDist2ip(&a, &b); } 
+float  vDist2(Vector2 a, Vector2 b) { return vDist2p(&a, &b); } 
+float  vDist3(Vector3 a, Vector3 b) { return vDist3p(&a, &b); }
+float  vDist4(Vector4 a, Vector4 b) { return vDist4p(&a, &b); }
+double vDist2ip(Vector2i* a, Vector2i* b) { return sqrt(vDistSq2ip(a, b)); } 
+float  vDist2p(Vector2* a, Vector2* b) { return sqrtf(vDistSq2p(a, b)); } 
+float  vDist3p(Vector3* a, Vector3* b) { return sqrtf(vDistSq3p(a, b)); }
+float  vDist4p(Vector4* a, Vector4* b) { return sqrtf(vDistSq4p(a, b)); }
+
+
+
+
+// Vector normalize (scale to unit length)
+Vector2 vNorm2(Vector2 v) { 
+	Vector2 out;
+	vNorm2p(&v, &out);
+	return out;
 }
 
-void vUnit(Vector* v, Vector* out) {
+Vector3 vNorm3(Vector3 v) { 
+	Vector3 out;
+	vNorm3p(&v, &out);
+	return out;
+}
+
+Vector4 vNorm4(Vector4 v) { 
+	Vector4 out;
+	vNorm4p(&v, &out);
+	return out;
+}
+
+void vNorm2p(const Vector2* v, Vector2* out) {
+	float n;
+	n = (v->x * v->x) + (v->y * v->y);
+	
+	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) {
+		out->x = v->x;
+		out->y = v->y;		
+	}
+	else if(n == 0.0) {
+		out->x = 0.0;
+		out->y = 0.0;
+	}
+	
+	n = 1.0f / sqrtf(n);
+	out->x = v->x * n;
+	out->y = v->y * n;
+} 
+
+void  vNorm3p(const Vector3* v, Vector3* out) {
 	float n;
 	n = (v->x * v->x) + (v->y * v->y) + (v->z * v->z);
 	
-	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) return; // very exact here
+	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) {
+		out->x = v->x;
+		out->y = v->y;		
+		out->z = v->z;		
+	}
+	else if(n == 0.0) {
+		out->x = 0.0;
+		out->y = 0.0;
+		out->z = 0.0;
+	}
 	
 	n = 1.0f / sqrtf(n);
 	out->x = v->x * n;
@@ -270,80 +656,178 @@ void vUnit(Vector* v, Vector* out) {
 	out->z = v->z * n;
 }
 
-void vCross(Vector* a, Vector* b, Vector* out) { // c = a x b
+void  vNorm4p(const Vector4* v, Vector4* out) {
+	float n;
+	n = (v->x * v->x) + (v->y * v->y) + (v->z * v->z) + (v->w * v->w);
+	
+	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) {
+		out->x = v->x;
+		out->y = v->y;		
+		out->z = v->z;		
+		out->w = v->w;		
+	}
+	else if(n == 0.0) {
+		out->x = 0.0;
+		out->y = 0.0;
+		out->z = 0.0;
+		out->w = 0.0;
+	}
+	
+	n = 1.0f / sqrtf(n);
+	out->x = v->x * n;
+	out->y = v->y * n;
+	out->z = v->z * n;
+	out->w = v->w * n;
+}
+
+// alternate name
+Vector2 vUnit2(Vector2 v) { return vNorm2(v); }
+Vector3 vUnit3(Vector3 v) { return vNorm3(v); }
+Vector4 vUnit4(Vector4 v) { return vNorm4(v); }
+void  vUnit2p(const Vector2* v, Vector2* out) { return vNorm2p(v, out); } 
+void  vUnit3p(const Vector3* v, Vector3* out) { return vNorm3p(v, out); } 
+void  vUnit4p(const Vector4* v, Vector4* out) { return vNorm4p(v, out); } 
+
+
+
+// Returns the minimum values of each component
+Vector2i vMin2i(Vector2i a, Vector2i b) {
+	Vector2i out;
+	vMin2ip(&a, &b, &out);
+	return out;
+}
+
+Vector2 vMin2(Vector2 a, Vector2 b) {
+	Vector2 out;
+	vMin2p(&a, &b, &out);
+	return out;
+}
+
+Vector3 vMin3(Vector3 a, Vector3 b) {
+	Vector3 out;
+	vMin3p(&a, &b, &out);
+	return out;
+}
+
+Vector4 vMin4(Vector4 a, Vector4 b) {
+	Vector4 out;
+	vMin4p(&a, &b, &out);
+	return out;
+}
+
+void vMin2ip(Vector2i* a, Vector2i* b, Vector2i* out) {
+	out->x = MIN(a->x, b->x);
+	out->y = MIN(a->y, b->y);
+}
+void vMin2p(Vector2* a, Vector2* b, Vector2* out) {
+	out->x = fminf(a->x, b->x);
+	out->y = fminf(a->y, b->y);
+}
+
+void vMin3p(Vector3* a, Vector3* b, Vector3* out) {
+	out->x = fminf(a->x, b->x);
+	out->y = fminf(a->y, b->y);
+	out->z = fminf(a->z, b->z);
+}
+
+void vMin4p(Vector4* a, Vector4* b, Vector4* out) {
+	out->x = fminf(a->x, b->x);
+	out->y = fminf(a->y, b->y);
+	out->z = fminf(a->z, b->z);
+	out->w = fminf(a->w, b->w);
+}
+
+
+
+// Returns the maximum values of each component
+Vector2i vMax2i(Vector2i a, Vector2i b) {
+	Vector2i out;
+	vMax2ip(&a, &b, &out);
+	return out;
+}
+
+Vector2 vMax2(Vector2 a, Vector2 b) {
+	Vector2 out;
+	vMax2p(&a, &b, &out);
+	return out;
+}
+
+Vector3 vMax3(Vector3 a, Vector3 b) {
+	Vector3 out;
+	vMax3p(&a, &b, &out);
+	return out;
+}
+
+Vector4 vMax4(Vector4 a, Vector4 b) {
+	Vector4 out;
+	vMax4p(&a, &b, &out);
+	return out;
+}
+
+void vMax2ip(Vector2i* a, Vector2i* b, Vector2i* out) {
+	out->x = MAX(a->x, b->x);
+	out->y = MAX(a->y, b->y);
+}
+void vMax2p(Vector2* a, Vector2* b, Vector2* out) {
+	out->x = fmaxf(a->x, b->x);
+	out->y = fmaxf(a->y, b->y);
+}
+
+void vMax3p(Vector3* a, Vector3* b, Vector3* out) {
+	out->x = fmaxf(a->x, b->x);
+	out->y = fmaxf(a->y, b->y);
+	out->z = fmaxf(a->z, b->z);
+}
+
+void vMax4p(Vector4* a, Vector4* b, Vector4* out) {
+	out->x = fmaxf(a->x, b->x);
+	out->y = fmaxf(a->y, b->y);
+	out->z = fmaxf(a->z, b->z);
+	out->w = fmaxf(a->w, b->w);
+}
+
+
+
+void vCross3p(Vector3* a, Vector3* b, Vector3* out) { // c = a x b
 	out->x = (a->y * b->z) - (a->z * b->y);
 	out->y = (a->z * b->x) - (a->x * b->z);
 	out->z = (a->x * b->y) - (a->y * b->x);
 }
 
-float vScalarTriple(Vector* a, Vector* b, Vector* c) { // a . (b x c)
+float vScalarTriple3p(Vector3* a, Vector3* b, Vector3* c) { // a . (b x c)
 	return (float)((a->x * b->y * c->z) - (a->x * b->z * c->y) - (a->y * b->x * c->z)
 				 + (a->z * b->x * c->y) + (a->y * b->z * c->x) - (a->z * b->y * c->x));
 }
 
 
 // feeding a zero vector into this will cause div/0 and you will deserve it
-void  vProject(Vector* what, Vector* onto, Vector* out) { // slower; onto may not be normalized
-	float wdo = vDot(what, onto);
-	float odo = vDot(onto, onto);
-	vScale(onto, wdo / odo, out);
+void  vProject3p(Vector3* what, Vector3* onto, Vector3* out) { // slower; onto may not be normalized
+	float wdo = vDot3p(what, onto);
+	float odo = vDot3p(onto, onto);
+	vScale3p(onto, wdo / odo, out);
 }
 
-void  vProjectNorm(Vector* what, Vector* onto, Vector* out) { // faster; onto must be normalized
-	float wdo = vDot(what, onto);
-	vScale(onto, wdo, out);
+void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out) { // faster; onto must be normalized
+	float wdo = vDot3p(what, onto);
+	vScale3p(onto, wdo, out);
 }
 
 
-// returns the minimum values of each component
-void  vMin(Vector* a, Vector* b, Vector* out) {
-#ifdef C3DLAS_USE_SIMD
-	__m128 a_ = _mm_loadu_ps((float*)&a);
-	__m128 b_ = _mm_loadu_ps((float*)&b);
-	__m128 c = _mm_min_ps(a_, b_);
-	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), c);
-#else
-	out->x = fmin(a->x, b->x);
-	out->y = fmin(a->y, b->y);
-	out->z = fmin(a->z, b->z);
-#endif
-}
 
-// returns the maximum values of each component
-void  vMax(Vector* a, Vector* b, Vector* out) {
-#ifdef C3DLAS_USE_SIMD
-	__m128 a_ = _mm_loadu_ps((float*)&a);
-	__m128 b_ = _mm_loadu_ps((float*)&b);
-	__m128 c = _mm_max_ps(a_, b_);
-	
-	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), c);
-#else
-	out->x = fmax(a->x, b->x);
-	out->y = fmax(a->y, b->y);
-	out->z = fmax(a->z, b->z);
-#endif
-}
-
-inline void vSet(float x, float y, float z, Vector* out) {
-	out->x = x;
-	out->y = y;
-	out->z = z;
-}
-
-void vRandom(Vector* end1, Vector* end2, Vector* out) {
+void vRandom3p(Vector3* end1, Vector3* end2, Vector3* out) {
 	out->x = frand(fmin(end1->x, end2->x), fmax(end1->x, end2->x));
 	out->y = frand(fmin(end1->y, end2->y), fmax(end1->y, end2->y));
 	out->z = frand(fmin(end1->z, end2->z), fmax(end1->z, end2->z));
 }
 
-void vRandomNorm(Vector* out) {
+void vRandomNorm3p(Vector3* out) {
 	float x = frand(-1, 1);
 	float y = frand(-1, 1);
 	float z = frand(-1, 1);
 	
 	float r = sqrt(x*x + y*y + z*z);
 	if(r == 0.0) {
-		vRandomNorm(out); // in the rare case of a zero-length vector, try again
+		vRandomNorm3p(out); // in the rare case of a zero-length vector, try again
 		return;
 	}
 	
@@ -353,96 +837,77 @@ void vRandomNorm(Vector* out) {
 }
 
 
-void  vLerp4(Vector4* a, Vector4* b, float t, Vector4* out) { // Linear interpolation between two vectors
-#ifdef C3DLAS_USE_SIMD
-	__m128 a_ = _mm_loadu_ps((float*)&a);
-	__m128 b_ = _mm_loadu_ps((float*)&b);
-	__m128 t_ = _mm_set_ps1(t);
-	
-	__m128 q = _mm_sub_ps(b_, a_);
-	        q = _mm_mul_ps(q, t_);
-	        q = _mm_add_ps(q, a_);
-	
-	_mm_storeu_ps((float*)out, q);
-#else
-	out->x = a->x + ((b->x - a->x) * t);
-	out->y = a->y + ((b->y - a->y) * t);
-	out->z = a->z + ((b->z - a->z) * t);
-	out->w = a->w + ((b->w - a->w) * t);
-#endif
-}
-
 
 // reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
-void vReflectAcross(Vector* v, Vector* pivot, Vector* out) {
-	Vector diff;
+void vReflectAcross3p(Vector3* v, Vector3* pivot, Vector3* out) {
+	Vector3 diff;
 	
-	vSub(pivot, v, &diff);
-	vAdd(pivot, &diff, out);
+	vSub3p(pivot, v, &diff);
+	vAdd3p(pivot, &diff, out);
 }
 
 // calculate a unit vector normal to a triangle's face.
-void  vTriFaceNormal(Vector* a, Vector* b, Vector* c, Vector* out) {
-	Vector b_a, c_a;
+void  vTriFaceNormal3p(Vector3* a, Vector3* b, Vector3* c, Vector3* out) {
+	Vector3 b_a, c_a;
 	
-	vSub(b, a, &b_a);
-	vSub(c, a, &c_a);
-	vCross(&b_a, &c_a, out);
-	vNorm(out, out);
+	vSub3p(b, a, &b_a);
+	vSub3p(c, a, &c_a);
+	vCross3p(&b_a, &c_a, out);
+	vNorm3p(out, out);
 }
 
 // calculate a unit vector normal to a triangle's face.
-void  vpTriFaceNormal(Vector* tri, Vector* out) {
-	vTriFaceNormal(tri+0, tri+1, tri+2, out);
+void  vpTriFaceNormal3p(Vector3* tri, Vector3* out) {
+	vTriFaceNormal3p(tri+0, tri+1, tri+2, out);
 }
 
 
 
 
-void vProjectOntoPlane(Vector* v, Plane* p, Vector* out) {
-	Vector v_ortho;
+void vProjectOntoPlane3p(Vector3* v, Plane* p, Vector3* out) {
+	Vector3 v_ortho;
 	
 	// get the component of v that's perpendicular to the plane
-	vProjectNorm(v, &p->n, &v_ortho);
+	vProjectNorm3p(v, &p->n, &v_ortho);
 	
 	// subtract it from v
-	vSub(v, &v_ortho, out);
+	vSub3p(v, &v_ortho, out);
 }
 
-void vProjectOntoPlaneNormalized(Vector* v, Plane* p, Vector* out) {
-	vProjectOntoPlane(v, p, out);
-	vNorm(out, out);
+void vProjectOntoPlaneNormalized3p(Vector3* v, Plane* p, Vector3* out) {
+	vProjectOntoPlane3p(v, p, out);
+	vNorm3p(out, out);
 }
 
 
 
 // calculates a plane from a triangle
-void planeFromTriangle(Vector* v1, Vector* v2, Vector* v3, Plane* out) {
-	vTriFaceNormal(v1, v2, v3, &out->n);
-	out->d = vDot(&out->n, v1);
+void planeFromTriangle3p(Vector3* v1, Vector3* v2, Vector3* v3, Plane* out) {
+	vTriFaceNormal3p(v1, v2, v3, &out->n);
+	out->d = vDot3p(&out->n, v1);
 }
 
 // copy a plane
-void planeCopy(Plane* in, Plane* out) {
-	vCopy(&in->n, &out->n);
+void planeCopy3p(Plane* in, Plane* out) {
+	vCopy3p(&in->n, &out->n);
 	out->d = in->d;
 }
 
 // reverses the plane's direction
-void planeInverse(Plane* in, Plane* out) {
-	vInverse(&in->n, &out->n);
+void planeInverse3p(Plane* in, Plane* out) {
+	vInverse3p(&in->n, &out->n);
 	out->d = -in->d;
 }
 
 // classifies a point by which side of the plane it's on, default espilon
-int planeClassifyPoint(Plane* p, Vector* pt) {
-	return planeClassifyPointEps(p, pt, FLT_CMP_EPSILON);
+int planeClassifyPoint3p(Plane* p, Vector3* pt) {
+	return planeClassifyPointEps3p(p, pt, FLT_CMP_EPSILON);
 }
 
 // classifies a point by which side of the plane it's on, custom espilon
-int planeClassifyPointEps(Plane* p, Vector* pt, float epsilon) {
-	float dist = vDot(&p->n, pt);
+int planeClassifyPointEps3p(Plane* p, Vector3* pt, float epsilon) {
+	float dist = vDot3p(&p->n, pt);
 	if(fabs(dist - p->d) < epsilon)
 		return C3DLAS_COPLANAR;
 	else if (dist < p->d)
@@ -454,16 +919,16 @@ int planeClassifyPointEps(Plane* p, Vector* pt, float epsilon) {
 
 
 // C3DLAS_INTERSECT, _COPLANAR or _DISJOINT
-int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out) {
-	Vector ldir;
+int planeLineFindIntersect3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out) {
+	Vector3 ldir;
 	float da, db;
 	
-	vSub(lb, la, &ldir);
+	vSub3p(lb, la, &ldir);
 	
-	da = vDot(la, &pl->n) - pl->d;
+	da = vDot3p(la, &pl->n) - pl->d;
 	
 	// bail if the line and plane are parallel
-	if(fabs(vDot(&pl->n, &ldir)) < FLT_CMP_EPSILON) {
+	if(fabs(vDot3p(&pl->n, &ldir)) < FLT_CMP_EPSILON) {
 		
 		// check coplanarity
 		if(fabs(da) < FLT_CMP_EPSILON) {
@@ -474,7 +939,7 @@ int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out) {
 	}
 	
 
-	db = vDot(lb, &pl->n) - pl->d;
+	db = vDot3p(lb, &pl->n) - pl->d;
 	
 	// check if one of the points is on the plane
 	if(fabs(da) < FLT_CMP_EPSILON) {
@@ -486,20 +951,20 @@ int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out) {
 		return C3DLAS_INTERSECT;
 	}
 	
-	Vector p0, g, j;
-	vScale(&pl->n, pl->d, &p0);
-	vSub(&p0, la, &g);
-	float h = vDot(&g, &pl->n);
-	float i = vDot(&ldir, &pl->n);
+	Vector3 p0, g, j;
+	vScale3p(&pl->n, pl->d, &p0);
+	vSub3p(&p0, la, &g);
+	float h = vDot3p(&g, &pl->n);
+	float i = vDot3p(&ldir, &pl->n);
 	float d = i != 0 ? h / i : 0;
 	
 	// check if the plane intersects outside the two points
-	if(d < 0 || d > vDist(la, lb)) {
+	if(d < 0 || d > vDist3p(la, lb)) {
 		return C3DLAS_DISJOINT;
 	}
 	
-	vScale(&ldir, d, &j);
-	vAdd(la, &j, out);
+	vScale3p(&ldir, d, &j);
+	vAdd3p(la, &j, out);
 	
 	return C3DLAS_INTERSECT;
 }
@@ -507,20 +972,20 @@ int planeLineFindIntersect(Plane* pl, Vector* la, Vector* lb, Vector* out) {
 
 // Assumes full proper intersection.
 // C3DLAS_INTERSECT
-int planeLineFindIntersectFast(Plane* pl, Vector* la, Vector* lb, Vector* out) {
-	Vector ldir, p0, g, j;
+int planeLineFindIntersectFast3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out) {
+	Vector3 ldir, p0, g, j;
 	float h, i, d;
 	
-	vSub(lb, la, &ldir);
+	vSub3p(lb, la, &ldir);
 	
-	vScale(&pl->n, pl->d, &p0);
-	vSub(&p0, la, &g);
-	h = vDot(&g, &pl->n);
-	i = vDot(&ldir, &pl->n);
+	vScale3p(&pl->n, pl->d, &p0);
+	vSub3p(&p0, la, &g);
+	h = vDot3p(&g, &pl->n);
+	i = vDot3p(&ldir, &pl->n);
 	d = i != 0 ? h / i : 0;
 	
-	vScale(&ldir, d, &j);
-	vAdd(la, &j, out);
+	vScale3p(&ldir, d, &j);
+	vAdd3p(la, &j, out);
 	
 	return C3DLAS_INTERSECT;
 }
@@ -528,24 +993,24 @@ int planeLineFindIntersectFast(Plane* pl, Vector* la, Vector* lb, Vector* out) {
 
 // C3DLAS_COPLANAR, _PARALLEL, _INTERSECT, or _DISJOINT
 // aboveCnt and belowCnt are always set.
-int linePlaneClip(
-	Vector* la, 
-	Vector* lb, 
+int linePlaneClip3p(
+	Vector3* la, 
+	Vector3* lb, 
 	Plane* pl, 
-	Vector* aboveOut, 
-	Vector* belowOut,
+	Vector3* aboveOut, 
+	Vector3* belowOut,
 	int* aboveCnt,
 	int* belowCnt
 ) {
-	Vector ldir, c;
+	Vector3 ldir, c;
 	float da, db;
 	
-	vSub(lb, la, &ldir);
+	vSub3p(lb, la, &ldir);
 	
-	da = vDot(la, &pl->n) - pl->d;
+	da = vDot3p(la, &pl->n) - pl->d;
 	
 	// bail if the line and plane are parallel
-	if(fabs(vDot(&pl->n, &ldir)) < FLT_CMP_EPSILON) {
+	if(fabs(vDot3p(&pl->n, &ldir)) < FLT_CMP_EPSILON) {
 		*aboveCnt = 0;
 		*belowCnt = 0;
 			
@@ -558,7 +1023,7 @@ int linePlaneClip(
 	}
 	
 
-	db = vDot(lb, &pl->n) - pl->d;
+	db = vDot3p(lb, &pl->n) - pl->d;
 	
 	// check if one of the points is on the plane
 	if(fabs(da) < FLT_CMP_EPSILON) {
@@ -595,15 +1060,15 @@ int linePlaneClip(
 	}
 	
 	// calculate itnersection point, c
-	Vector p0, g, j;
-	vScale(&pl->n, pl->d, &p0);
-	vSub(&p0, la, &g);
-	float h = vDot(&g, &pl->n);
-	float i = vDot(&ldir, &pl->n);
+	Vector3 p0, g, j;
+	vScale3p(&pl->n, pl->d, &p0);
+	vSub3p(&p0, la, &g);
+	float h = vDot3p(&g, &pl->n);
+	float i = vDot3p(&ldir, &pl->n);
 	float d = i != 0 ? h / i : 0;
 	
 	// check if the plane intersects outside the two points
-	if(d < 0 || d > vDist(la, lb)) {
+	if(d < 0 || d > vDist3p(la, lb)) {
 		if(da > 0) {
 			aboveOut[0] = *la; // correct ordering
 			aboveOut[1] = *lb;
@@ -620,8 +1085,8 @@ int linePlaneClip(
 		return C3DLAS_DISJOINT;
 	}
 	
-	vScale(&ldir, d, &j);
-	vAdd(la, &j, &c);
+	vScale3p(&ldir, d, &j);
+	vAdd3p(la, &j, &c);
 	
 	if(da > 0) {
 		aboveOut[0] = *la; // correct ordering
@@ -644,26 +1109,26 @@ int linePlaneClip(
 
 
 // C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
-int triPlaneTestIntersect(Vector* pTri, Plane* pl) {
-	Vector a, b, c;
+int triPlaneTestIntersect3p(Vector3* pTri, Plane* pl) {
+	Vector3 a, b, c;
 	float da, db, dc;
 	
 	// get distance of each vertex from the plane
 	// bail early if any of them are coplanar
 	a = pTri[0];
-	da = vDot(&a, &pl->n) - pl->d;
+	da = vDot3p(&a, &pl->n) - pl->d;
 	if(fabs(da) < FLT_CMP_EPSILON) {
 		return C3DLAS_COPLANAR;
 	}
 	
 	b = pTri[1];
-	db = vDot(&b, &pl->n) - pl->d;
+	db = vDot3p(&b, &pl->n) - pl->d;
 	if(fabs(db) < FLT_CMP_EPSILON) {
 		return C3DLAS_COPLANAR;
 	}
 	
 	c = pTri[2];
-	dc = vDot(&c, &pl->n) - pl->d;
+	dc = vDot3p(&c, &pl->n) - pl->d;
 	if(fabs(dc) < FLT_CMP_EPSILON) {
 		return C3DLAS_COPLANAR;
 	}
@@ -675,16 +1140,16 @@ int triPlaneTestIntersect(Vector* pTri, Plane* pl) {
 
 
 // C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
-int triPlaneClip(
-	Vector* pTri, 
+int triPlaneClip3p(
+	Vector3* pTri, 
 	Plane* pl, 
-	Vector* aboveOut, 
-	Vector* belowOut, 
+	Vector3* aboveOut, 
+	Vector3* belowOut, 
 	int* aboveCnt,
 	int* belowCnt
 ) {
 	
-	Vector v0, v1, v2;
+	Vector3 v0, v1, v2;
 	float vp_d0, vp_d1, vp_d2;
 	
 	v0 = pTri[0];
@@ -692,9 +1157,9 @@ int triPlaneClip(
 	v2 = pTri[2];
 
 	// get distance of each vertex from the plane
-	vp_d0 = vDot(&v0, &pl->n) - pl->d;
-	vp_d1 = vDot(&v1, &pl->n) - pl->d;
-	vp_d2 = vDot(&v2, &pl->n) - pl->d;
+	vp_d0 = vDot3p(&v0, &pl->n) - pl->d;
+	vp_d1 = vDot3p(&v1, &pl->n) - pl->d;
+	vp_d2 = vDot3p(&v2, &pl->n) - pl->d;
 	
 	
 	// bail early if just one is coplanar
@@ -706,8 +1171,8 @@ int triPlaneClip(
 			fabs(vp_d2) > FLT_CMP_EPSILON
 		) {
 			// get intersection point
-			Vector c;
-			planeLineFindIntersectFast(pl, &v1, &v2, &c);
+			Vector3 c;
+			planeLineFindIntersectFast3p(pl, &v1, &v2, &c);
 			
 			if(vp_d1 > 0) { // v1 is above the plane
 				aboveOut[0] = c; // correct winding
@@ -742,8 +1207,8 @@ int triPlaneClip(
 			fabs(vp_d2) > FLT_CMP_EPSILON
 		) {
 			// get intersection point
-			Vector c;
-			planeLineFindIntersectFast(pl, &v0, &v2, &c);
+			Vector3 c;
+			planeLineFindIntersectFast3p(pl, &v0, &v2, &c);
 			
 			if(vp_d0 > 0) { // v0 is above the plane
 				aboveOut[0] = c; // correct winding
@@ -778,8 +1243,8 @@ int triPlaneClip(
 			fabs(vp_d1) > FLT_CMP_EPSILON
 		) {
 			// get intersection point
-			Vector c;
-			planeLineFindIntersectFast(pl, &v0, &v1, &c);
+			Vector3 c;
+			planeLineFindIntersectFast3p(pl, &v0, &v1, &c);
 			
 			if(vp_d0 > 0) { // v0 is above the plane
 				aboveOut[0] = c; // correct winding
@@ -820,9 +1285,9 @@ int triPlaneClip(
 	if(signbit(vp_d0) == signbit(vp_d1)) {
 		// vertex 2 is isolated; edges 0,2 and 1,2 intersect
 		
-		Vector c0, c1;
-		planeLineFindIntersectFast(pl, &v0, &v2, &c0);
-		planeLineFindIntersectFast(pl, &v1, &v2, &c1);
+		Vector3 c0, c1;
+		planeLineFindIntersectFast3p(pl, &v0, &v2, &c0);
+		planeLineFindIntersectFast3p(pl, &v1, &v2, &c1);
 		
 		if(vp_d2 > 0) { // v2 is above the plane
 			aboveOut[0] = v2; // correct winding
@@ -857,9 +1322,9 @@ int triPlaneClip(
 	else if(signbit(vp_d1) == signbit(vp_d2)) {
 		// vertex 0 is isolated; edges 1,0 and 2,0 intersect
 		
-		Vector c0, c1;
-		planeLineFindIntersectFast(pl, &v1, &v0, &c0);
-		planeLineFindIntersectFast(pl, &v2, &v0, &c1);
+		Vector3 c0, c1;
+		planeLineFindIntersectFast3p(pl, &v1, &v0, &c0);
+		planeLineFindIntersectFast3p(pl, &v2, &v0, &c1);
 		
 		if(vp_d0 > 0) { // v0 is above the plane
 			aboveOut[0] = v0; // correct winding
@@ -894,9 +1359,9 @@ int triPlaneClip(
 	else {
 		// vertex 1 is isolated; edges 0,1 and 2,1 intersect
 		
-		Vector c0, c1;
-		planeLineFindIntersectFast(pl, &v0, &v1, &c0);
-		planeLineFindIntersectFast(pl, &v2, &v1, &c1);
+		Vector3 c0, c1;
+		planeLineFindIntersectFast3p(pl, &v0, &v1, &c0);
+		planeLineFindIntersectFast3p(pl, &v2, &v1, &c1);
 		
 		if(vp_d1 > 0) { // v1 is above the plane
 			aboveOut[0] = v1; // correct winding
@@ -936,20 +1401,20 @@ int triPlaneClip(
 // _PARALLEL with no output on parallel lines
 // _INTERSECT with one point of output on intersection
 // _DISJOINT with two outputs otherwise
-int shortestLineFromRayToRay(Ray* r1, Ray* r2, Vector* pOut) {
+int shortestLineFromRayToRay3p(Ray3* r1, Ray3* r2, Vector3* pOut) {
 	
-	Vector u, v, w, ps, pt;
+	Vector3 u, v, w, ps, pt;
 	float a, b, c, d, e, s, t;
 	
 	u = r1->d;
 	v = r2->d;
-	vSub(&r1->o, &r2->o, &w);
+	vSub3p(&r1->o, &r2->o, &w);
 	
-	a = vDot(&u, &u); 
-	b = vDot(&u, &v); 
-	c = vDot(&v, &v); 
-	d = vDot(&u, &w); 
-	e = vDot(&v, &w); 
+	a = vDot3p(&u, &u); 
+	b = vDot3p(&u, &v); 
+	c = vDot3p(&v, &v); 
+	d = vDot3p(&u, &w); 
+	e = vDot3p(&v, &w); 
 	
 	float ac_bb = a * c - b * b;
 	if(fabs(ac_bb) < FLT_CMP_EPSILON) {
@@ -959,15 +1424,15 @@ int shortestLineFromRayToRay(Ray* r1, Ray* r2, Vector* pOut) {
 	s = (b * e - c * d) / ac_bb;
 	t = (a * e - b * d) / ac_bb;
 	
-	vScale(&u, s, &ps);
-	vScale(&v, s, &pt);
-	vAdd(&r1->o, &ps, &ps);
-	vAdd(&r2->o, &pt, &pt);
+	vScale3p(&u, s, &ps);
+	vScale3p(&v, s, &pt);
+	vAdd3p(&r1->o, &ps, &ps);
+	vAdd3p(&r2->o, &pt, &pt);
 	
 	pOut[0] = ps;
 	pOut[1] = pt;
 	
-	if(vDistSq(&ps, &pt) < FLT_CMP_EPSILON_SQ) {
+	if(vDistSq3p(&ps, &pt) < FLT_CMP_EPSILON_SQ) {
 		return C3DLAS_INTERSECT;
 	}
 	
@@ -983,54 +1448,54 @@ void frustumFromMatrix(Matrix* m, Frustum* out) {
 	// first the points
 	// these MUST be in this order
 	// near
-	vMatrixMulf(-1,-1,-1, &inv, &out->points[0]);
-	vMatrixMulf(-1, 1,-1, &inv, &out->points[1]);
-	vMatrixMulf( 1,-1,-1, &inv, &out->points[2]);
-	vMatrixMulf( 1, 1,-1, &inv, &out->points[3]);
+	vMatrixMulf3p(-1,-1,-1, &inv, &out->points[0]);
+	vMatrixMulf3p(-1, 1,-1, &inv, &out->points[1]);
+	vMatrixMulf3p( 1,-1,-1, &inv, &out->points[2]);
+	vMatrixMulf3p( 1, 1,-1, &inv, &out->points[3]);
 	// far
-	vMatrixMulf(-1,-1, 1, &inv, &out->points[4]);
-	vMatrixMulf(-1, 1, 1, &inv, &out->points[5]);
-	vMatrixMulf( 1,-1, 1, &inv, &out->points[6]);
-	vMatrixMulf( 1, 1, 1, &inv, &out->points[7]);
+	vMatrixMulf3p(-1,-1, 1, &inv, &out->points[4]);
+	vMatrixMulf3p(-1, 1, 1, &inv, &out->points[5]);
+	vMatrixMulf3p( 1,-1, 1, &inv, &out->points[6]);
+	vMatrixMulf3p( 1, 1, 1, &inv, &out->points[7]);
 	
 	// now the planes
 	// near and far
-	planeFromTriangle(&out->points[0], &out->points[1], &out->points[2], &out->planes[0]);
-	planeFromTriangle(&out->points[4], &out->points[5], &out->points[6], &out->planes[1]);
+	planeFromTriangle3p(&out->points[0], &out->points[1], &out->points[2], &out->planes[0]);
+	planeFromTriangle3p(&out->points[4], &out->points[5], &out->points[6], &out->planes[1]);
 	// sides
-	planeFromTriangle(&out->points[0], &out->points[4], &out->points[1], &out->planes[2]);
-	planeFromTriangle(&out->points[0], &out->points[4], &out->points[2], &out->planes[3]);
-	planeFromTriangle(&out->points[3], &out->points[7], &out->points[1], &out->planes[4]);
-	planeFromTriangle(&out->points[3], &out->points[7], &out->points[2], &out->planes[5]);
+	planeFromTriangle3p(&out->points[0], &out->points[4], &out->points[1], &out->planes[2]);
+	planeFromTriangle3p(&out->points[0], &out->points[4], &out->points[2], &out->planes[3]);
+	planeFromTriangle3p(&out->points[3], &out->points[7], &out->points[1], &out->planes[4]);
+	planeFromTriangle3p(&out->points[3], &out->points[7], &out->points[2], &out->planes[5]);
 }
 
 
-void frustumCenter(Frustum* f, Vector* out) {
-	Vector sum = {0.0f,0.0f,0.0f};
+void frustumCenter(Frustum* f, Vector3* out) {
+	Vector3 sum = {0.0f,0.0f,0.0f};
 	
-	for(int i = 0; i < 8; i++) vAdd(&f->points[i], &sum, &sum);
-	vScale(&sum, 1.0f/8.0f, out);
+	for(int i = 0; i < 8; i++) vAdd3p(&f->points[i], &sum, &sum);
+	vScale3p(&sum, 1.0f/8.0f, out);
 }
 
 // General idea of the algorithm:
 // https://lxjk.github.io/2017/04/15/Calculate-Minimal-Bounding-Sphere-of-Frustum.html
 // http://archive.is/YACj2
 void frustumBoundingSphere(Frustum* f, Sphere* out) {
-	Vector f0, n0;
-	vPointAvg(&f->points[0], &f->points[3], &n0);
-	vPointAvg(&f->points[4], &f->points[7], &f0);
+	Vector3 f0, n0;
+	vPointAvg3p(&f->points[0], &f->points[3], &n0);
+	vPointAvg3p(&f->points[4], &f->points[7], &f0);
 	
-	float Dn2 = vDistSq(&n0, &f->points[0]); 
-	float Df2 = vDistSq(&f0, &f->points[4]);
+	float Dn2 = vDistSq3p(&n0, &f->points[0]); 
+	float Df2 = vDistSq3p(&f0, &f->points[4]);
 	
 	 // check for ortho
 	if(Dn2 - Df2 < 0.00001) {
 		frustumCenter(f, &out->center);
-		out->r = vDist(&out->center, &f->points[0]); 
+		out->r = vDist3p(&out->center, &f->points[0]); 
 		return;
 	}
 	
-	float Dnf = vDist(&f0, &n0);
+	float Dnf = vDist3p(&f0, &n0);
 	float Dnc = (Dn2 - Df2 - Df2) / (2 * Dnf);
 	
 // 	printf("\n f: %f,%f,%f\n", f->points[4].x,f->points[4].y,f->points[4].z);
@@ -1041,7 +1506,7 @@ void frustumBoundingSphere(Frustum* f, Sphere* out) {
 	
 	
 	if(Dnc > 0 && Dnc < Dnf) {
-		vLerp(&f0, &n0, Dnc / Dnf, &out->center);
+		vLerp3p(&f0, &n0, Dnc / Dnf, &out->center);
 		out->r = sqrt(Dnc * Dnc + Dn2);
 	}
 	else {
@@ -1052,165 +1517,78 @@ void frustumBoundingSphere(Frustum* f, Sphere* out) {
 
 
 void frustumInscribeSphere(Frustum* f, Sphere* out) {
-	Vector fx, nx;
-	vPointAvg(&f->points[0], &f->points[3], &nx);
-	vPointAvg(&f->points[4], &f->points[7], &fx);
+	Vector3 fx, nx;
+	vPointAvg3p(&f->points[0], &f->points[3], &nx);
+	vPointAvg3p(&f->points[4], &f->points[7], &fx);
 	
 /*	
-	float Dn2 = vDistSq(&n0, &f->points[0]); 
-	float Df2 = vDistSq(&f0, &f->points[4]);
-	float Dnf = vDist(&f0, n0);
+	float Dn2 = vDistSq3p(&n0, &f->points[0]); 
+	float Df2 = vDistSq3p(&f0, &f->points[4]);
+	float Dnf = vDist3p(&f0, n0);
 	float Dnc = (Dn2 - Df2 - Df2) / (2 * Dnf);*/
 
 }
 
 
 
-void quadCenterp(Vector* a, Vector* b, Vector* c, Vector* d, Vector* out) {
-	Vector sum;
-	vAdd(a, b, &sum);
-	vAdd(&sum, c, &sum);
-	vAdd(&sum, d, &sum);
-	vScale(&sum, 0.25f, out);
+void quadCenterp3p(Vector3* a, Vector3* b, Vector3* c, Vector3* d, Vector3* out) {
+	Vector3 sum;
+	vAdd3p(a, b, &sum);
+	vAdd3p(&sum, c, &sum);
+	vAdd3p(&sum, d, &sum);
+	vScale3p(&sum, 0.25f, out);
 }
 
 // closest distance from an arbitrary point to the plane 
-float planePointDist(Plane* pl, Vector* p) {
-	Vector a;
-	vScale(&pl->n, pl->d, &a);
-	return fabs(vDot(&a, p));
+float planePointDist3p(Plane* pl, Vector3* p) {
+	Vector3 a;
+	vScale3p(&pl->n, pl->d, &a);
+	return fabs(vDot3p(&a, p));
 } 
 
 // signed closest distance from an arbitrary point to the plane 
-float planePointDistSigned(Plane* pl, Vector* p) {
-	Vector a;
-	vScale(&pl->n, pl->d, &a);
-	return vDot(&a, p);
+float planePointDistSigned3p(Plane* pl, Vector3* p) {
+	Vector3 a;
+	vScale3p(&pl->n, pl->d, &a);
+	return vDot3p(&a, p);
 } 
 
-void vPointAvg(Vector* a, Vector* b, Vector* out) {
-	Vector sum;
-	vAdd(a, b, &sum);
-	vScale(&sum, 0.5f, out);
+void vPointAvg3p(Vector3* a, Vector3* b, Vector3* out) {
+	Vector3 sum;
+	vAdd3p(a, b, &sum);
+	vScale3p(&sum, 0.5f, out);
 } 
 
 // 2d vector stuff
 
-int vEq2(Vector2* a, Vector2* b) {
-	return vEqEp2(a, b, FLT_CMP_EPSILON);
-}
 
-int vEqEp2(Vector2* a, Vector2* b, float epsilon) {
-	float x, y, n;
-	
-	x = a->x - b->x;
-	y = a->y - b->y;
-	
-	n = fabs(x * x + y * y);
-	
-	return n <= epsilon * epsilon;
-}
-
-void vCopy2(const Vector2* src, Vector2* dst) {
+void vCopy2p(const Vector2* src, Vector2* dst) {
 	dst->x = src->x;
 	dst->y = src->y;
 }
 
-void vSwap2(Vector2* a, Vector2* b) { // swap two vectors
-	float x, y;
-	x = a->x;
-	y = a->y;
-	a->x = b->x;
-	a->y = b->y;
-	b->x = x;
-	b->y = y;
-}
 
-void vAdd2(Vector2* a, Vector2* b, Vector2* out) {
-	out->x = a->x + b->x;
-	out->y = a->y + b->y;
-}
 
-void vSub2(Vector2* from, Vector2* what, Vector2* diff) { // diff = from - what
-	diff->x = from->x - what->x;
-	diff->y = from->y - what->y;
-}
 
-void vScale2(Vector2* v, float scalar, Vector2* out) {
-	out->x = v->x * scalar;
-	out->y = v->y * scalar;
-}
-
-float vDist2(Vector2* a, Vector2* b) {
-	float x = a->x - b->x;
-	float y = a->y - b->y;
-	return sqrt(x * x + y * y);
-}
-
-void  vLerp2(Vector2* a, Vector2* b, float t, Vector2* out) {
-	out->x = a->x + ((b->x - a->x) * t);
-	out->y = a->y + ((b->y - a->y) * t);
-}
-
-void vInverse2(const Vector2* v, Vector2* out) {
-	// see vInverse for snark
-	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
-	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
-}
-
-float vMag2(Vector2* v) {
-	return sqrt((float)((v->x * v->x) + (v->y * v->y)));
-}
-
-float vDot2(Vector2* a, Vector2* b) {
+float vDot2p(Vector2* a, Vector2* b) {
 	return (float)((a->x * b->x) + (a->y * b->y));
 }
 
-void vNorm2(Vector2* v, Vector2* out) {
-	vUnit2(v, out);
-}
 
-void vUnit2(Vector2* v, Vector2* out) {
-	float n;
-	n = (v->x * v->x) + (v->y * v->y);
-	
-	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) return; // very exact here
-	
-	n = 1.0f / sqrtf(n);
-	out->x = v->x * n;
-	out->y = v->y * n;
-}
-
-// returns the minimum values of each component
-void  vMin2(Vector2* a, Vector2* b, Vector2* out) {
-	out->x = fmin(a->x, b->x);
-	out->y = fmin(a->y, b->y);
-}
-
-// returns the maximum values of each component
-void  vMax2(Vector2* a, Vector2* b, Vector2* out) {
-	out->x = fmax(a->x, b->x);
-	out->y = fmax(a->y, b->y);
-}
-
-inline void vSet2(float x, float y, Vector2* out) {
-	out->x = x;
-	out->y = y;
-}
 
 
 // reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
-void vReflectAcross2(Vector2* v, Vector2* pivot, Vector2* out) {
+void vReflectAcross2p(Vector2* v, Vector2* pivot, Vector2* out) {
 	Vector2 diff;
 	
-	vSub2(pivot, v, &diff);
-	vAdd2(pivot, &diff, out);
+	vSub2p(pivot, v, &diff);
+	vAdd2p(pivot, &diff, out);
 }
 
 
 // degenerate cases may not give desired results. GIGO.
-void vRoundAway2(const Vector2* in, const Vector2* center, Vector2i* out) {
+void vRoundAway2p(const Vector2* in, const Vector2* center, Vector2i* out) {
 	
 	if(in->x > center->x) out->x = ceilf(in->x);
 	else out->x = floorf(in->x);
@@ -1220,7 +1598,7 @@ void vRoundAway2(const Vector2* in, const Vector2* center, Vector2i* out) {
 }
 
 // degenerate cases may not give desired results. GIGO.
-void vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out) {
+void vRoundToward2p(const Vector2* in, const Vector2* center, Vector2i* out) {
 	
 	if(in->x > center->x) out->x = floorf(in->x);
 	else out->x = ceilf(in->x);
@@ -1232,7 +1610,7 @@ void vRoundToward2(const Vector2* in, const Vector2* center, Vector2i* out) {
 
 // returns the *signed* area of a triangle. useful for determining winding
 // positive values mean a clockwise triangle
-float triArea2(Vector2* a, Vector2* b, Vector2* c) {
+float triArea2p(Vector2* a, Vector2* b, Vector2* c) {
 	return 0.5 * (
 		((b->x - a->x) * (b->y + a->y)) +
 		((c->x - b->x) * (c->y + b->y)) +
@@ -1241,7 +1619,7 @@ float triArea2(Vector2* a, Vector2* b, Vector2* c) {
 
 
 // determines if a point is inside a triangle
-int triPointInside2(Vector2* p, Vector2* a, Vector2* b, Vector2* c) {
+int triPointInside2p(Vector2* p, Vector2* a, Vector2* b, Vector2* c) {
 	int d = signbit((p->x - b->x) * (a->y - b->y) - (a->x - b->x) * (p->y - b->y));
 	int e = signbit((p->x - c->x) * (b->y - c->y) - (b->x - c->x) * (p->y - c->y));
 	if(d != e) return 0;
@@ -1254,67 +1632,16 @@ int triPointInside2(Vector2* p, Vector2* a, Vector2* b, Vector2* c) {
 
 // 2d integer vector stuff
 
-int vEq2i(Vector2i* a, Vector2i* b) {
-	return a->x == b->x && a->y == b->y;
-}
-
-void vCopy2i(const Vector2i* src, Vector2i* dst) {
+void vCopy2ip(const Vector2i* src, Vector2i* dst) {
 	dst->x = src->x;
 	dst->y = src->y;
 }
 
-void vSwap2i(Vector2i* a, Vector2i* b) { // swap two vectors
-	int x, y;
-	x = a->x;
-	y = a->y;
-	a->x = b->x;
-	a->y = b->y;
-	b->x = x;
-	b->y = y;
-}
 
-void vAdd2i(Vector2i* a, Vector2i* b, Vector2i* out) {
-	out->x = a->x + b->x;
-	out->y = a->y + b->y;
-}
-
-void vSub2i(Vector2i* from, Vector2i* what, Vector2i* diff) { // diff = from - what
-	diff->x = from->x - what->x;
-	diff->y = from->y - what->y;
-}
-
-void vScale2i(Vector2i* v, int scalar, Vector2i* out) {
-	out->x = v->x * scalar;
-	out->y = v->y * scalar;
-}
-
-int vDot2i(Vector2i* a, Vector2i* b) {
+int vDot2ip(Vector2i* a, Vector2i* b) {
 	return ((a->x * b->x) + (a->y * b->y));
 }
 
-// returns the minimum values of each component
-void  vMin2i(Vector2i* a, Vector2i* b, Vector2i* out) {
-	out->x = MIN(a->x, b->x);
-	out->y = MIN(a->y, b->y);
-}
-
-// returns the maximum values of each component
-void  vMax2i(Vector2i* a, Vector2i* b, Vector2i* out) {
-	out->x = MAX(a->x, b->x);
-	out->y = MAX(a->y, b->y);
-}
-
-inline void vSet2i(int x, int y, Vector2i* out) {
-	out->x = x;
-	out->y = y;
-}
-
-// returns the absolute distance between two vectors
-float vDist2i(Vector2i* a, Vector2i* b) {
-	float x = (float)a->x - (float)b->x;
-	float y = (float)a->y - (float)b->y;
-	return sqrt(x * x + y * y);
-}
 
 
 
@@ -1323,8 +1650,8 @@ float vDist2i(Vector2i* a, Vector2i* b) {
 // plane-vector operations
 
 // distance from point to plane
-float pvDist(Plane* p, Vector* v) {
-	return vDot(v, &p->n) + p->d;
+float pvDist3p(Plane* p, Vector3* v) {
+	return vDot3p(v, &p->n) + p->d;
 }
 
 
@@ -1333,11 +1660,11 @@ float pvDist(Plane* p, Vector* v) {
 
 
 // multiply a vector by a matrix
-void vMatrixMul(Vector* restrict in, Matrix* restrict m, Vector* restrict out) {
-	vMatrixMulf(in->x, in->y, in->z, m, out);
+void vMatrixMul3p(Vector3* restrict in, Matrix* restrict m, Vector3* restrict out) {
+	vMatrixMulf3p(in->x, in->y, in->z, m, out);
 }
 
-void vMatrixMulf(float x, float y, float z, Matrix* restrict m, Vector* restrict out) {
+void vMatrixMulf3p(float x, float y, float z, Matrix* restrict m, Vector3* restrict out) {
 	Vector4 v;
 
 	v.x = x * m->m[0+0] + y * m->m[4+0] + z * m->m[8+0] + 1 * m->m[12+0];
@@ -1401,7 +1728,7 @@ void mMul(Matrix* restrict a, Matrix* restrict out) {
 
 
 
-void mTransv(Vector* v, Matrix* out) {
+void mTransv(Vector3* v, Matrix* out) {
 	mTrans3f(v->x, v->y, v->z, out);
 }
 
@@ -1418,7 +1745,7 @@ void mTrans3f(float x, float y, float z, Matrix* out) {
 
 
 
-void mScalev(Vector* v, Matrix* out) {
+void mScalev(Vector3* v, Matrix* out) {
 	mScale3f(v->x, v->y, v->z, out);
 }
 
@@ -1435,7 +1762,7 @@ void mScale3f(float x, float y, float z, Matrix* out) {
 
 
 
-void mRotv(Vector* v, float theta, Matrix* out) {
+void mRotv(Vector3* v, float theta, Matrix* out) {
 	mRot3f(v->x, v->y, v->z, theta, out);
 }
 
@@ -1668,7 +1995,7 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 }
 
 
-void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out) {
+void mOrthoFromSphere(Sphere* s, Vector3* eyePos, Matrix* out) {
 	Matrix m;
 	
 	float right = -s->r ;
@@ -1688,9 +2015,9 @@ void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out) {
 	m.m[14] = -(far + near) / (far - near);
 	m.m[15] = 1;
 	
-	Vector d;
-	vSub(&s->center, eyePos, &d);
-	vNorm(&d, &d);
+	Vector3 d;
+	vSub3p(&s->center, eyePos, &d);
+	vNorm3p(&d, &d);
 	
 	Matrix m2;
 
@@ -1707,8 +2034,8 @@ void mOrthoFromSphere(Sphere* s, Vector* eyePos, Matrix* out) {
 	
 
 	m2 = IDENT_MATRIX;
-	Vector ic;
-	vScale(&s->center, -1, &ic);
+	Vector3 ic;
+	vScale3p(&s->center, -1, &ic);
 	mTransv(&ic, &m2);
 	
 	mFastMul(&m2, &m, out);
@@ -1729,20 +2056,20 @@ void mOrthoExtractPlanes(Matrix* m, float* left, float* right, float* top, float
 // analgous to gluLookAt
 // BUG: very broken apparently
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
-void mLookAt(Vector* eye, Vector* center, Vector* up, Matrix* out) {
+void mLookAt(Vector3* eye, Vector3* center, Vector3* up, Matrix* out) {
 	
-	Vector f, upn, s, u, sn;
+	Vector3 f, upn, s, u, sn;
 	Matrix m, m2;
 	
-	vSub(center, eye, &f);
-	vNorm(&f, &f);
+	vSub3p(center, eye, &f);
+	vNorm3p(&f, &f);
 	
-	vNorm(up, &upn);
+	vNorm3p(up, &upn);
 	
-	vCross(&f, &upn, &s);
-	vNorm(&s, &sn);
+	vCross3p(&f, &upn, &s);
+	vNorm3p(&s, &sn);
 	
-	vCross(&sn, &f, &u);
+	vCross3p(&sn, &f, &u);
 	
 	m.m[0] = s.x;
 	m.m[1] = u.x;
@@ -1848,7 +2175,7 @@ void msMul(Matrix* a, MatrixStack* ms) { // makes a copy of out before multiplyi
 	mMul(a, msGetTop(ms));
 }
 
-void msTransv(Vector* v, MatrixStack* ms) { // translation
+void msTransv(Vector3* v, MatrixStack* ms) { // translation
 	mTransv(v, msGetTop(ms));
 }
 
@@ -1856,7 +2183,7 @@ void msTrans3f(float x, float y, float z, MatrixStack* ms) { // translation
 	mTrans3f(x, y, z, msGetTop(ms));
 }
 
-void msScalev(Vector* v, MatrixStack* ms) {
+void msScalev(Vector3* v, MatrixStack* ms) {
 	mScalev(v, msGetTop(ms));
 }
 
@@ -1864,7 +2191,7 @@ void msScale3f(float x, float y, float z, MatrixStack* ms) {
 	mScale3f(x, y, z, msGetTop(ms));
 }
 
-void msRotv(Vector* v, float theta, MatrixStack* ms) { // rotate about a vector
+void msRotv(Vector3* v, float theta, MatrixStack* ms) { // rotate about a vector
 	mRotv(v, theta, msGetTop(ms));
 }
 
@@ -1884,13 +2211,13 @@ void msOrtho(float left, float right, float top, float bottom, float near, float
 	mOrtho(left, right, top, bottom, near, far, msGetTop(ms));
 }
 
-void msLookAt(Vector* eye, Vector* center, Vector* up, MatrixStack* ms) {
+void msLookAt(Vector3* eye, Vector3* center, Vector3* up, MatrixStack* ms) {
 	mLookAt(eye, center, up, msGetTop(ms));
 }
 
 
 
-void evalBezier(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out) {
+void evalBezier3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out) {
 	out->x = evalBezier1D(e1->x, e2->x, c1->x, c2->x, t);
 	out->y = evalBezier1D(e1->y, e2->y, c1->y, c2->y, t);
 	out->z = evalBezier1D(e1->z, e2->z, c1->z, c2->z, t);
@@ -1911,7 +2238,7 @@ float evalBezier1D(float e1, float e2, float c1, float c2, float t) {
 
 
 
-void evalBezierTangent(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out) {
+void evalBezierTangent3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out) {
 	out->x = evalBezier1D_dt(e1->x, e2->x, c1->x, c2->x, t);
 	out->y = evalBezier1D_dt(e1->y, e2->y, c1->y, c2->y, t);
 	out->z = evalBezier1D_dt(e1->z, e2->z, c1->z, c2->z, t);
@@ -1932,7 +2259,7 @@ float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t) {
 	return (6 * (1 - t) * (c2 - c1 - c1 + e1)) + (6 * t * (e2 - c2 - c2 - c1));
 }
 
-void evalBezierNorm(Vector* e1, Vector* e2, Vector* c1, Vector* c2, float t, Vector* out) {
+void evalBezierNorm3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out) {
 	out->x = evalBezier1D_ddt(e1->x, e2->x, c1->x, c2->x, t);
 	out->y = evalBezier1D_ddt(e1->y, e2->y, c1->y, c2->y, t);
 	out->z = evalBezier1D_ddt(e1->z, e2->z, c1->z, c2->z, t);
@@ -1948,12 +2275,12 @@ float evalQBezier1D(float e1, float e2, float c1, float t) {
 	return (mt2 * e1) + (2 * mt * t * c1) + (t * t * e2);
 }
 
-void evalQBezier2D(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out) {
+void evalQBezier2D3p(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out) {
 	out->x = evalQBezier1D(e1->x, e2->x, c1->x, t);
 	out->y = evalQBezier1D(e1->y, e2->y, c1->y, t);
 }
 
-void evalQBezier(Vector* e1, Vector* e2, Vector* c1, float t, Vector* out) {
+void evalQBezier3p(Vector3* e1, Vector3* e2, Vector3* c1, float t, Vector3* out) {
 	out->x = evalQBezier1D(e1->x, e2->x, c1->x, t);
 	out->y = evalQBezier1D(e1->y, e2->y, c1->y, t);
 	out->z = evalQBezier1D(e1->z, e2->z, c1->z, t);
@@ -1967,32 +2294,32 @@ void evalQBezier(Vector* e1, Vector* e2, Vector* c1, float t, Vector* out) {
 
 // 3D versions
 
-int boxDisjoint(const AABB* a, const AABB* b) {
+int boxDisjoint3p(const AABB3* a, const AABB3* b) {
 	return a->max.x < b->min.x || b->max.x < a->min.x
 		|| a->max.y < b->min.y || b->max.y < a->min.y
 		|| a->max.z < b->min.z || b->max.z < a->min.z;
 }
 
-int boxOverlaps(const AABB* a, const AABB* b) {
-	return !boxDisjoint(a, b);
+int boxOverlaps3p(const AABB3* a, const AABB3* b) {
+	return !boxDisjoint3p(a, b);
 }
 
 
 
-int boxContainsPoint(const AABB* b, const Vector* p) {
+int boxContainsPoint3p(const AABB3* b, const Vector3* p) {
 	return b->min.x <= p->x && b->max.x >= p->x
 		&& b->min.y <= p->y && b->max.y >= p->y
 		&& b->min.z <= p->z && b->max.z >= p->z;
 }
 
 
-void boxCenter(const AABB* b, Vector* out) {
+void boxCenter3p(const AABB3* b, Vector3* out) {
 	out->x = (b->max.x + b->min.x) / 2;
 	out->y = (b->max.y + b->min.y) / 2;
 	out->z = (b->max.z + b->min.z) / 2;
 }
 
-void boxSize(const AABB* b, Vector* out) {
+void boxSize3p(const AABB3* b, Vector3* out) {
 	out->x = b->max.x - b->min.x;
 	out->y = b->max.y - b->min.y;
 	out->z = b->max.z - b->min.z;
@@ -2002,39 +2329,39 @@ void boxSize(const AABB* b, Vector* out) {
 
 // 2D versions
 
-int boxDisjoint2(const AABB2* a, const AABB2* b) {
+int boxDisjoint2p(const AABB2* a, const AABB2* b) {
 
 	return a->max.x < b->min.x || b->max.x < a->min.x
 		|| a->max.y < b->min.y || b->max.y < a->min.y;
 }
 
-int boxOverlaps2(const AABB2* a, const AABB2* b) {
-	return !boxDisjoint2(a, b);
+int boxOverlaps2p(const AABB2* a, const AABB2* b) {
+	return !boxDisjoint2p(a, b);
 }
 
 
 
-int boxContainsPoint2(const AABB2* b, const Vector2* p) {
+int boxContainsPoint2p(const AABB2* b, const Vector2* p) {
 	return b->min.x <= p->x && b->max.x >= p->x
 		&& b->min.y <= p->y && b->max.y >= p->y;
 }
 
 
-void boxCenter2(const AABB2* b, Vector2* out) {
+void boxCenter2p(const AABB2* b, Vector2* out) {
 	out->x = (b->max.x + b->min.x) / 2;
 	out->y = (b->max.y + b->min.y) / 2;
 }
 
-void boxSize2(const AABB2* b, Vector2* out) {
+void boxSize2p(const AABB2* b, Vector2* out) {
 	out->x = b->max.x - b->min.x;
 	out->y = b->max.y - b->min.y;
 }
 
-void boxQuadrant2(const AABB2* in, char ix, char iy, AABB2* out) {
+void boxQuadrant2p(const AABB2* in, char ix, char iy, AABB2* out) {
 	Vector2 sz, c;
 	
-	boxCenter2(in, &c);
-	boxSize2(in, &sz);
+	boxCenter2p(in, &c);
+	boxSize2p(in, &sz);
 	sz.x *= .5;
 	sz.y *= .5;
 	
@@ -2047,43 +2374,43 @@ void boxQuadrant2(const AABB2* in, char ix, char iy, AABB2* out) {
 
 // 2D integer versions
 
-int boxDisjoint2i(const AABB2i* a, const AABB2i* b) {
+int boxDisjoint2ip(const AABB2i* a, const AABB2i* b) {
 
 	return a->max.x < b->min.x || b->max.x < a->min.x
 		|| a->max.y < b->min.y || b->max.y < a->min.y;
 }
 
-int boxOverlaps2i(const AABB2i* a, const AABB2i* b) {
-	return !boxDisjoint2i(a, b);
+int boxOverlaps2ip(const AABB2i* a, const AABB2i* b) {
+	return !boxDisjoint2ip(a, b);
 }
 
 
 
-int boxContainsPoint2i(const AABB2i* b, const Vector2i* p) {
+int boxContainsPoint2ip(const AABB2i* b, const Vector2i* p) {
 	return b->min.x <= p->x && b->max.x >= p->x
 		&& b->min.y <= p->y && b->max.y >= p->y;
 }
 
 
-void boxCenter2i(const AABB2i* b, Vector2* out) {
+void boxCenter2ip(const AABB2i* b, Vector2* out) {
 	out->x = (b->max.x + b->min.x) / 2.0f;
 	out->y = (b->max.y + b->min.y) / 2.0f;
 }
 
-void boxSize2i(const AABB2i* b, Vector2* out) {
+void boxSize2ip(const AABB2i* b, Vector2* out) {
 	out->x = b->max.x - b->min.x;
 	out->y = b->max.y - b->min.y;
 }
 
 // BUG: needs some fancy math work to keep everything tight. integers don't split nicely
-void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out) {
+void boxQuadrant2ip(const AABB2i* in, char ix, char iy, AABB2i* out) {
 	Vector2 sz, c;
 	
 	printf("fix me: %s:%d", __FILE__, __LINE__);
 	exit(666);
 	
-	boxCenter2i(in, &c);
-	boxSize2i(in, &sz);
+	boxCenter2ip(in, &c);
+	boxSize2ip(in, &sz);
 	sz.x *= .5;
 	sz.y *= .5;
 	
@@ -2096,7 +2423,7 @@ void boxQuadrant2i(const AABB2i* in, char ix, char iy, AABB2i* out) {
 
 
 // find the center of a quad
-void quadCenter2(const Quad2* q, Vector2* out) {
+void quadCenter2p(const Quad2* q, Vector2* out) {
 	Vector2 c;
 	int i;
 	
@@ -2110,24 +2437,24 @@ void quadCenter2(const Quad2* q, Vector2* out) {
 }
 
 
-void quadRoundOutward2(const Quad2* in, Quad2i* out) {
+void quadRoundOutward2p(const Quad2* in, Quad2i* out) {
 	Vector2 c;
 	int i;
 	
-	quadCenter2(in, &c);
+	quadCenter2p(in, &c);
 	
 	for(i = 0; i < 4; i++)
-		vRoundAway2(&in->v[i], &c, &out->v[i]);
+		vRoundAway2p(&in->v[i], &c, &out->v[i]);
 }
 
-void quadRoundInward2(const Quad2* in, Quad2i* out) {
+void quadRoundInward2p(const Quad2* in, Quad2i* out) {
 	Vector2 c;
 	int i;
 	
-	quadCenter2(in, &c);
+	quadCenter2p(in, &c);
 	
 	for(i = 0; i < 4; i++)
-		vRoundToward2(&in->v[i], &c, &out->v[i]);
+		vRoundToward2p(&in->v[i], &c, &out->v[i]);
 }
 
 
@@ -2146,13 +2473,13 @@ int quadIsAARect2i(const Quad2i* q) {
 
 
 // ray stuff
-void makeRay(Vector* origin, Vector* direction, Ray* out) {
+void makeRay3p(Vector3* origin, Vector3* direction, Ray3* out) {
 	
 	out->o.x = origin->x;
 	out->o.y = origin->y;
 	out->o.z = origin->z;
 	
-	vNorm(direction, &out->d);
+	vNorm3p(direction, &out->d);
 }
 
 // ray stuff
@@ -2161,18 +2488,18 @@ void makeRay2(Vector2* origin, Vector2* direction, Ray2* out) {
 	out->o.x = origin->x;
 	out->o.y = origin->y;
 	
-	vNorm2(direction, &out->d);
+	vNorm2p(direction, &out->d);
 }
 
 // this version has no branching, but only answers yes or no.
 // algorithm explanation here. hopefully my extrapolation into 3 dimensions is correct.
 // http://tavianator.com/fast-branchless-raybounding-box-intersections/
-int boxRayIntersectFast(const AABB* b, const Ray* r) {
-	Vector t1, t2;
+int boxRayIntersectFast3p(const AABB3* b, const Ray3* r) {
+	Vector3 t1, t2;
 	float tmin, tmax;
-	Vector id;
+	Vector3 id;
 	
-	vInverse(&r->d, &id);
+	vInverse3p(&r->d, &id);
 	
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
@@ -2199,7 +2526,7 @@ int boxRayIntersectFast2(const AABB2* b, const Ray2* r) {
 	float tmin, tmax;
 	Vector2 id;
 	
-	vInverse2(&r->d, &id);
+	vInverse2p(&r->d, &id);
 	
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
@@ -2218,11 +2545,11 @@ int boxRayIntersectFast2(const AABB2* b, const Ray2* r) {
 // this version gives the point of intersection as well as distance
 // algorithm explanation here. hopefully my extrapolation into 3 dimensions is correct.
 // http://tavianator.com/fast-branchless-raybounding-box-intersections/
-int boxRayIntersect(const AABB* b, const Ray* r, Vector* ipoint, float* idist) {
-	Vector t1, t2, id;
+int boxRayIntersect3p(const AABB3* b, const Ray3* r, Vector3* ipoint, float* idist) {
+	Vector3 t1, t2, id;
 	float tmin, tmax;
 	
-	vInverse(&r->d, &id);
+	vInverse3p(&r->d, &id);
 		
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
@@ -2292,7 +2619,7 @@ static void bsSegmentForT2(BezierSpline2* bs, float normalT, Vector2* out) {
 	out[1].y = p->c.y;
 	
 	// control 2 - this one is reflected across e2
-	vReflectAcross2(&n->c, &n->e, &out[2]);
+	vReflectAcross2p(&n->c, &n->e, &out[2]);
 	
 	// end 2
 	out[3].x = n->e.x;
@@ -2361,7 +2688,7 @@ Vector2 evalCubicHermite2D(float t, Vector2 p0, Vector2 p1, Vector2 m0, Vector2 
 
 
 
-Vector evalCubicHermite3D(float t, Vector p0, Vector p1, Vector m0, Vector m1) {
+Vector3 evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 m1) {
 	
 #ifdef C3DLAS_USE_SIMD
 	__m128 p0_ = _mm_loadu_ps((float*)&p0);
@@ -2397,13 +2724,13 @@ Vector evalCubicHermite3D(float t, Vector p0, Vector p1, Vector m0, Vector m1) {
 	
 	union {
 		Vector4 v4;
-		Vector v3;
+		Vector3 v3;
 	} u;
 	_mm_storeu_ps(&u.v4, o);
 	
 	return u.v3;
 #else
-	return (Vector){
+	return (Vector3){
 		.x = evalCubicHermite1D(t, p0.x, p1.x, m0.x, m1.x),
 		.y = evalCubicHermite1D(t, p0.y, p1.y, m0.y, m1.y),
 		.z = evalCubicHermite1D(t, p0.z, p1.z, m0.z, m1.z)

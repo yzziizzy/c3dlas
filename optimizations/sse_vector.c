@@ -10,7 +10,7 @@
 #ifndef __SSE__
 	#define c3dlas_sse3_vAdd c3dlas_pure_vAdd
 #else
-void c3dlas_sse3_vAdd(Vector* a, Vector* b, Vector* out) {
+void c3dlas_sse3_vAdd(Vector3* a, Vector3* b, Vector3* out) {
 	/*
 	out->x = a->x + b->x;
 	out->y = a->y + b->y;
@@ -49,7 +49,7 @@ void c3dlas_sse3_vAdd(Vector* a, Vector* b, Vector* out) {
 #ifndef __SSE__
 	#define c3dlas_sse3_vAdd4 c3dlas_pure_vAdd
 #else
-void c3dlas_sse3_vAdd4(Vector* a, Vector* b, Vector* out) {
+void c3dlas_sse3_vAdd4(Vector3* a, Vector3* b, Vector3* out) {
 	/*
 	out->x = a->x + b->x;
 	out->y = a->y + b->y;
