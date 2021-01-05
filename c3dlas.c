@@ -36,12 +36,18 @@ uint32_t reverseBits(uint32_t n, int len) {
 
 // returns a random number in (-1, 1) uninclusive
 float pcg_f(uint64_t* state, uint64_t stream) {
+	union {
+		uint32_t fu;
+		float ff;
+	} u;
+	
+	
 	uint64_t last = *state;
 	*state = (last * 6364136223846793005ULL) + (stream | 1);
 	uint32_t xs = ((last >> 18) ^ last) >> 27;
 	uint32_t rot = last >> 59;
-	uint32_t f = (((xs >> rot) | (xs << ((-rot) & 31))) & 0x807fffff) | 0x3f000000;
-	return *(float*)&f;
+	u.fu = (((xs >> rot) | (xs << ((-rot) & 31))) & 0x807fffff) | 0x3f000000;
+	return u.ff;
 }
 
 
@@ -2423,7 +2429,7 @@ void boxQuadrant2ip(const AABB2i* in, char ix, char iy, AABB2i* out) {
 
 // find the center of a quad
 void quadCenter2p(const Quad2* q, Vector2* out) {
-	Vector2 c;
+	Vector2 c = {0};
 	int i;
 	
 	for(i = 0; i < 4; i++) {

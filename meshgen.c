@@ -140,7 +140,7 @@ Mesh* genIcosahedronMesh(float radius) {
 	m->szVertices = m->vertexCnt = 12;
 	m->szIndices = m->indexCnt = 20 * 3;
 	
-	genIcosahedronPointsf(radius, m->vertices, NULL);
+	genIcosahedronPointsf(radius, (Vector3*)m->vertices, NULL);
 	
 	short indices[] = {
 		// top two triangles
