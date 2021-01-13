@@ -918,6 +918,20 @@ void vProjectOntoPlaneNormalized3p(Vector3* v, Plane* p, Vector3* out) {
 }
 
 
+int IntersectPlaneRay3p(Plane* p, Ray3* r, Vector3* out) {
+	float d = vDot3p(&p->n, &r->d);
+	
+	if(fabs(d) < FLT_CMP_EPSILON) return C3DLAS_DISJOINT;
+	
+	float t = -(vDot3(p->n, r->o) + d) / vDot3(p->n, r->d); 
+	
+	if(t < 0) return C3DLAS_DISJOINT;
+	
+	*out = vAdd3(r->o, vScale3(r->d, t));
+	
+	return C3DLAS_INTERSECT;
+}
+
 
 // calculates a plane from a triangle
 void planeFromTriangle3p(Vector3* v1, Vector3* v2, Vector3* v3, Plane* out) {
@@ -1947,14 +1961,14 @@ void mPerspective(double fov, float aspect, float near, float far, Matrix* out) 
 	double f;
 	
 	m = IDENT_MATRIX;
-	f = 1.0 / tan(fov * DEG2RAD / 2);
+	f = 1.0 / tan(fov * DEG2RAD / 2.0);
 	
 	m.m[0] = f / aspect;
 	m.m[5] = f;
 	m.m[10] = (far + near) / (near - far);
-	m.m[11] = -1;
-	m.m[14] = (2 * far * near) / (near - far);
-	m.m[15] = 1;
+	m.m[11] = -1.0;
+	m.m[14] = (2.0 * far * near) / (near - far);
+	m.m[15] = 1.0;
 	
 	mMul(&m, out);
 }

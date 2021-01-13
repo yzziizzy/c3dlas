@@ -460,6 +460,10 @@ int planeLineFindIntersect3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out);
 // C3DLAS_INTERSECT
 int planeLineFindIntersectFast3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out);
 
+// C3DLAS_INTERSECT, or _DISJOINT
+int IntersectPlaneRay3p(Plane* p, Ray3* r, Vector3* out);
+
+
 // C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
 int triPlaneTestIntersect3p(Vector3* pTri, Plane* pl);
 
