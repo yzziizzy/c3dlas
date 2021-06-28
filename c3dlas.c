@@ -2079,6 +2079,7 @@ void mLookAt(Vector3* eye, Vector3* center, Vector3* up, Matrix* out) {
 	
 	Vector3 f, upn, s, u, sn;
 	Matrix m, m2;
+	m2 = IDENT_MATRIX;
 	
 	vSub3p(center, eye, &f);
 	vNorm3p(&f, &f);
