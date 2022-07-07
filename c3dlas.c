@@ -2112,7 +2112,7 @@ void mLookAt(Vector3* eye, Vector3* center, Vector3* up, Matrix* out) {
 	m.m[15] = 1;
 	
 	mTrans3f(-eye->x, -eye->y, -eye->z, &m2);
-	mFastMul(&m, &m2, out);
+	mFastMul(&m2, &m, out);
 }
 
 
