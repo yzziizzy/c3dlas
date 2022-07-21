@@ -834,6 +834,105 @@ void vMax4p(Vector4* a, Vector4* b, Vector4* out) {
 
 
 
+// Muchas gracias, Inigo.  
+// https://iquilezles.org/articles/distfunctions2d/
+float vDistPointLine2(Vector2 p, Line2 ls) {
+	Vector2 pa = vSub2(p, ls.start); // vector from the starting point to p
+	Vector2 ba = vSub2(ls.end, ls.start); // vector from the starting point to the ending point
+	
+	float t = vDot2(pa, ba) / vDot2(ba, ba); // project the pa onto ba, then divide that distance by the length of ba to normalize it
+	fclamp(t, 0.0, 1.0); // clamp t to between the endpoints of the line segment
+	
+	// Consider the starting point to be at the origin, for ease of visualization.
+	// ba is the vector from the origin to the endpoint og the line that now passes through the origin.
+	// Scaling ba by t gives the intercept point of the line through p that is perpendicular to the test line segment.
+	// pa is p if a was the origin. Therefore, pi is the vector from p to the intercept point on the test line segment. 
+	Vector2 pi = vSub2(pa, vScale2(ba, t));
+	return vMag2(pi); // the answer is the length of pi 
+}
+
+float vDistPointLine3(Vector3 p, Line3 ls) {
+	Vector3 pa = vSub3(p, ls.start);
+	Vector3 ba = vSub3(ls.end, ls.start);
+	
+	float t = fclamp(vDot3(pa, ba) / vDot3(ba, ba), 0.0, 1.0);
+	return vMag3(vSub3(pa, vScale3(ba, t)));
+}
+
+// This version also returns the normalized distance along the line of the closest point
+float vDistTPointLine2(Vector2 p, Line2 ls, float* T) {
+	Vector2 pa = vSub2(p, ls.start);
+	Vector2 ba = vSub2(ls.end, ls.start);
+	
+	float t = fclamp(vDot2(pa, ba) / vDot2(ba, ba), 0.0, 1.0);
+	if(T) *T = t;
+	return vMag2(vSub2(pa, vScale2(ba, t)));
+}
+
+float vDistTPointLine3(Vector3 p, Line3 ls, float* T) {
+	Vector3 pa = vSub3(p, ls.start);
+	Vector3 ba = vSub3(ls.end, ls.start);
+	
+	float t = fclamp(vDot3(pa, ba) / vDot3(ba, ba), 0.0, 1.0);
+	if(T) *T = t;
+	return vMag3(vSub3(pa, vScale3(ba, t)));
+}
+
+
+
+int vInsidePolygon(Vector2 p, Polygon* poly) {
+	int inside = 0;
+	int cnt = poly->pointCount;
+	
+	if(poly->maxRadiusSq < vDot2(poly->centroid, p)) return 0;
+	
+	for(int i = 0; i < cnt; i++) {
+		Vector2 a = poly->points[i];
+		Vector2 b = poly->points[(i + 1) % cnt];
+		
+		if(a.y == b.y) continue; // horizontal edges are ignored
+		
+		// we're testing a ray going to the right
+		if(a.x < p.x && b.x < p.x) continue; // segment is entirely left of the point
+		
+		if(a.y >= p.y && b.y >= p.y) continue; // segment entirely above the point
+		if(a.y < p.y && b.y < p.y) continue; // segment entirely below the point
+		// segment is in the same vertical band as the point
+		
+		float sx = a.x + (b.x - a.x) * ((p.y - a.y) / (b.y - a.y));
+		if(p.x > sx) continue;
+		
+		inside = !inside;
+	}
+
+	return inside;
+}
+
+void polyCalcCentroid(Polygon* poly) {
+	int cnt = poly->pointCount;
+	Vector2 centroid = {0,0};
+	
+	for(int i = 0; i < cnt; i++) {
+		Vector2 a = poly->points[i];
+		centroid = vAdd2(centroid, a);
+	}
+	
+	poly->centroid = vScale2(centroid, 1.0 / poly->pointCount);
+
+}
+
+
+void polyCalcRadiusSq(Polygon* poly) {
+	int cnt = poly->pointCount;
+	float d = 0;
+	
+	for(int i = 0; i < cnt; i++) {
+		Vector2 a = poly->points[i];
+		d = fmax(d, vDot2(poly->centroid, a));
+	}
+	
+	poly->maxRadiusSq = d;
+}
 
 
 

@@ -104,6 +104,8 @@ typedef struct {
 	float x,y,z,w;
 } Vector4;
 
+// Rays, but also infinite lines (mathematical lines) because there is no practical
+//   difference besides whether you conside the ray to be one-sided or not.
 typedef struct {
 	Vector3 o; // origin
 	Vector3 d; // normalized direction
@@ -114,10 +116,24 @@ typedef struct {
 	Vector2 d; // normalized direction
 } Ray2;
 
+// Line *segments*
+typedef struct {
+	Vector2 start, end;
+} Line2;
+
 typedef struct {
 	Vector3 start, end;
-} LineSegment3;
+} Line3;
 
+// Polygons are 2-dimensional by definition
+typedef struct Polygon {
+	Vector2* points;
+	long pointAlloc;
+	long pointCount;
+	
+	Vector2 centroid;
+	float maxRadiusSq; // squared distance from the centroid to the furthest point
+} Polygon;
 
 typedef struct BezierSplineSegment3 {
 	Vector3 e, c; // end and control
@@ -416,8 +432,19 @@ void     vMax2p(Vector2* a, Vector2* b, Vector2* out);
 void     vMax3p(Vector3* a, Vector3* b, Vector3* out);
 void     vMax4p(Vector4* a, Vector4* b, Vector4* out);
 
+// Distance from a point to a line segment 
+float vDistPointLine2(Vector2 p, Line2 ls);
+float vDistPointLine3(Vector3 p, Line3 ls);
+
+// Also returns the normalized distance along the line to the closest point
+float vDistTPointLine2(Vector2 p, Line2 ls, float* T);
+float vDistTPointLine3(Vector3 p, Line3 ls, float* T);
 
 
+
+int vInsidePolygon(Vector2 p, Polygon* poly);
+void polyCalcCentroid(Polygon* poly);
+void polyCalcRadiusSq(Polygon* poly) ;
 
 void  vProject3p(Vector3* what, Vector3* onto, Vector3* out); // slower; onto may not be normalized
 void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out); // faster; onto must be normalized
