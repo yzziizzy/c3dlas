@@ -878,6 +878,7 @@ float vDistTPointLine3(Vector3 p, Line3 ls, float* T) {
 	return vMag3(vSub3(pa, vScale3(ba, t)));
 }
 
+// ----
 
 
 int vInsidePolygon(Vector2 p, Polygon* poly) {
@@ -907,6 +908,36 @@ int vInsidePolygon(Vector2 p, Polygon* poly) {
 
 	return inside;
 }
+
+
+// Muchas gracias, Inigo.  
+// https://iquilezles.org/articles/distfunctions2d/
+float vDistPolygon(Vector2 p, Polygon* poly) {
+
+	float d = vDot2(vSub2(p, poly->points[0]), vSub2(p, poly->points[0]));
+    float s = 1.0;
+
+    for(int i = 0, j = poly->pointCount - 1; i < poly->pointCount; j = i, i++) {
+        Vector2 A = poly->points[i];
+        Vector2 B = poly->points[j];
+
+		Vector2 e = vSub2(B, A);
+        Vector2 w = vSub2(p, A);
+        Vector2 b = vSub2(w, vScale2(e, fclamp(vDot2(w, e) / vDot2(e, e), 0.0, 1.0)));
+
+        d = fmin(d, vDot2(b, b));
+        
+		int c1 = p.y >= A.y;
+		int c2 = p.y < B.y;
+		int c3 = e.x * w.y > e.y * w.x;
+        if((c1 && c2 && c3) || (!c1 && !c2 && !c3)) s *= -1.0;  
+    }
+
+    return s * sqrtf(d);
+}
+
+// ----
+
 
 void polyCalcCentroid(Polygon* poly) {
 	int cnt = poly->pointCount;
