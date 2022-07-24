@@ -21,19 +21,14 @@ typedef struct {
 
 
 
-typedef struct MeshVertex {
-	Vector3 v, n;
-	struct {
-		unsigned short u, v;
-	} t;
-} MeshVertex;
 
-typedef struct Mesh {
-	MeshVertex* vertices;
-	unsigned short* indices;
+typedef struct TriangleMesh {
+	Vector3* vertices;
+	Vector3* normals;
+	unsigned int* indices;
 	
 	// used quantity
-	int vertexCnt;
+	int vertexCnt; // also used for normals.
 	int indexCnt;
 	// always GL_TRIANGLES
 	
@@ -41,13 +36,13 @@ typedef struct Mesh {
 	int szVertices;
 	int szIndices;
 	
-	
-} Mesh;
+	char windingDir; // c = clockwise, w = widdershins (counter-clockwise) 
+} TriangleMesh;
 
 
 typedef struct MeshSlice {
 	
-	MeshVertex* vertices; 
+//	MeshVertex* vertices; 
 	short* indices; 
 	// always line strips; -1 resets
 	
@@ -72,10 +67,24 @@ void mgGenFlatPatch(short width, short height, IndexedPatch* out);
 float* genNoisef(short width, short height, float min, float max);
 
 
-Mesh* makeCube(Matrix* mat, int flat);
+TriangleMesh* makeCube(Matrix* mat, int flat);
 
 
+TriangleMesh* makeQuad(float width, float height);
+TriangleMesh* makeCylinder(int sides, float height, float baseRadius, float topRadius);
+TriangleMesh* makeIcosahedron(float radius);
+TriangleMesh* makeSubbedIcosahedron(float radius, int subdivisions);
 
+
+// uncapped cylinders
+// discs
+// free triangles
+// tetrahedrons / cones
+// shapes with planar but subdivided faces
+// mesh smoothing fn
+// tex coord projection
+
+TriangleMesh* makeParallelpiped();
 
 
 

@@ -10,7 +10,7 @@ ATLAS/CBLAS are an incomprehensible mess.
 
 GPL, while a wonderful thing, is a bit heavy-handed for some basic math functions.
 
-I firmly believe that such a library did not exist because most of the fucntionality was built in to older OpenGL versions. By the time OpenGL 3.3 came out most developers had converted to worshiping under the altar of OOP.
+I firmly believe that such a library did not exist because most of the functionality was built in to older OpenGL versions. By the time OpenGL 3.3 came out most developers had converted to worshiping under the altar of OOP.
 
 
 

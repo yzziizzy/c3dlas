@@ -915,25 +915,25 @@ int vInsidePolygon(Vector2 p, Polygon* poly) {
 float vDistPolygon(Vector2 p, Polygon* poly) {
 
 	float d = vDot2(vSub2(p, poly->points[0]), vSub2(p, poly->points[0]));
-    float s = 1.0;
+	float s = 1.0;
 
-    for(int i = 0, j = poly->pointCount - 1; i < poly->pointCount; j = i, i++) {
-        Vector2 A = poly->points[i];
-        Vector2 B = poly->points[j];
+	for(int i = 0, j = poly->pointCount - 1; i < poly->pointCount; j = i, i++) {
+		Vector2 A = poly->points[i];
+		Vector2 B = poly->points[j];
 
 		Vector2 e = vSub2(B, A);
-        Vector2 w = vSub2(p, A);
-        Vector2 b = vSub2(w, vScale2(e, fclamp(vDot2(w, e) / vDot2(e, e), 0.0, 1.0)));
+		Vector2 w = vSub2(p, A);
+		Vector2 b = vSub2(w, vScale2(e, fclamp(vDot2(w, e) / vDot2(e, e), 0.0, 1.0)));
 
-        d = fmin(d, vDot2(b, b));
+		d = fmin(d, vDot2(b, b));
         
 		int c1 = p.y >= A.y;
 		int c2 = p.y < B.y;
 		int c3 = e.x * w.y > e.y * w.x;
-        if((c1 && c2 && c3) || (!c1 && !c2 && !c3)) s *= -1.0;  
-    }
+		if((c1 && c2 && c3) || (!c1 && !c2 && !c3)) s *= -1.0;  
+	}
 
-    return s * sqrtf(d);
+	return s * sqrtf(d);
 }
 
 // ----
@@ -1808,6 +1808,43 @@ float pvDist3p(Plane* p, Vector3* v) {
 
 // matrix-vector operations
 
+Vector3 vMatrixMulProjectedMagic3(Vector3 in, Matrix* m) {
+	Vector4 v;
+
+	v.x = in.x * m->m[0+0] + in.y * m->m[4+0] + in.z * m->m[8+0] + 1.0 * m->m[12+0];
+	v.y = in.x * m->m[0+1] + in.y * m->m[4+1] + in.z * m->m[8+1] + 1.0 * m->m[12+1];
+	v.z = in.x * m->m[0+2] + in.y * m->m[4+2] + in.z * m->m[8+2] + 1.0 * m->m[12+2];
+	v.w = in.x * m->m[0+3] + in.y * m->m[4+3] + in.z * m->m[8+3] + 1.0 * m->m[12+3];
+	
+	if(v.w == 0) return (Vector3){0,0,0}; 
+	if(v.w < 0) v.w = -v.w;
+	
+	return (Vector3){x: v.x / v.w, y: v.y / v.w, z: v.z / v.w};
+}
+
+Vector3 vMatrixMul3(Vector3 in, Matrix* m) {
+	Vector4 v;
+
+	v.x = in.x * m->m[0+0] + in.y * m->m[4+0] + in.z * m->m[8+0] + 1.0 * m->m[12+0];
+	v.y = in.x * m->m[0+1] + in.y * m->m[4+1] + in.z * m->m[8+1] + 1.0 * m->m[12+1];
+	v.z = in.x * m->m[0+2] + in.y * m->m[4+2] + in.z * m->m[8+2] + 1.0 * m->m[12+2];
+	v.w = in.x * m->m[0+3] + in.y * m->m[4+3] + in.z * m->m[8+3] + 1.0 * m->m[12+3];
+	
+	if(v.w == 0) return (Vector3){0,0,0};
+	
+	return (Vector3){x: v.x / v.w, y: v.y / v.w, z: v.z / v.w};
+}
+
+Vector4 vMatrixMul4(Vector4 in, Matrix* m) {
+	Vector4 v;
+
+	v.x = in.x * m->m[0+0] + in.y * m->m[4+0] + in.z * m->m[8+0] + in.w * m->m[12+0];
+	v.y = in.x * m->m[0+1] + in.y * m->m[4+1] + in.z * m->m[8+1] + in.w * m->m[12+1];
+	v.z = in.x * m->m[0+2] + in.y * m->m[4+2] + in.z * m->m[8+2] + in.w * m->m[12+2];
+	v.w = in.x * m->m[0+3] + in.y * m->m[4+3] + in.z * m->m[8+3] + in.w * m->m[12+3];
+	
+	return v;
+}
 
 // multiply a vector by a matrix
 void vMatrixMul3p(Vector3* restrict in, Matrix* restrict m, Vector3* restrict out) {
@@ -2098,8 +2135,7 @@ void mPerspective(double fov, float aspect, float near, float far, Matrix* out) 
 	m.m[10] = (far + near) / (near - far);
 	m.m[11] = -1.0;
 	m.m[14] = (2.0 * far * near) / (near - far);
-	m.m[15] = 1.0;
-	
+
 	mMul(&m, out);
 }
 

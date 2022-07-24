@@ -553,7 +553,9 @@ float pvDist3p(Plane* p, Vector3* v);
 
 void vMatrixMul3p(Vector3* in, Matrix* m, Vector3* out); // multiply a vector by a matrix
 void vMatrixMulf3p(float x, float y, float z, Matrix* m, Vector3* out); // multiply a vector by a matrix
-
+Vector3 vMatrixMul3(Vector3 in, Matrix* m);
+Vector4 vMatrixMul4(Vector4 in, Matrix* m);
+Vector3 vMatrixMulProjectedMagic3(Vector3 in, Matrix* m);
 
 void mIdent(Matrix* m); // set m to the identity matrix
 void mCopy(Matrix* in, Matrix* out);

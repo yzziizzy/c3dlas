@@ -9,6 +9,8 @@
 
 
 
+#if 0
+
 
 // in the x-y plane, 0,0 at the lower left
 void mgGenFlatPatch(short width, short height, IndexedPatch* out) {
@@ -129,13 +131,13 @@ void genHalfIcosahedronPointsf(float radius, Vector3* out, int* count) {
 	}
 }
 
-Mesh* genIcosahedronMesh(float radius) {
+TriangleMesh* genIcosahedronMesh(float radius) {
 	
-	Mesh* m;
+	TriangleMesh* m;
 	
-	m = malloc(sizeof(Mesh));
-	m->vertices = malloc(sizeof(Vector3) * 12);
-	m->indices = malloc(sizeof(short) * 20 * 3);
+	m = malloc(sizeof(*m));
+	m->vertices = malloc(sizeof(*m->vertices) * 12);
+	m->indices = malloc(sizeof(*m->indices) * 20 * 3);
 	
 	m->szVertices = m->vertexCnt = 12;
 	m->szIndices = m->indexCnt = 20 * 3;
@@ -185,9 +187,11 @@ Mesh* genIcosahedronMesh(float radius) {
 	
 	return m;
 }
+
+
 // centered, along z axis
-Mesh* genHollowCylinder(float innerRadius, float outerRadius, int segments, float length) {
-	Mesh* m;
+TriangleMesh* genHollowCylinder(float innerRadius, float outerRadius, int segments, float length) {
+	TriangleMesh* m;
 	int i, j;
 	float hlen = length / 2;
 	
@@ -235,9 +239,9 @@ Mesh* genHollowCylinder(float innerRadius, float outerRadius, int segments, floa
 
 
 // centered, along z axis
-Mesh* genCylinder(float radius, int segments, float length) {
+TriangleMesh* genCylinder(float radius, int segments, float length) {
 	
-	Mesh* m;
+	TriangleMesh* m;
 	int i, j;
 	float hlen = length / 2;
 	
@@ -321,7 +325,7 @@ float* genNoisef(short width, short height, float min, float max) {
 
 
 
-Mesh* extrudeAlongVector(Vector3* lineStrip, int lineCount, Vector3* v) {
+TriangleMesh* extrudeAlongVector(Vector3* lineStrip, int lineCount, Vector3* v) {
 	
 	int i;
 	Mesh* m;
@@ -354,8 +358,8 @@ Mesh* extrudeAlongVector(Vector3* lineStrip, int lineCount, Vector3* v) {
 }
 
 
-Mesh* allocMesh(int triangles) {
-	Mesh* m;
+TriangleMesh* allocMesh(int triangles) {
+	TriangleMesh* m;
 	
 	m = calloc(sizeof(Mesh), 1);
 	
@@ -375,21 +379,21 @@ Mesh* allocMesh(int triangles) {
 
 
 
-void growMeshVertices(Mesh* m, int count) {
+void growMeshVertices(TriangleMesh* m, int count) {
 	if(count < m->szVertices) return;
 	
 	m->vertices = realloc(m->vertices, sizeof(MeshVertex) * count);
 	m->szVertices = count;
 }
 
-void growMeshIndices(Mesh* m, int count) {
+void growMeshIndices(TriangleMesh* m, int count) {
 	if(count < m->szIndices) return;
 	
 	m->indices = realloc(m->indices, sizeof(MeshVertex) * count);
 	m->szIndices = count;
 }
 
-void checkGrowMesh(Mesh* m, int newVertices, int newIndices) {
+void checkGrowMesh(TriangleMesh* m, int newVertices, int newIndices) {
 	if(m->szVertices - m->vertexCnt < newVertices) {
 		if(m->szVertices < 16) m->szVertices = 16;
 		// grow by the next multiple of szVertices large enough to fit the requested quantity
@@ -407,7 +411,7 @@ void checkGrowMesh(Mesh* m, int newVertices, int newIndices) {
 
 
 // doesn't check mesh allocation size. Real Programmers(TM) already know how much memory there is.
-void appendTriangleFast(Mesh* m, Vector3* v0, Vector3* v1, Vector3* v2) {
+void appendTriangleFast(TriangleMesh* m, Vector3* v0, Vector3* v1, Vector3* v2) {
 	int i = m->vertexCnt;
 	int j = m->indexCnt;
 	
@@ -423,7 +427,7 @@ void appendTriangleFast(Mesh* m, Vector3* v0, Vector3* v1, Vector3* v2) {
 	m->indexCnt = j;
 }
 
-void appendTriangle(Mesh* m, Vector3* v0, Vector3* v1, Vector3* v2) {
+void appendTriangle(TriangleMesh* m, Vector3* v0, Vector3* v1, Vector3* v2) {
 	
 	checkGrowMesh(m, 3, 3);
 	
@@ -433,7 +437,7 @@ void appendTriangle(Mesh* m, Vector3* v0, Vector3* v1, Vector3* v2) {
 
 // appends a face of vnct vertices to the mesh
 // CW winding, convex polygons only. will be tesselated as a fan pivoting around v[0].
-void appendFace(Mesh* m, Vector3* v, int vcnt) {
+void appendFace(TriangleMesh* m, Vector3* v, int vcnt) {
 	int i;
 	
 	checkGrowMesh(m, vcnt, 3 * (vcnt - 2));
@@ -445,7 +449,7 @@ void appendFace(Mesh* m, Vector3* v, int vcnt) {
 
 
 // shitty version
-Mesh* makeCube(Matrix* mat, int flat) {
+TriangleMesh* makeCube(Matrix* mat, int flat) {
 	Mesh* m;
 	int i;
 	
@@ -485,7 +489,7 @@ Mesh* makeCube(Matrix* mat, int flat) {
 }
 
 
-Mesh* makeCuboid(Vector3* p1, Vector3* p2) {
+TriangleMesh* makeCuboid(Vector3* p1, Vector3* p2) {
 /*	
 	Mesh* m;
 	Vector3 min, max;
@@ -547,7 +551,7 @@ Mesh* makeCuboid(Vector3* p1, Vector3* p2) {
 
 
 // assumes vertices are not shared
-void calcFlatNormals(Mesh* m) {
+void calcFlatNormals(TriangleMesh* m) {
 	int j, i1, i2, i3;
 	Vector3 n;
 	
@@ -567,7 +571,7 @@ void calcFlatNormals(Mesh* m) {
 
 
 // only works if vertices are welded first.
-void calcSmoothNormals(Mesh* m) {
+void calcSmoothNormals(TriangleMesh* m) {
 	
 	Vector3* sums;
 	int i, vi0, vi1, vi2;
@@ -596,7 +600,7 @@ void calcSmoothNormals(Mesh* m) {
 
 
 
-void weldVertices(Mesh* m, float epsilon) {
+void weldVertices(TriangleMesh* m, float epsilon) {
 	
 	
 	
@@ -606,7 +610,7 @@ void weldVertices(Mesh* m, float epsilon) {
 // rewrites a mesh with no vertex reuse. required for flat shading.
 // super mega naive version; git-r-done. probably more cache-friendly than fancy ones anyway.
 //    a few bits of data can probably be collected in previous passes, like newVertexCnt.
-void unweldVertices(Mesh* m) {
+void unweldVertices(TriangleMesh* m) {
 	
 	char* vusage;
 	int i;
@@ -720,3 +724,5 @@ void appendBezierSpline(MeshSlice* ms, BezierSpline3* bs, float tolerance, int c
 	
 	
 }
+
+#endif
