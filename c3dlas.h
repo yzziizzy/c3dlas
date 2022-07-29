@@ -660,8 +660,12 @@ int boxDisjoint3p(const AABB3* a, const AABB3* b);
 int boxOverlaps3p(const AABB3* a, const AABB3* b);
 int boxContainsPoint3p(const AABB3* b, const Vector3* p);
 
+Vector3 boxCenter3(const AABB3 b); // calculates the center of the box
 void boxCenter3p(const AABB3* b, Vector3* out); // calculates the center of the box
+Vector3 boxSize3(const AABB3 b); // calculates the size of the box
 void boxSize3p(const AABB3* b, Vector3* out); // calculates the size of the box
+void boxExpandTo3p(AABB3* b, Vector3* p);
+void boxExpandTo3(AABB3* b, Vector3 p);
 
 
 void makeRay3p(Vector3* origin, Vector3* direction, Ray3* out);

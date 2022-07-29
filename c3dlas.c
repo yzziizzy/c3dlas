@@ -2135,6 +2135,7 @@ void mPerspective(double fov, float aspect, float near, float far, Matrix* out) 
 	m.m[10] = (far + near) / (near - far);
 	m.m[11] = -1.0;
 	m.m[14] = (2.0 * far * near) / (near - far);
+	m.m[15] = 0.0;
 
 	mMul(&m, out);
 }
@@ -2505,12 +2506,40 @@ void boxCenter3p(const AABB3* b, Vector3* out) {
 	out->z = (b->max.z + b->min.z) / 2;
 }
 
+Vector3 boxCenter3(const AABB3 b) {
+	return (Vector3) {
+		(b->max.x + b->min.x) / 2,
+		(b->max.y + b->min.y) / 2,
+		(b->max.z + b->min.z) / 2
+	};
+}
+
 void boxSize3p(const AABB3* b, Vector3* out) {
 	out->x = b->max.x - b->min.x;
 	out->y = b->max.y - b->min.y;
 	out->z = b->max.z - b->min.z;
 }
 
+Vector3 boxSize3(const AABB3 b) {
+	return (Vector3){
+		b->max.x - b->min.x
+		b->max.y - b->min.y
+		b->max.z - b->min.z
+	};
+}
+
+void boxExpandTo3p(AABB3* b, Vector3* p) {
+	b->min.x = fmin(b->min.x, p->x);
+	b->min.y = fmin(b->min.y, p->y);
+	b->min.z = fmin(b->min.z, p->z);
+	b->max.x = fmin(b->max.x, p->x);
+	b->max.y = fmin(b->max.y, p->y);
+	b->max.z = fmin(b->max.z, p->z);
+}
+
+void boxExpandTo3(AABB3* b, Vector3 p);
+	boxExpandTo3p(b, &p);
+}
 
 
 // 2D versions
