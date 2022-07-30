@@ -2501,16 +2501,16 @@ int boxContainsPoint3p(const AABB3* b, const Vector3* p) {
 
 
 void boxCenter3p(const AABB3* b, Vector3* out) {
-	out->x = (b->max.x + b->min.x) / 2;
-	out->y = (b->max.y + b->min.y) / 2;
-	out->z = (b->max.z + b->min.z) / 2;
+	out->x = (b->max.x + b->min.x) / 2.0;
+	out->y = (b->max.y + b->min.y) / 2.0;
+	out->z = (b->max.z + b->min.z) / 2.0;
 }
 
 Vector3 boxCenter3(const AABB3 b) {
 	return (Vector3) {
-		(b->max.x + b->min.x) / 2,
-		(b->max.y + b->min.y) / 2,
-		(b->max.z + b->min.z) / 2
+		(b.max.x + b.min.x) / 2.0,
+		(b.max.y + b.min.y) / 2.0,
+		(b.max.z + b.min.z) / 2.0
 	};
 }
 
@@ -2522,9 +2522,9 @@ void boxSize3p(const AABB3* b, Vector3* out) {
 
 Vector3 boxSize3(const AABB3 b) {
 	return (Vector3){
-		b->max.x - b->min.x
-		b->max.y - b->min.y
-		b->max.z - b->min.z
+		b.max.x - b.min.x,
+		b.max.y - b.min.y,
+		b.max.z - b.min.z
 	};
 }
 
@@ -2537,7 +2537,7 @@ void boxExpandTo3p(AABB3* b, Vector3* p) {
 	b->max.z = fmin(b->max.z, p->z);
 }
 
-void boxExpandTo3(AABB3* b, Vector3 p);
+void boxExpandTo3(AABB3* b, Vector3 p) {
 	boxExpandTo3p(b, &p);
 }
 
@@ -2563,8 +2563,8 @@ int boxContainsPoint2p(const AABB2* b, const Vector2* p) {
 
 
 void boxCenter2p(const AABB2* b, Vector2* out) {
-	out->x = (b->max.x + b->min.x) / 2;
-	out->y = (b->max.y + b->min.y) / 2;
+	out->x = (b->max.x + b->min.x) / 2.0;
+	out->y = (b->max.y + b->min.y) / 2.0;
 }
 
 void boxSize2p(const AABB2* b, Vector2* out) {
