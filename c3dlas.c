@@ -1,5 +1,6 @@
 
 
+
 #include <stdio.h>
 #include <string.h>
 #include <float.h>
@@ -10,6 +11,13 @@
 #include "c3dlas.h"
 
 
+
+#ifndef _GNU_SOURCE
+static inline sincosf(float x, float* s, float* c) {
+	*s = sinf(x);
+	*c = cosf(x);
+}
+#endif
 
 
 // utilities
@@ -580,8 +588,6 @@ float vMag4p(const Vector4* v) {
 
 
 
-
-
 // Squared distance from one point to another
 
 double vDistSq2i(Vector2i a, Vector2i b) { return vDistSq2ip(&a, &b); } 
@@ -833,6 +839,35 @@ void vMax4p(Vector4* a, Vector4* b, Vector4* out) {
 }
 
 
+// Coordinate system conversions
+
+// Does not check for degenerate vectors
+// Cartesian to Spherical
+Vector3 vC2S3(Vector3 cart) {
+	Vector3 sp;
+	sp.rho = vMag3(cart);
+	sp.theta = acosf(cart.x / sp.rho);
+	sp.phi = acosf(cart.x / (sp.rho * sinf(sp.theta)));
+	
+	return sp;
+}
+
+// Spherical to Cartesian
+Vector3 vS2C3(Vector3 s) {
+	float st, ct, sp, cp;
+	
+	// as of July 2022, gcc trunk is smart enough to automatically optimize to sincos, but clang isn't. 
+	sincosf(s.phi, &sp, &cp);
+	sincosf(s.theta, &st, &ct);
+
+	return (Vector3){
+		.x = s.rho * st * cp,
+		.y = s.rho * st * sp,
+		.z = s.rho * ct
+	};
+}
+
+
 
 // Muchas gracias, Inigo.  
 // https://iquilezles.org/articles/distfunctions2d/
@@ -987,20 +1022,23 @@ void vRandom3p(Vector3* end1, Vector3* end2, Vector3* out) {
 	out->z = frand(fmin(end1->z, end2->z), fmax(end1->z, end2->z));
 }
 
+// Uniformly distributed around the unit sphere; ie, no clustering at the poles.
+Vector3 vRandomNorm3() {
+	Vector3 out;
+	vRandomNorm3p(&out);
+	return out;
+}
+
 void vRandomNorm3p(Vector3* out) {
-	float x = frand(-1, 1);
-	float y = frand(-1, 1);
-	float z = frand(-1, 1);
+	float u = frand(-1.0, 1.0);
+	float th = frand(0, 2.0 * F_PI);
+	float q = sqrtf(1.0 - u * u);
+	float sth, cth;
 	
-	float r = sqrt(x*x + y*y + z*z);
-	if(r == 0.0) {
-		vRandomNorm3p(out); // in the rare case of a zero-length vector, try again
-		return;
-	}
-	
-	out->x = x / r;
-	out->y = y / r;
-	out->z = z / r;
+	sincosf(th, &sth, &cth);
+	out->x = u * cth;
+	out->y = u * sth;
+	out->z = u;
 }
 
 
@@ -1959,9 +1997,8 @@ void mRot3f(float x, float y, float z, float theta, Matrix* out) {
 	float sinth;
 	Matrix r;
 	
-	costh = cos(theta);
+	sincosf(theta, &sinth, &costh);
 	omcosth = 1 - costh;
-	sinth = sin(theta);
 	
 	r.m[0] = costh + (x * x * omcosth);
 	r.m[1] = (z * sinth) + (x * y * omcosth);
@@ -2211,11 +2248,11 @@ void mOrthoFromSphere(Sphere* s, Vector3* eyePos, Matrix* out) {
 	
 	m2 = IDENT_MATRIX;
 // 	mRotX(asin(d.z) + (F_PI / 4)  , &m2);
-	mRotY(atan2(d.z, d.x) + (F_PI / 2)  , &m2);
+	mRotY(atan2f(d.z, d.x) + (F_PI / 2)  , &m2);
 	mMul(&m2, &m);
 
 	m2 = IDENT_MATRIX;
-	mRotZ(asin(d.y), &m2);
+	mRotZ(asinf(d.y), &m2);
 	mMul(&m2, &m);
 	
 
@@ -2514,6 +2551,7 @@ Vector3 boxCenter3(const AABB3 b) {
 	};
 }
 
+
 void boxSize3p(const AABB3* b, Vector3* out) {
 	out->x = b->max.x - b->min.x;
 	out->y = b->max.y - b->min.y;
@@ -2565,6 +2603,13 @@ int boxContainsPoint2p(const AABB2* b, const Vector2* p) {
 void boxCenter2p(const AABB2* b, Vector2* out) {
 	out->x = (b->max.x + b->min.x) / 2.0;
 	out->y = (b->max.y + b->min.y) / 2.0;
+}
+
+Vector2 boxSize2(const AABB2 b) {
+	return (Vector2){
+		b.max.x - b.min.x,
+		b.max.y - b.min.y
+	};
 }
 
 void boxSize2p(const AABB2* b, Vector2* out) {

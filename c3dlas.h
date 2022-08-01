@@ -93,16 +93,30 @@ typedef struct Vector2i {
 } Vector2i;
 
 typedef struct {
-	float x,y;
+	//    cartesian  polar
+	union { float x, rho; };
+	union { float y, theta; };
 } Vector2;
 
+
+// The spherical coordinates use the "mathematical" conventions as opposed to the "physics" conventions
+// This is because of the struct layout convenience for overlapping with 2D polar coordinates. 
+
 typedef struct {
-	float x,y,z;
+	//    cartesian  spherical  color
+	union { float x, rho,       r; }; // rho is the radius
+	union { float y, theta,     g; }; // rotation in the X-Y plane
+	union { float z, phi,       b; }; // rotation in the plane passing through the Z axis
 } Vector3;
 
 typedef struct {
-	float x,y,z,w;
+	//    cartesian  spherical  color
+	union { float x, rho,       r; }; // rho is the radius
+	union { float y, theta,     g; }; // rotation in the X-Y plane
+	union { float z, phi,       b; }; // rotation in the plane passing through the Z axis
+	union { float w,            a; };
 } Vector4;
+
 
 // Rays, but also infinite lines (mathematical lines) because there is no practical
 //   difference besides whether you conside the ray to be one-sided or not.
@@ -231,6 +245,10 @@ static inline float frand(float low, float high) {
 
 static inline float frandNorm(void) {
 	return ((float)rand() / (float)RAND_MAX);
+}
+
+static inline float frandNorm2(void) {
+	return ((float)rand() / (float)RAND_MAX) * 2.0 - 1.0;
 }
 
 static inline double drand(double low, double high) {
@@ -431,6 +449,13 @@ void     vMax2ip(Vector2i* a, Vector2i* b, Vector2i* out);
 void     vMax2p(Vector2* a, Vector2* b, Vector2* out);
 void     vMax3p(Vector3* a, Vector3* b, Vector3* out);
 void     vMax4p(Vector4* a, Vector4* b, Vector4* out);
+
+// Cartesian to Spherical
+Vector3 vC2S3(Vector3 cart);
+
+// Spherical to Cartesian
+Vector3 vS2C3(Vector3 s);
+
 
 // Distance from a point to a line segment 
 float vDistPointLine2(Vector2 p, Line2 ls);
@@ -662,7 +687,9 @@ int boxContainsPoint3p(const AABB3* b, const Vector3* p);
 
 Vector3 boxCenter3(const AABB3 b); // calculates the center of the box
 void boxCenter3p(const AABB3* b, Vector3* out); // calculates the center of the box
+Vector2 boxSize2(const AABB2 b); // calculates the size of the box
 Vector3 boxSize3(const AABB3 b); // calculates the size of the box
+void boxSize2p(const AABB2* b, Vector2* out); // calculates the size of the box
 void boxSize3p(const AABB3* b, Vector3* out); // calculates the size of the box
 void boxExpandTo3p(AABB3* b, Vector3* p);
 void boxExpandTo3(AABB3* b, Vector3 p);
