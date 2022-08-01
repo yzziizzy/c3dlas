@@ -260,7 +260,7 @@ static inline double drandNorm(void) {
 }
 
 static inline float fclamp(float val, float min, float max) {
-	return fmin(max, fmax(min, val));
+	return fminf(max, fmaxf(min, val));
 }
 
 static inline float fclampNorm(float val) {
@@ -479,6 +479,7 @@ void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out); // faster; ont
 void  vPointAvg3p(Vector3* a, Vector3* b, Vector3* out);
 
 void vRandom3p(Vector3* end1, Vector3* end2, Vector3* out);
+Vector3 vRandom3(Vector3 end1, Vector3 end2);
 void vRandomNorm3p(Vector3* out);
 
 
@@ -491,7 +492,8 @@ int shortestLineFromRayToRay3p(Ray3* r1, Ray3* r2, Vector3* pOut);
 
 // reflects the distance from v to pivot across pivot.
 // out, pivot, and v will form a straight line with pivot exactly in the middle.
-void  vReflectAcross3p(Vector3* v, Vector3* pivot, Vector3* out);
+void    vReflectAcross3p(Vector3* v, Vector3* pivot, Vector3* out);
+Vector3 vReflectAcross3(Vector3 v, Vector3 pivot);
 void  vTriFaceNormal3p(Vector3* a, Vector3* b, Vector3* c, Vector3* out); // returns a normalized face normal for the given triangle
 void  vpTriFaceNormal3p(Vector3* tri, Vector3* out); // returns a normalized face normal for the given triangle
 

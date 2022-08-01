@@ -960,7 +960,7 @@ float vDistPolygon(Vector2 p, Polygon* poly) {
 		Vector2 w = vSub2(p, A);
 		Vector2 b = vSub2(w, vScale2(e, fclamp(vDot2(w, e) / vDot2(e, e), 0.0, 1.0)));
 
-		d = fmin(d, vDot2(b, b));
+		d = fminf(d, vDot2(b, b));
         
 		int c1 = p.y >= A.y;
 		int c2 = p.y < B.y;
@@ -994,7 +994,7 @@ void polyCalcRadiusSq(Polygon* poly) {
 	
 	for(int i = 0; i < cnt; i++) {
 		Vector2 a = poly->points[i];
-		d = fmax(d, vDot2(poly->centroid, a));
+		d = fmaxf(d, vDot2(poly->centroid, a));
 	}
 	
 	poly->maxRadiusSq = d;
@@ -1017,9 +1017,17 @@ void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out) { // faster; on
 
 
 void vRandom3p(Vector3* end1, Vector3* end2, Vector3* out) {
-	out->x = frand(fmin(end1->x, end2->x), fmax(end1->x, end2->x));
-	out->y = frand(fmin(end1->y, end2->y), fmax(end1->y, end2->y));
-	out->z = frand(fmin(end1->z, end2->z), fmax(end1->z, end2->z));
+	out->x = frand(fminf(end1->x, end2->x), fmaxf(end1->x, end2->x));
+	out->y = frand(fminf(end1->y, end2->y), fmaxf(end1->y, end2->y));
+	out->z = frand(fminf(end1->z, end2->z), fmaxf(end1->z, end2->z));
+}
+
+Vector3 vRandom3(Vector3 end1, Vector3 end2) {
+	return (Vector3){
+		.x = frand(fminf(end1.x, end2.x), fmaxf(end1.x, end2.x)),
+		.y = frand(fminf(end1.y, end2.y), fmaxf(end1.y, end2.y)),
+		.z = frand(fminf(end1.z, end2.z), fmaxf(end1.z, end2.z))
+	};
 }
 
 // Uniformly distributed around the unit sphere; ie, no clustering at the poles.
@@ -1050,6 +1058,12 @@ void vReflectAcross3p(Vector3* v, Vector3* pivot, Vector3* out) {
 	
 	vSub3p(pivot, v, &diff);
 	vAdd3p(pivot, &diff, out);
+}
+
+Vector3 vReflectAcross3(Vector3 v, Vector3 pivot) {
+	Vector3 o;
+	vReflectAcross3p(&v, &pivot, &o);
+	return o;
 }
 
 // calculate a unit vector normal to a triangle's face.
@@ -2567,12 +2581,12 @@ Vector3 boxSize3(const AABB3 b) {
 }
 
 void boxExpandTo3p(AABB3* b, Vector3* p) {
-	b->min.x = fmin(b->min.x, p->x);
-	b->min.y = fmin(b->min.y, p->y);
-	b->min.z = fmin(b->min.z, p->z);
-	b->max.x = fmin(b->max.x, p->x);
-	b->max.y = fmin(b->max.y, p->y);
-	b->max.z = fmin(b->max.z, p->z);
+	b->min.x = fminf(b->min.x, p->x);
+	b->min.y = fminf(b->min.y, p->y);
+	b->min.z = fminf(b->min.z, p->z);
+	b->max.x = fmaxf(b->max.x, p->x);
+	b->max.y = fmaxf(b->max.y, p->y);
+	b->max.z = fmaxf(b->max.z, p->z);
 }
 
 void boxExpandTo3(AABB3* b, Vector3 p) {
@@ -2763,18 +2777,18 @@ int boxRayIntersectFast3p(const AABB3* b, const Ray3* r) {
 	
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
-	tmin = fmin(t1.x, t2.x);
-	tmax = fmax(t1.x, t2.x);
+	tmin = fminf(t1.x, t2.x);
+	tmax = fmaxf(t1.x, t2.x);
 	
 	t1.y = (b->min.y - r->o.y) * id.y;
 	t2.y = (b->max.y - r->o.y) * id.y;
-	tmin = fmax(tmin, fmin(t1.y, t2.y));
-	tmax = fmin(tmax, fmax(t1.y, t2.y));
+	tmin = fmaxf(tmin, fminf(t1.y, t2.y));
+	tmax = fminf(tmax, fmaxf(t1.y, t2.y));
 	
 	t1.z = (b->min.z - r->o.z) * id.z;
 	t2.z = (b->max.z - r->o.z) * id.z;
-	tmin = fmax(tmin, fmin(t1.z, t2.z));
-	tmax = fmin(tmax, fmax(t1.z, t2.z));
+	tmin = fmaxf(tmin, fminf(t1.z, t2.z));
+	tmax = fminf(tmax, fmaxf(t1.z, t2.z));
 
 	return tmax >= tmin && tmax > 0.0f;
 }
@@ -2790,13 +2804,13 @@ int boxRayIntersectFast2(const AABB2* b, const Ray2* r) {
 	
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
-	tmin = fmin(t1.x, t2.x);
-	tmax = fmax(t1.x, t2.x);
+	tmin = fminf(t1.x, t2.x);
+	tmax = fmaxf(t1.x, t2.x);
 	
 	t1.y = (b->min.y - r->o.y) * id.y;
 	t2.y = (b->max.y - r->o.y) * id.y;
-	tmin = fmax(tmin, fmin(t1.y, t2.y));
-	tmax = fmin(tmax, fmax(t1.y, t2.y));
+//	tmin = fmaxf(tmin, fminf(t1.y, t2.y));
+	tmax = fminf(tmax, fmaxf(t1.y, t2.y));
 	
 	return tmax >= tmin && tmax > 0.0f;
 }
@@ -2813,18 +2827,18 @@ int boxRayIntersect3p(const AABB3* b, const Ray3* r, Vector3* ipoint, float* idi
 		
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
-	tmin = fmin(t1.x, t2.x);
-	tmax = fmax(t1.x, t2.x);
+	tmin = fminf(t1.x, t2.x);
+	tmax = fmaxf(t1.x, t2.x);
 	
 	t1.y = (b->min.y - r->o.y) * id.y;
 	t2.y = (b->max.y - r->o.y) * id.y;
-	tmin = fmax(tmin, fmin(t1.y, t2.y));
-	tmax = fmin(tmax, fmax(t1.y, t2.y));
+	tmin = fmaxf(tmin, fminf(t1.y, t2.y));
+	tmax = fminf(tmax, fmaxf(t1.y, t2.y));
 	
 	t1.z = (b->min.z - r->o.z) * id.z;
 	t2.z = (b->max.z - r->o.z) * id.z;
-	tmin = fmax(tmin, fmin(t1.z, t2.z));
-	tmax = fmin(tmax, fmax(t1.z, t2.z));
+	tmin = fmaxf(tmin, fminf(t1.z, t2.z));
+	tmax = fminf(tmax, fmaxf(t1.z, t2.z));
 	
 	if(tmax < tmin) return 0;
 	
