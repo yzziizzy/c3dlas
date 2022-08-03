@@ -103,6 +103,10 @@ void pcg_f8(uint64_t* state, uint64_t stream, float* out) {
 
 
 
+float frandPCG(float low, float high, PCG* pcg) {
+	return low + ((high - low) * (pcg_f(&pcg->state, pcg->stream) * 0.5 + 0.5));
+}
+
 
 int vEq2i(Vector2i a, Vector2i b) { return vEq2ip(&a, &b); }
 int vEqExact2i(Vector2i a, Vector2i b) { return vEqExact2ip(&a, &b); } 
@@ -1016,6 +1020,18 @@ void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out) { // faster; on
 
 
 
+void vRandomPCG3p(Vector3* end1, Vector3* end2, PCG* pcg, Vector3* out) {
+	out->x = frandPCG(fminf(end1->x, end2->x), fmaxf(end1->x, end2->x), pcg);
+	out->y = frandPCG(fminf(end1->y, end2->y), fmaxf(end1->y, end2->y), pcg);
+	out->z = frandPCG(fminf(end1->z, end2->z), fmaxf(end1->z, end2->z), pcg);
+}
+
+Vector3 vRandomPCG3(Vector3 end1, Vector3 end2, PCG* pcg) {
+	Vector3 o;
+	vRandomPCG3p(&end1, &end2, pcg, &o);
+	return o;
+}
+
 void vRandom3p(Vector3* end1, Vector3* end2, Vector3* out) {
 	out->x = frand(fminf(end1->x, end2->x), fmaxf(end1->x, end2->x));
 	out->y = frand(fminf(end1->y, end2->y), fmaxf(end1->y, end2->y));
@@ -1052,12 +1068,11 @@ void vRandomNorm3p(Vector3* out) {
 
 
 // reflects the distance from v to pivot across pivot.
-// out, pivot, and v will form a straight line with pivot exactly in the middle.
+// out, pivot, and v will all be in the same plane, with pivot half way between v and out
 void vReflectAcross3p(Vector3* v, Vector3* pivot, Vector3* out) {
-	Vector3 diff;
-	
-	vSub3p(pivot, v, &diff);
-	vAdd3p(pivot, &diff, out);
+	Vector3 v2 = vScale3(*v, -1);
+	float d = vDot3(v2, *pivot) * 2.0;
+	*out = vSub3(v2, vScale3(*pivot, d));
 }
 
 Vector3 vReflectAcross3(Vector3 v, Vector3 pivot) {
@@ -3015,5 +3030,85 @@ Vector3 evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 
 
 
 
+Quaternion qAdd(Quaternion l, Quaternion r) {
+	return vAdd4(l, r);
+}
 
+Quaternion qSub(Quaternion l, Quaternion r) {
+	return vSub4(l, r);
+}
+
+Quaternion qScale(Quaternion q, float s) {
+	return (Quaternion){.i = q.i*s, .j = q.j*s, .k = q.k*s, .real = q.real*s }; 
+}
+
+Quaternion qMul(Quaternion l, Quaternion r) {
+	return (Quaternion){
+		.i = r.real*r.i + r.i*l.real - r.j*l.k    + r.k*l.j,
+		.j = r.real*r.j + r.i*l.k    + r.j*l.real - r.k*l.i,
+		.k = r.real*r.k - r.i*l.j    + r.j*l.i    + r.k*l.real,
+		.real = l.real*r.real - l.i*r.i - l.j*r.j - l.k*r.k
+	};
+}
+
+Quaternion qDiv(Quaternion n, Quaternion d) {
+	float m = vDot4(d, d);
+
+	return (Quaternion){
+		.i = (d.real*n.i - d.i*n.real - d.k*n.k    + d.k*n.j   ) / m,
+		.j = (d.real*n.j + d.i*n.k    - d.k*n.real - d.k*n.i   ) / m,
+		.k = (d.real*n.k - d.i*n.j    - d.k*n.i    - d.k*n.real) / m,
+		.real = (n.real*d.real + n.i*d.i + n.j*d.j + n.k*d.k) / m
+	};
+}
+
+
+// rotate one quaternion by another
+Quaternion qRot(Quaternion r, Quaternion a) {
+	return qMul(qMul(r, a), qInv(r));
+}
+
+// rotate a cartesian vector by a quaternion
+//Quaternion qRotv(Quaternion r, Vector3 v) {
+//	return qMul(qMul(r, a), qInv(r));
+//}
+
+
+// conjugate
+Quaternion qConj(Quaternion q) {
+	return (Quaternion){
+		.i = -q.i,
+		.j = -q.j,
+		.k = -q.k,
+		.real = q.real
+	};
+}
+
+// inverse
+Quaternion qInv(Quaternion q) {
+	float m = vDot4(q, q);
+	return (Quaternion){
+		.i = -q.i / m,
+		.j = -q.j / m,
+		.k = -q.k / m,
+		.real = q.real / m
+	};
+}
+
+Quaternion qUnit(Quaternion q) {
+	return vNorm4(q);
+}
+
+// aliases of the same thing for conceptual convenience
+float qMod(Quaternion q) {
+	return vMag4(q);
+}
+
+float qMag(Quaternion q) {
+	return vMag4(q);
+}
+
+float qLen(Quaternion q) {
+	return vMag4(q);
+}
 

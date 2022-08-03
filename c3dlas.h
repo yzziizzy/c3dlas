@@ -109,14 +109,15 @@ typedef struct {
 	union { float z, phi,       b; }; // rotation in the plane passing through the Z axis
 } Vector3;
 
-typedef struct {
-	//    cartesian  spherical  color
-	union { float x, rho,       r; }; // rho is the radius
-	union { float y, theta,     g; }; // rotation in the X-Y plane
-	union { float z, phi,       b; }; // rotation in the plane passing through the Z axis
-	union { float w,            a; };
+typedef struct Vector4 {
+	//    cartesian  spherical  color  quaternion basis
+	union { float x, rho,       r,     i; }; // rho is the radius
+	union { float y, theta,     g,     j; }; // rotation in the X-Y plane
+	union { float z, phi,       b,     k; }; // rotation in the plane passing through the Z axis
+	union { float w,            a,     real; };
 } Vector4;
 
+typedef struct Vector4 Quaternion;
 
 // Rays, but also infinite lines (mathematical lines) because there is no practical
 //   difference besides whether you conside the ray to be one-sided or not.
@@ -227,6 +228,9 @@ typedef struct AABB3 {
 } AABB3;
 
 
+typedef struct {
+	uint64_t state, stream;
+} PCG;
 
 
 
@@ -238,6 +242,7 @@ uint32_t bitReverse32(uint32_t x);
 uint32_t reverseBits(uint32_t n, int len);
 
 float pcg_f(uint64_t* state, uint64_t stream);
+float frandPCG(float low, float high, PCG* pcg);
 
 static inline float frand(float low, float high) {
 	return low + ((high - low) * ((float)rand() / (float)RAND_MAX));
@@ -477,6 +482,11 @@ void polyCalcRadiusSq(Polygon* poly) ;
 void  vProject3p(Vector3* what, Vector3* onto, Vector3* out); // slower; onto may not be normalized
 void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out); // faster; onto must be normalized
 void  vPointAvg3p(Vector3* a, Vector3* b, Vector3* out);
+
+
+
+void vRandomPCG3p(Vector3* end1, Vector3* end2, PCG* pcg, Vector3* out);
+Vector3 vRandomPCG3(Vector3 end1, Vector3 end2, PCG* pcg);
 
 void vRandom3p(Vector3* end1, Vector3* end2, Vector3* out);
 Vector3 vRandom3(Vector3 end1, Vector3 end2);
@@ -729,6 +739,22 @@ void quadRoundInward2p(const Quad2* in, Quad2i* out);
 float   evalCubicHermite1D(float t, float p0, float p1, float m0, float m1);
 Vector2 evalCubicHermite2D(float t, Vector2 p0, Vector2 p1, Vector2 m0, Vector2 m1); 
 Vector3  evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 m1);
+
+
+Quaternion qAdd(Quaternion l, Quaternion r);
+Quaternion qSub(Quaternion l, Quaternion r);
+Quaternion qScale(Quaternion q, float s);
+Quaternion qMul(Quaternion l, Quaternion r);
+Quaternion qDiv(Quaternion n, Quaternion d);
+Quaternion qRot(Quaternion r, Quaternion a);
+Quaternion qConj(Quaternion q);
+Quaternion qInv(Quaternion q);
+
+// these appear to all mean the same thing for quaternions.
+float qMod(Quaternion q);
+float qMag(Quaternion q);
+float qLen(Quaternion q);
+
 
 #endif // __c3dlas_h__
 
