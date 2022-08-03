@@ -455,6 +455,11 @@ void     vMax2p(Vector2* a, Vector2* b, Vector2* out);
 void     vMax3p(Vector3* a, Vector3* b, Vector3* out);
 void     vMax4p(Vector4* a, Vector4* b, Vector4* out);
 
+Vector2 vClamp2f(Vector2 in, float min, float max);
+Vector2 vClamp2(Vector2 in, Vector2 min, Vector2 max);
+Vector3 vClamp3f(Vector3 in, float min, float max);
+Vector3 vClamp3(Vector3 in, Vector3 min, Vector3 max);
+
 // Cartesian to Spherical
 Vector3 vC2S3(Vector3 cart);
 

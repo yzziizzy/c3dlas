@@ -843,6 +843,37 @@ void vMax4p(Vector4* a, Vector4* b, Vector4* out) {
 }
 
 
+Vector2 vClamp2f(Vector2 in, float min, float max) {
+	return (Vector2) {
+		.x = fmaxf(min, fminf(in.x, max)), 
+		.y = fmaxf(min, fminf(in.y, max)) 
+	};
+}
+
+Vector2 vClamp2(Vector2 in, Vector2 min, Vector2 max) {
+	return (Vector2) {
+		.x = fmaxf(min.x, fminf(in.x, max.x)), 
+		.y = fmaxf(min.y, fminf(in.y, max.y)) 
+	};
+}
+
+Vector3 vClamp3f(Vector3 in, float min, float max) {
+	return (Vector3) {
+		.x = fmaxf(min, fminf(in.x, max)), 
+		.y = fmaxf(min, fminf(in.y, max)), 
+		.z = fmaxf(min, fminf(in.z, max)) 
+	};
+}
+
+Vector3 vClamp3(Vector3 in, Vector3 min, Vector3 max) {
+	return (Vector3) {
+		.x = fmaxf(min.x, fminf(in.x, max.x)), 
+		.y = fmaxf(min.y, fminf(in.y, max.y)), 
+		.z = fmaxf(min.z, fminf(in.z, max.z)) 
+	};
+}
+
+
 // Coordinate system conversions
 
 // Does not check for degenerate vectors
