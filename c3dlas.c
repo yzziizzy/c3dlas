@@ -896,8 +896,8 @@ Vector3 vS2C3(Vector3 s) {
 	sincosf(s.theta, &st, &ct);
 
 	return (Vector3){
-		.x = s.rho * st * sp,
-		.y = s.rho * ct * sp,
+		.x = s.rho * sp * st,
+		.y = s.rho * sp * ct,
 		.z = s.rho * cp
 	};
 }
