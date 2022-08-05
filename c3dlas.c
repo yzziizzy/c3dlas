@@ -881,8 +881,8 @@ Vector3 vClamp3(Vector3 in, Vector3 min, Vector3 max) {
 Vector3 vC2S3(Vector3 cart) {
 	Vector3 sp;
 	sp.rho = vMag3(cart);
-	sp.theta = acosf(cart.x / sp.rho);
-	sp.phi = acosf(cart.x / (sp.rho * sinf(sp.theta)));
+	sp.theta = atan2f(cart.x, cart.y);
+	sp.phi = acosf(cart.z / sp.rho);
 	
 	return sp;
 }
@@ -896,8 +896,8 @@ Vector3 vS2C3(Vector3 s) {
 	sincosf(s.theta, &st, &ct);
 
 	return (Vector3){
-		.x = s.rho * sp * st,
-		.y = s.rho * sp * ct,
+		.x = s.rho * sp * ct,
+		.y = s.rho * sp * st,
 		.z = s.rho * cp
 	};
 }
@@ -2100,6 +2100,7 @@ void mRotZ(float theta, Matrix* out) {
 
 void mTransposeFast(Matrix* in, Matrix* out) {
 	int i;
+	
 	for(i = 0; i < 4; i++) {
 		out->m[i]      = in->m[i * 4];
 		out->m[i + 4]  = in->m[(i * 4) + 1];
