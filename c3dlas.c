@@ -2254,9 +2254,14 @@ void mPerspExtractNF(Matrix* m, double* near, double* far) {
 
 
 // set the near and far planes for an existing prespective matrix
-void mPerspSetNF(Matrix* m, float near, float far) {
-	m->m[10] = -(far + near) / (far - near);
-	m->m[14] = (-2.0 * far * near) / (far - near);
+void mPerspSetNF_ZUp(Matrix* m, float near, float far) { // Z-up
+	m->m[6] = (far + near) / (near - far);
+	m->m[14] = (2.0 * far * near) / (near - far);
+}
+
+void mPerspSetNF(Matrix* m, float near, float far) { // Y-up	
+	m->m[10] = (far + near) / (far - near);
+	m->m[14] = (2.0 * far * near) / (far - near);
 }
 
 
@@ -2279,48 +2284,52 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 }
 
 
-void mOrthoFromSphere(Sphere* s, Vector3* eyePos, Matrix* out) {
+//void mOrthoFromSphere(Sphere* s, Vector3* eyePos, Matrix* out) {
+void mOrthoFromSphere(Sphere s, Vector3 eyePos, Vector3 up, Matrix* out) {
 	Matrix m;
 	
-	float right = -s->r ;
-	float left = s->r;
-	float top = s->r;
-	float bottom = -s->r;
-	float near = -s->r;
-	float far = s->r;
+	float right = -s.r ;
+	float left = s.r;
+	float top = s.r;
+	float bottom = -s.r;
+	float near = -s.r;
+	float far = s.r;
 	
 	// this is the ortho projection matrix
+	/*
 	m = IDENT_MATRIX;
-	m.m[0] = 2 / (right - left);
-	m.m[5] = 2 / (top - bottom);
-	m.m[10] = -2 / (far - near);
+	m.m[0] = 2. / (right - left);
+	m.m[5] = 2. / (top - bottom);
+	m.m[10] = -2. / (far - near);
 	m.m[12] = -(right + left) / (right - left);
 	m.m[13] = -(top + bottom) / (top - bottom);
 	m.m[14] = -(far + near) / (far - near);
 	m.m[15] = 1;
+*/
+
+	m = IDENT_MATRIX;
+	m.m[0 + (0*4)] = 2. / (right - left);
+	m.m[1 + (1*4)] = 2. / (top - bottom);
+	m.m[2 + (2*4)] = -2. / (far - near);
 	
-	Vector3 d;
-	vSub3p(&s->center, eyePos, &d);
-	vNorm3p(&d, &d);
+	m.m[0 + (3*4)] = -(top + bottom) / (top - bottom);
+	m.m[1 + (3*4)] = -(right + left) / (right - left);
+	m.m[2 + (3*4)] = -(far + near) / (far - near);
+	m.m[3 + (3*4)] = 1;
+	
+	
+	Matrix zup = {
+		1, 0, 0, 0, // 0 1 2 3
+		0, 0, 1, 0, // 4 5(6)7
+		0, 1, 0, 0, // 8(9)0 1
+		0, 0, 0, 1  // 2 3 4 5
+	};
+//	mMul(&zup, &m);
+	
+	Vector3 d = vNorm3(vSub3(s.center, eyePos));
 	
 	Matrix m2;
-
-	
-	
-	m2 = IDENT_MATRIX;
-// 	mRotX(asin(d.z) + (F_PI / 4)  , &m2);
-	mRotY(atan2f(d.z, d.x) + (F_PI / 2)  , &m2);
-	mMul(&m2, &m);
-
-	m2 = IDENT_MATRIX;
-	mRotZ(asinf(d.y), &m2);
-	mMul(&m2, &m);
-	
-
-	m2 = IDENT_MATRIX;
-	Vector3 ic;
-	vScale3p(&s->center, -1, &ic);
-	mTransv(&ic, &m2);
+	mLookAt(eyePos, s.center, up, &m2);
 	
 	mFastMul(&m2, &m, out);
 }
@@ -2338,46 +2347,39 @@ void mOrthoExtractPlanes(Matrix* m, float* left, float* right, float* top, float
 
 
 // analgous to gluLookAt
-// BUG: very broken apparently
-// https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
-void mLookAt(Vector3* eye, Vector3* center, Vector3* up, Matrix* out) {
+// up is not required to be orthogonal to anything, so long as it's not parallel to anything
+// http://www.songho.ca/opengl/gl_camera.html#lookat
+void mLookAt(Vector3 eye, Vector3 center, Vector3 up, Matrix* out) {
 	
-	Vector3 f, upn, s, u, sn;
-	Matrix m, m2;
-	m2 = IDENT_MATRIX;
+	Vector3 forward, left, upn;
+	Matrix m;
 	
-	vSub3p(center, eye, &f);
-	vNorm3p(&f, &f);
 	
-	vNorm3p(up, &upn);
+	forward = vNorm3(vSub3(eye, center));
+	left = vNorm3(vCross3(forward, up));
+	upn = vCross3(left, forward);
 	
-	vCross3p(&f, &upn, &s);
-	vNorm3p(&s, &sn);
-	
-	vCross3p(&sn, &f, &u);
-	
-	m.m[0] = s.x;
-	m.m[1] = u.x;
-	m.m[2] = -f.x;
-	m.m[3] = 0;
+	m.m[0+(0*4)] = left.x;
+	m.m[1+(0*4)] = upn.x;
+	m.m[2+(0*4)] = forward.x;
+	m.m[3+(0*4)] = 0;
 
-	m.m[4] = s.y;
-	m.m[5] = u.y;
-	m.m[6] = -f.y;
-	m.m[7] = 0;
+	m.m[0+(1*4)] = left.y;
+	m.m[1+(1*4)] = upn.y;
+	m.m[2+(1*4)] = forward.y;
+	m.m[3+(1*4)] = 0;
 	
-	m.m[8] = s.z;
-	m.m[9] = u.z;
-	m.m[10] = -f.z;
-	m.m[11] = 0;
+	m.m[0+(2*4)] = left.z;
+	m.m[1+(2*4)] = upn.z;
+	m.m[2+(2*4)] = forward.z;
+	m.m[3+(2*4)] = 0;
 	
-	m.m[12] = 0;
-	m.m[13] = 0;
-	m.m[14] = 0;
-	m.m[15] = 1;
+	m.m[0+(3*4)] = -left.x * center.x    - left.y * center.y    - left.z * center.z;
+	m.m[1+(3*4)] = -upn.x * center.x     - upn.y * center.y     - upn.z * center.z;
+	m.m[2+(3*4)] = -forward.x * center.x - forward.y * center.y - forward.z * center.z;
+	m.m[3+(3*4)] = 1;
 	
-	mTrans3f(-eye->x, -eye->y, -eye->z, &m2);
-	mFastMul(&m2, &m, out);
+	*out = m;
 }
 
 
@@ -2497,7 +2499,7 @@ void msOrtho(float left, float right, float top, float bottom, float near, float
 }
 
 void msLookAt(Vector3* eye, Vector3* center, Vector3* up, MatrixStack* ms) {
-	mLookAt(eye, center, up, msGetTop(ms));
+	mLookAt(*eye, *center, *up, msGetTop(ms));
 }
 
 
@@ -3096,14 +3098,27 @@ Quaternion qDiv(Quaternion n, Quaternion d) {
 
 
 // rotate one quaternion by another
+// aka "conjugation"
 Quaternion qRot(Quaternion r, Quaternion a) {
 	return qMul(qMul(r, a), qInv(r));
 }
+Quaternion qConjugation(Quaternion r, Quaternion a) {
+	return qMul(qMul(r, a), qInv(r));
+}
 
-// rotate a cartesian vector by a quaternion
-//Quaternion qRotv(Quaternion r, Vector3 v) {
-//	return qMul(qMul(r, a), qInv(r));
-//}
+// create a quaternion representing a rotation of theta around vector r
+Quaternion qFromRTheta(Vector3 r, float theta) {
+	float t_2 = theta / 2;
+	float st_2, ct_2;
+	sincosf(t_2, &st_2, &ct_2);
+	
+	return (Quaternion){
+		.real = ct_2,
+		.i = st_2 * r.x,
+		.j = st_2 * r.y,
+		.k = st_2 * r.z
+	};
+}
 
 
 // conjugate
@@ -3144,3 +3159,72 @@ float qLen(Quaternion q) {
 	return vMag4(q);
 }
 
+
+// Applies the full conjugate multiplication qvq*
+void qNonUnitToMatrix(Quaternion q, Matrix* out) {
+	float s2 = q.real * q.real;
+	float x2 = q.i * q.i;
+	float y2 = q.j * q.j;
+	float z2 = q.k * q.k;
+	
+	float sx = 2.0 * q.real * q.i;
+	float sy = 2.0 * q.real * q.j;
+	float sz = 2.0 * q.real * q.k;
+	float xy = 2.0 * q.i * q.j;
+	float xz = 2.0 * q.i * q.k;
+	float yz = 2.0 * q.j * q.k;
+
+	out->m[0] = s2 + x2 - y2 - z2;
+	out->m[1] = xy + sz;
+	out->m[2] = xz - sy;
+	out->m[3] = 0;
+	
+	out->m[4] = xy - sz;
+	out->m[5] = s2 - x2 + y2 - z2;
+	out->m[6] = yz + sx;
+	out->m[7] = 0;
+	
+	out->m[8] = xz + sy;
+	out->m[9] = yz - sx;
+	out->m[10] = s2 - x2 - y2 + z2;
+	out->m[11] = 0;
+	
+	out->m[12] = 0;
+	out->m[13] = 0;
+	out->m[14] = 0;
+	out->m[15] = 1;
+}
+
+// Applies the full conjugate multiplication qvq*
+void qUnitToMatrix(Quaternion q, Matrix* out) {
+	float x2 = 2.0 * q.i * q.i;
+	float y2 = 2.0 * q.j * q.j;
+	float z2 = 2.0 * q.k * q.k;
+	
+	float sx = 2.0 * q.real * q.i;
+	float sy = 2.0 * q.real * q.j;
+	float sz = 2.0 * q.real * q.k;
+	float xy = 2.0 * q.i * q.j;
+	float xz = 2.0 * q.i * q.k;
+	float yz = 2.0 * q.j * q.k;
+	
+	out->m[0] = 1.0 - y2 - z2;
+	out->m[1] = xy + sz;
+	out->m[2] = xz - sy;
+	out->m[3] = 0;
+	
+	out->m[4] = xy - sz;
+	out->m[5] = 1.0 - x2 - z2;
+	out->m[6] = yz + sx;
+	out->m[7] = 0;
+	
+	out->m[8] = xz + sy;
+	out->m[9] = yz - sx;
+	out->m[10] = 1.0 - x2 - y2;
+	out->m[11] = 0;
+	
+	out->m[12] = 0;
+	out->m[13] = 0;
+	out->m[14] = 0;
+	out->m[15] = 1;
+}

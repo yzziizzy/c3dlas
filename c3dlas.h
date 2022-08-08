@@ -111,12 +111,13 @@ typedef struct {
 
 typedef struct Vector4 {
 	//    cartesian  spherical  color  quaternion basis
-	union { float x, rho,       r,     i; }; // rho is the radius
-	union { float y, theta,     g,     j; }; // rotation in the X-Y plane
-	union { float z, phi,       b,     k; }; // rotation in the plane passing through the Z axis
-	union { float w,            a,     real; };
+	union { float x, rho,       r,     i; }; // rho = the radius
+	union { float y, theta,     g,     j; }; // theta = rotation in the X-Y plane
+	union { float z, phi,       b,     k; }; // phi = rotation in the plane passing through the Z axis
+	union { float w,            a,     real; }; // real is last for memory alignment with 4d cartesian vectors
 } Vector4;
 
+// Best quaternion site on the internet so far: http://www.songho.ca/math/quaternion/quaternion.html
 typedef struct Vector4 Quaternion;
 
 // Rays, but also infinite lines (mathematical lines) because there is no practical
@@ -634,21 +635,23 @@ void mPerspExtractNF(Matrix* m, double* near, double* far);
 
 // set the near and far planes for an existing prespective matrix
 void mPerspSetNF(Matrix* m, float near, float far);
+void mPerspSetNF_ZUp(Matrix* m, float near, float far);
 
 // orthographic projection. use this for a "2D" look.
 // same div/0 warnings.
 void mOrtho(float left, float right, float top, float bottom, float near, float far, Matrix* out);
 
 // calculates an orthographic matrix that encloses the sphere, looking from eyePos
-void mOrthoFromSphere(Sphere* s, Vector3* eyePos, Matrix* out);
+void mOrthoFromSphere(Sphere s, Vector3 eyePos, Vector3 up, Matrix* out);
 
 // extract the planes from an orthographic projection matrix.
 void mOrthoExtractPlanes(Matrix* m, float* left, float* right, float* top, float* bottom, float* near, float* far);
 
 
 // analgous to gluLookAt
-// https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml
-void mLookAt(Vector3* eye, Vector3* center, Vector3* up, Matrix* out);
+// up is not required to be orthogonal to anything, so long as it's not parallel to anything
+// http://www.songho.ca/opengl/gl_camera.html#lookat
+void mLookAt(Vector3 eye, Vector3 center, Vector3 up, Matrix* out);
 
 void mPrint(Matrix* m, FILE* f);
 
@@ -745,6 +748,8 @@ float   evalCubicHermite1D(float t, float p0, float p1, float m0, float m1);
 Vector2 evalCubicHermite2D(float t, Vector2 p0, Vector2 p1, Vector2 m0, Vector2 m1); 
 Vector3  evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 m1);
 
+
+Quaternion qFromRTheta(Vector3 r, float theta);
 
 Quaternion qAdd(Quaternion l, Quaternion r);
 Quaternion qSub(Quaternion l, Quaternion r);
