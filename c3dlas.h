@@ -567,6 +567,7 @@ int shortestLineFromRayToRay3p(Ray3* r1, Ray3* r2, Vector3* pOut);
 void    vReflectAcross3p(Vector3* v, Vector3* pivot, Vector3* out);
 Vector3 vReflectAcross3(Vector3 v, Vector3 pivot);
 void  vTriFaceNormal3p(Vector3* a, Vector3* b, Vector3* c, Vector3* out); // returns a normalized face normal for the given triangle
+Vector3 vTriFaceNormal3(Vector3 a, Vector3 b, Vector3 c);
 void  vpTriFaceNormal3p(Vector3* tri, Vector3* out); // returns a normalized face normal for the given triangle
 
 void  vProjectOntoPlane3p(Vector3* v, Plane* p, Vector3* out);

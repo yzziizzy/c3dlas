@@ -13,7 +13,7 @@
 
 
 #ifndef _GNU_SOURCE
-static inline sincosf(float x, float* s, float* c) {
+static inline void sincosf(float x, float* s, float* c) {
 	*s = sinf(x);
 	*c = cosf(x);
 }
@@ -1120,6 +1120,15 @@ void  vTriFaceNormal3p(Vector3* a, Vector3* b, Vector3* c, Vector3* out) {
 	vSub3p(c, a, &c_a);
 	vCross3p(&b_a, &c_a, out);
 	vNorm3p(out, out);
+}
+
+// calculate a unit vector normal to a triangle's face.
+Vector3 vTriFaceNormal3(Vector3 a, Vector3 b, Vector3 c) {
+	Vector3 b_a, c_a, out;
+	
+	b_a = vSub3(b, a);
+	c_a = vSub3(c, a);
+	return vNorm3(vCross3(b_a, c_a));
 }
 
 // calculate a unit vector normal to a triangle's face.

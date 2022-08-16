@@ -533,20 +533,20 @@ void msLookAt(Vector3* eye, Vector3* center, Vector3* up, MatrixStack* ms) {
 
 
 
-void msymPlaneFromTrip(Vector* a, Vector* b, Vector* c, MatrixSym* m) {
+void msymPlaneFromTrip(Vector3* a, Vector3* b, Vector3* c, MatrixSym* m) {
 
-	Vector3 n = vTriFaceNormal3(a, b, c);
-	float d = vDot3(n, a);
+	Vector3 n = vTriFaceNormal3(*a, *b, *c);
+	float d = vDot3p(&n, a);
 	
-	m->m[0] = n->x * n->x;
-	m->m[1] = n->x * n->y;
-	m->m[2] = n->y * n->y;
-	m->m[3] = n->x * n->z;
-	m->m[4] = n->y * n->z;
-	m->m[5] = n->z * n->z;
-	m->m[6] = n->x * d;
-	m->m[7] = n->y * d;
-	m->m[8] = n->z * d;
+	m->m[0] = n.x * n.x;
+	m->m[1] = n.x * n.y;
+	m->m[2] = n.y * n.y;
+	m->m[3] = n.x * n.z;
+	m->m[4] = n.y * n.z;
+	m->m[5] = n.z * n.z;
+	m->m[6] = n.x * d;
+	m->m[7] = n.y * d;
+	m->m[8] = n.z * d;
 	m->m[9] = d * d;
 }
 
