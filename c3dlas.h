@@ -201,6 +201,15 @@ typedef struct { // does not have to be coplanar
 } Quad3;
 
 
+/* Column-major, for OpenGL compatibility:
+ _            _
+|  0  4  8 12  |
+|  1  5  9 13  |
+|  2  6 10 14  |
+|_ 3  7 11 15 _|
+
+*/
+
 typedef struct {
 	float m[16];
 } Matrix;
@@ -210,6 +219,53 @@ typedef struct MatrixStack {
 	short top;
 	Matrix* stack;
 } MatrixStack;
+
+
+// Symmetric matrix
+/* Column-major, for OpenGL compatibility:
+ _            _
+|  0  1  3  6  |
+|     2  4  7  |
+|        5  8  |
+|_          9 _|
+
+       ==
+ _            _
+|  0  1  3  6  |
+|  1  2  4  7  |
+|  3  4  5  8  |
+|_ 6  7  8  9 _|
+
+*/
+
+typedef struct {
+	float m[10];
+} MatrixSym;
+
+
+// 3x3 matrix
+/* Column-major, for OpenGL compatibility:
+ _         _
+|  0  3  6  |
+|  1  4  7  |
+|_ 2  5  8 _|
+
+*/
+typedef struct {
+	float m[9];
+} Matrix3;
+
+// 2x2 matrix
+/* Column-major, for OpenGL compatibility:
+ _      _
+|  0  2  |
+|_ 1  3 _|
+
+*/
+typedef struct {
+	float m[4];
+} Matrix2;
+
 
 
 // axis-aligned bounding box
