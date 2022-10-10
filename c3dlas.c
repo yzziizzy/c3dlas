@@ -43,6 +43,7 @@ uint32_t reverseBits(uint32_t n, int len) {
 // random numbers
 
 // returns a random number in (-1, 1) uninclusive
+// Thanks to Kaslai (https://github.com/Aslai) for fixing a nasty bug in the previous version
 float pcg_f(uint64_t* state, uint64_t stream) {
 	union {
 		uint32_t fu;
@@ -54,7 +55,12 @@ float pcg_f(uint64_t* state, uint64_t stream) {
 	*state = (last * 6364136223846793005ULL) + (stream | 1);
 	uint32_t xs = ((last >> 18) ^ last) >> 27;
 	uint32_t rot = last >> 59;
-	u.fu = (((xs >> rot) | (xs << ((-rot) & 31))) & 0x807fffff) | 0x3f000000;
+	uint32_t fin = (xs >> rot) | (xs << ((-rot) & 31));
+	
+	uint32_t exp = (fin & 0x3F800000);
+	exp = (0x7F + 33 - __builtin_clzl(exp)) << 23;
+	
+	u.fu = ((fin) & 0x807fffff) | exp;
 	return u.ff;
 }
 
