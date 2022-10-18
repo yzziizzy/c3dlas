@@ -115,28 +115,52 @@ float frandPCG(float low, float high, PCG* pcg) {
 
 
 int vEq2i(Vector2i a, Vector2i b) { return vEq2ip(&a, &b); }
-int vEqExact2i(Vector2i a, Vector2i b) { return vEqExact2ip(&a, &b); } 
-int vEqExact2(Vector2 a, Vector2 b) { return vEqExact2p(&a, &b); } 
-int vEqExact3(Vector3 a, Vector3 b) { return vEqExact3p(&a, &b); } 
-int vEqExact4(Vector4 a, Vector4 b) { return vEqExact4p(&a, &b); } 
-
 int vEq2ip(Vector2i* a, Vector2i* b) { return vEqExact2ip(a, b); } 
-int vEqExact2ip(Vector2i* a, Vector2i* b)  {
-	return a->x == b->x && a->y == b->y;
-}
- 
-int vEqExact2p(Vector2* a, Vector2* b) {
-	return a->x == b->x && a->y == b->y;
-}
- 
-int vEqExact3p(Vector3* a, Vector3* b) {
-	return a->x == b->x && a->y == b->y && a->z == b->z;
-}
- 
-int vEqExact4p(Vector4* a, Vector4* b) {
-	return a->x == b->x && a->y == b->y && a->z == b->z && a->w == b->w;
-}
 
+#define FN(sz) \
+int vEqExact2 ## sz(Vector2 ## sz a, Vector2 ## sz b) { return vEqExact2 ## sz ## p(&a, &b); } \
+int vEqExact2 ## sz ## p(Vector2 ## sz* a,Vector2 ## sz* b) { \
+	return a->x == b->x && a->y == b->y; \
+}
+ 
+FN( )
+FN(i)
+FN(l)
+FN(d)
+#undef FN
+
+#define FN(sz) \
+int vEqExact3 ## sz(Vector3 ## sz a, Vector3 ## sz b) { return vEqExact3 ## sz ## p(&a, &b); } \
+int vEqExact3 ## sz ## p(Vector3 ## sz* a,Vector3 ## sz* b) { \
+	return a->x == b->x && a->y == b->y && a->z == b->z; \
+}
+ 
+FN( )
+FN(i)
+FN(l)
+FN(d)
+#undef FN
+
+#define FN(sz) \
+int vEqExact4 ## sz(Vector4 ## sz a, Vector4 ## sz b) { return vEqExact4 ## sz ## p(&a, &b); } \
+int vEqExact4 ## sz ## p(Vector4 ## sz* a,Vector4 ## sz* b) { \
+	return a->x == b->x && a->y == b->y && a->z == b->z && a->w == b->w; \
+}
+ 
+FN( )
+FN(i)
+FN(l)
+FN(d)
+#undef FN
+ 
+//int vEqExact3p(Vector3* a, Vector3* b) {
+//	return a->x == b->x && a->y == b->y && a->z == b->z;
+//}
+// 
+//int vEqExact4p(Vector4* a, Vector4* b) {
+//	return a->x == b->x && a->y == b->y && a->z == b->z && a->w == b->w;
+//}
+//
 int vEq2(Vector2 a, Vector2 b) { return vEq2p(&a, &b); } 
 int vEq3(Vector3 a, Vector3 b) { return vEq3p(&a, &b); } 
 int vEq4(Vector4 a, Vector4 b) { return vEq4p(&a, &b); }

@@ -43,8 +43,16 @@
 #define RAD2DEG (57.29577951308232087679815481410517033240547246656432154916024386)
 #define DEG2RAD (0.0174532925199432957692369076848861271344287188854172545609719144)
 
-#define FLT_CMP_EPSILON 0.000001
+#ifndef FLT_CMP_EPSILON
+	#define FLT_CMP_EPSILON 0.000001
+#endif
+
+#ifndef DBL_CMP_EPSILON
+	#define DBL_CMP_EPSILON 0.00000000000001
+#endif
+
 #define FLT_CMP_EPSILON_SQ (FLT_CMP_EPSILON * FLT_CMP_EPSILON)
+#define DBL_CMP_EPSILON_SQ (DBL_CMP_EPSILON_SQ * DBL_CMP_EPSILON_SQ)
 
 #define C3DLAS_COPLANAR  (0)
 #define C3DLAS_FRONT     (1)
@@ -88,26 +96,61 @@ static const char* c3dlas_EnumString(int e) {
 })
 
 
+
 typedef struct Vector2i {
 	int x,y;
 } Vector2i;
 
-typedef struct {
+typedef struct Vector3i {
+	int x,y,z;
+} Vector3i;
+
+typedef struct Vector4i {
+	int x,y,z,w;
+} Vector4i;
+
+
+typedef struct Vector2l {
+	long x,y;
+} Vector2l;
+
+typedef struct Vector3l {
+	long x,y,z;
+} Vector3l;
+
+typedef struct Vector4l {
+	long x,y,z,w;
+} Vector4l;
+
+
+typedef struct Vector2 {
 	//    cartesian  polar
 	union { float x, rho; };
 	union { float y, theta; };
 } Vector2;
 
+typedef struct Vector2d {
+	//    cartesian  polar
+	union { double x, rho; };
+	union { double y, theta; };
+} Vector2d;
 
 // The spherical coordinates use the "mathematical" conventions as opposed to the "physics" conventions
 // This is because of the struct layout convenience for overlapping with 2D polar coordinates. 
 
-typedef struct {
+typedef struct Vector3 {
 	//    cartesian  spherical  color
 	union { float x, rho,       r; }; // rho is the radius
 	union { float y, theta,     g; }; // rotation in the X-Y plane
 	union { float z, phi,       b; }; // rotation in the plane passing through the Z axis
 } Vector3;
+
+typedef struct Vector3d {
+	//    cartesian  spherical  color
+	union { double x, rho,       r; }; // rho is the radius
+	union { double y, theta,     g; }; // rotation in the X-Y plane
+	union { double z, phi,       b; }; // rotation in the plane passing through the Z axis
+} Vector3d;
 
 typedef struct Vector4 {
 	//    cartesian  spherical  color  quaternion basis
@@ -117,8 +160,17 @@ typedef struct Vector4 {
 	union { float w,            a,     real; }; // real is last for memory alignment with 4d cartesian vectors
 } Vector4;
 
+typedef struct Vector4d {
+	//    cartesian  spherical  color  quaternion basis
+	union { double x, rho,       r,     i; }; // rho = the radius
+	union { double y, theta,     g,     j; }; // theta = rotation in the X-Y plane
+	union { double z, phi,       b,     k; }; // phi = rotation in the plane passing through the Z axis
+	union { double w,            a,     real; }; // real is last for memory alignment with 4d cartesian vectors
+} Vector4d;
+
 // Best quaternion site on the internet so far: http://www.songho.ca/math/quaternion/quaternion.html
 typedef struct Vector4 Quaternion;
+typedef struct Vector4d Quaterniond;
 
 // Rays, but also infinite lines (mathematical lines) because there is no practical
 //   difference besides whether you conside the ray to be one-sided or not.
@@ -274,6 +326,21 @@ typedef struct AABB2i {
 	Vector2i max;
 } AABB2i;
 
+typedef struct AABB3i {
+	Vector3i min;
+	Vector3i max;
+} AABB3i;
+
+typedef struct AABB2l {
+	Vector2l min;
+	Vector2l max;
+} AABB2l;
+
+typedef struct AABB3l {
+	Vector3l min;
+	Vector3l max;
+} AABB3l;
+
 typedef struct AABB2 {
 	Vector2 min;
 	Vector2 max;
@@ -283,6 +350,16 @@ typedef struct AABB3 {
 	Vector3 min;
 	Vector3 max;
 } AABB3;
+
+typedef struct AABB2d {
+	Vector2d min;
+	Vector2d max;
+} AABB2d;
+
+typedef struct AABB3d {
+	Vector3d min;
+	Vector3d max;
+} AABB3d;
 
 
 typedef struct {
@@ -325,21 +402,42 @@ static inline float fclamp(float val, float min, float max) {
 	return fminf(max, fmaxf(min, val));
 }
 
+static inline double dclamp(double val, double min, double max) {
+	return fmin(max, fmax(min, val));
+}
+
 static inline float fclampNorm(float val) {
 	return fclamp(val, 0.0f, 1.0f);
+}
+
+static inline double dclampNorm(double val) {
+	return dclamp(val, 0.0, 1.0);
 }
 
 static inline int iclamp(int val, int min, int max) {
 	return MIN(max, MAX(min, val));
 }
 
+static inline long lclamp(long val, long min, long max) {
+	return MIN(max, MAX(min, val));
+}
+
 static inline float flerp(float a, float b, float t) {
+	return a  + ((b - a) * t);
+}
+static inline double dlerp(double a, double b, double t) {
 	return a  + ((b - a) * t);
 }
 
 static inline float flerp2D(float xx, float xy, float yx, float yy, float xt, float yt) {
 	float a = xx  + ((xy - xx) * yt);
 	float b = yx  + ((yy - yx) * yt);
+	return a  + ((b - a) * xt);
+}
+
+static inline double dlerp2D(double xx, double xy, double yx, double yy, double xt, double yt) {
+	double a = xx  + ((xy - xx) * yt);
+	double b = yx  + ((yy - yx) * yt);
 	return a  + ((b - a) * xt);
 }
 
@@ -352,15 +450,31 @@ static inline float flerp2D(float xx, float xy, float yx, float yy, float xt, fl
 
 // exact equivalence
 int vEq2i(Vector2i a, Vector2i b); 
-int vEqExact2i(Vector2i a, Vector2i b); 
 int vEqExact2(Vector2 a, Vector2 b); 
+int vEqExact2i(Vector2i a, Vector2i b); 
+int vEqExact2l(Vector2l a, Vector2l b); 
+int vEqExact2d(Vector2d a, Vector2d b); 
 int vEqExact3(Vector3 a, Vector3 b); 
+int vEqExact3i(Vector3i a, Vector3i b); 
+int vEqExact3l(Vector3l a, Vector3l b); 
+int vEqExact3d(Vector3d a, Vector3d b); 
 int vEqExact4(Vector4 a, Vector4 b); 
+int vEqExact4i(Vector4i a, Vector4i b); 
+int vEqExact4l(Vector4l a, Vector4l b); 
+int vEqExact4d(Vector4d a, Vector4d b); 
 int vEq2ip(Vector2i* a, Vector2i* b); 
 int vEqExact2ip(Vector2i* a, Vector2i* b); 
+int vEqExact2lp(Vector2l* a, Vector2l* b); 
+int vEqExact2dp(Vector2d* a, Vector2d* b); 
 int vEqExact2p(Vector2* a, Vector2* b); 
 int vEqExact3p(Vector3* a, Vector3* b); 
+int vEqExact3lp(Vector3l* a, Vector3l* b); 
+int vEqExact3ip(Vector3i* a, Vector3i* b); 
+int vEqExact3dp(Vector3d* a, Vector3d* b); 
 int vEqExact4p(Vector4* a, Vector4* b); 
+int vEqExact4ip(Vector4i* a, Vector4i* b); 
+int vEqExact4lp(Vector4l* a, Vector4l* b); 
+int vEqExact4dp(Vector4d* a, Vector4d* b); 
 
 // safe equivalence, to FLT_CMP_EPSILON
 int vEq2(Vector2 a, Vector2 b); 
