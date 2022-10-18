@@ -1956,7 +1956,7 @@ Vector3 vMatrixMulProjectedMagic3(Vector3 in, Matrix* m) {
 	if(v.w == 0) return (Vector3){0,0,0}; 
 	if(v.w < 0) v.w = -v.w;
 	
-	return (Vector3){x: v.x / v.w, y: v.y / v.w, z: v.z / v.w};
+	return (Vector3){.x = v.x / v.w, .y = v.y / v.w, .z = v.z / v.w};
 }
 
 Vector3 vMatrixMul3(Vector3 in, Matrix* m) {
@@ -1969,7 +1969,7 @@ Vector3 vMatrixMul3(Vector3 in, Matrix* m) {
 	
 	if(v.w == 0) return (Vector3){0,0,0};
 	
-	return (Vector3){x: v.x / v.w, y: v.y / v.w, z: v.z / v.w};
+	return (Vector3){.x = v.x / v.w, .y = v.y / v.w, .z = v.z / v.w};
 }
 
 Vector4 vMatrixMul4(Vector4 in, Matrix* m) {
