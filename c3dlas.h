@@ -527,6 +527,14 @@ void     vScale2ip(Vector2i* v, float scalar, Vector2i* out);
 void     vScale2p(Vector2* v, float scalar, Vector2* out);
 void     vScale3p(Vector3* v, float scalar, Vector3* out);
 
+// Component-wise vector muliplication
+Vector2  vMul2(Vector2 a, Vector2 b);
+Vector3  vMul3(Vector3 a, Vector3 b);
+Vector4  vMul4(Vector4 a, Vector4 b);
+void     vMul2p(Vector2* a, Vector2* b, Vector2* out);
+void     vMul3p(Vector3* a, Vector3* b, Vector3* out);
+void     vMul4p(Vector4* a, Vector4* b, Vector4* out);
+
 // Dot product (inner product)
 double vDot2i(const Vector2i a, const Vector2i b);
 float  vDot2(const Vector2 a, const Vector2 b);

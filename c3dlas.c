@@ -433,6 +433,50 @@ void vScale3p(Vector3* v, float scalar, Vector3* out) {
 }
 
 
+// Component-wise vector muliplication
+Vector2 vMul2(Vector2 a, Vector2 b) {
+	return (Vector2){
+		.x = a.x * b.x,
+		.y = a.y * b.y,
+	};
+}
+
+Vector3 vMul3(Vector3 a, Vector3 b) {
+	return (Vector3){
+		.x = a.x * b.x,
+		.y = a.y * b.y,
+		.z = a.z * b.z,
+	};
+}
+
+Vector4 vMul4(Vector4 a, Vector4 b) {
+	return (Vector4){
+		.x = a.x * b.x,
+		.y = a.y * b.y,
+		.z = a.z * b.z,
+		.w = a.w * b.w,
+	};
+}
+
+void vMul2p(Vector2* a, Vector2* b, Vector2* out) {
+	out->x = a->x * b->x;
+	out->y = a->y * b->y;
+}
+
+void vMul3p(Vector3* a, Vector3* b, Vector3* out) {
+	out->x = a->x * b->x;
+	out->y = a->y * b->y;
+	out->z = a->z * b->z;
+}
+
+void vMul4p(Vector4* a, Vector4* b, Vector4* out) {
+	out->x = a->x * b->x;
+	out->y = a->y * b->y;
+	out->z = a->z * b->z;
+	out->w = a->w * b->w;
+}
+
+
 
 // Dot product (inner product)
 
