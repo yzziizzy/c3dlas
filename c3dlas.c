@@ -5,6 +5,7 @@
 #include <string.h>
 #include <float.h>
 #include <math.h>
+#include <tgmath.h>
 
 #include <x86intrin.h>
 
@@ -114,44 +115,115 @@ float frandPCG(float low, float high, PCG* pcg) {
 }
 
 
-int vEq2i(Vector2i a, Vector2i b) { return vEq2ip(&a, &b); }
-int vEq2ip(Vector2i* a, Vector2i* b) { return vEqExact2ip(a, b); } 
 
-#define FN(sz) \
-int vEqExact2 ## sz(Vector2 ## sz a, Vector2 ## sz b) { return vEqExact2 ## sz ## p(&a, &b); } \
-int vEqExact2 ## sz ## p(Vector2 ## sz* a,Vector2 ## sz* b) { \
-	return a->x == b->x && a->y == b->y; \
-}
- 
-FN( )
-FN(i)
-FN(l)
-FN(d)
+
+
+#define vSub(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vSub) default: ((void)0))(a, __VA_ARGS__)
+
+
+//#define XR(suf, t, ft, ret, name, ...) \
+//	ret v##name##suf(const Vector##suf a, const Vector##suf b __VA_OPT__(,) __VA_ARGS__); \
+//	ret v##name##suf##p(const Vector##suf* a, const Vector##suf* b __VA_OPT__(,) __VA_ARGS__);
+//
+//#define X1(suf, t, ft, name) \
+//	Vector##suf v##name##suf(const Vector##suf a); \
+//	void v##name##suf##p(const Vector##suf* a, Vector##suf* out);
+//	
+//#define X2(suf, t, ft, name) \
+//	Vector##suf v##name##suf(Vector##suf a, Vector##suf b); \
+//	void v##name##suf##p(Vector##suf* a, Vector##suf* b, Vector##suf* out);
+//
+//	C3DLAS_VECTOR_LIST(XR, int, Eq)
+//	C3DLAS_VECTOR_LIST(XR, int, EqExact)
+////	C3DLAS_VECTOR_LIST(XR, int, EqEp, double epsilon)
+//	C3DLAS_VECTOR_LIST(X2, Add)
+//	C3DLAS_VECTOR_LIST(X2, Sub)
+//	C3DLAS_VECTOR_LIST(X2, Mul)
+//	C3DLAS_VECTOR_LIST(X2, Min)
+//	C3DLAS_VECTOR_LIST(X2, Max)
+//	C3DLAS_VECTOR_LIST(X1, Norm)
+//	C3DLAS_VECTOR_LIST(X1, Unit)
+//	C3DLAS_VECTOR_LIST(X1, Inverse)
+//#undef X1
+//#undef X2
+//#undef XR
+//
+
+int vEq2i(const Vector2i a, const Vector2i b) { return vEq2ip(&a, &b); }
+int vEq2ip(const Vector2i* a, const Vector2i* b) { return vEqExact2ip(a, b); } 
+
+#define FN(suf, t, ft, sz, ...) \
+int vEqExact ## sz ## suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
+	return vEqExact##sz##suf##p(&a, &b); \
+} \
+int vEqExact ## sz ## suf ## p(const Vector##sz##suf const * a, const Vector##sz##suf const * b) { \
+	return a->x == b->x && a->y == b->y __VA_ARGS__; \
+}\
+int vEqEp##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b, ft epsilon) { \
+	return vEqEp##sz##suf##p(&a, &b, epsilon); \
+} \
+int vEqEp##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, ft epsilon) { \
+	return vDistSq##sz##suf(*a, *b) <= epsilon * epsilon; \
+} \
+\
+ft vDistSq##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
+	return vDistSq##sz##suf##p(&a, &b); \
+} \
+ft vDistSq##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b) { \
+	ft tmp = 0; \
+	for(int i = 0; i < sz; i++) { \
+		ft q = ((t*)a)[i] - ((t*)b)[i]; \
+		tmp += q * q; \
+	} \
+	return tmp;\
+} \
+ft vDist##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
+	return sqrt(vDistSq##sz##suf##p(&a, &b)); \
+} \
+ft vDist##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b) { \
+	return sqrt(vDistSq##sz##suf##p(a, b)); \
+} \
+\
+Vector##sz##suf vAdd##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
+	Vector##sz##suf out; \
+	vAdd##sz##suf##p(&a, &b, &out); \
+	return out; \
+} \
+void vAdd##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) { \
+		((t*)out)[i] = ((t*)a)[i] + ((t*)b)[i]; \
+	} \
+} \
+\
+Vector##sz##suf vSub##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
+	Vector##sz##suf out; \
+	vSub##sz##suf##p(&a, &b, &out); \
+	return out; \
+} \
+void vSub##sz##suf##p(const Vector##sz##suf const * a, const Vector##sz##suf const * b, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) { \
+		((t*)out)[i] = ((t*)a)[i] - ((t*)b)[i]; \
+	} \
+} \
+\
+Vector##sz##suf vMul##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
+	Vector##sz##suf out; \
+	vMul##sz##suf##p(&a, &b, &out); \
+	return out; \
+} \
+void vMul##sz##suf##p(const Vector##sz##suf const * a, const Vector##sz##suf const * b, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) { \
+		((t*)out)[i] = ((t*)a)[i] * ((t*)b)[i]; \
+	} \
+} \
+
+
+	C3DLAS_VECTOR_TYPE_LIST(FN, 2)
+	C3DLAS_VECTOR_TYPE_LIST(FN, 3, && a->z == b->z)
+	C3DLAS_VECTOR_TYPE_LIST(FN, 4, && a->z == b->z && a->w == b->w)
 #undef FN
 
-#define FN(sz) \
-int vEqExact3 ## sz(Vector3 ## sz a, Vector3 ## sz b) { return vEqExact3 ## sz ## p(&a, &b); } \
-int vEqExact3 ## sz ## p(Vector3 ## sz* a,Vector3 ## sz* b) { \
-	return a->x == b->x && a->y == b->y && a->z == b->z; \
-}
- 
-FN( )
-FN(i)
-FN(l)
-FN(d)
-#undef FN
 
-#define FN(sz) \
-int vEqExact4 ## sz(Vector4 ## sz a, Vector4 ## sz b) { return vEqExact4 ## sz ## p(&a, &b); } \
-int vEqExact4 ## sz ## p(Vector4 ## sz* a,Vector4 ## sz* b) { \
-	return a->x == b->x && a->y == b->y && a->z == b->z && a->w == b->w; \
-}
- 
-FN( )
-FN(i)
-FN(l)
-FN(d)
-#undef FN
  
 //int vEqExact3p(Vector3* a, Vector3* b) {
 //	return a->x == b->x && a->y == b->y && a->z == b->z;
@@ -161,72 +233,20 @@ FN(d)
 //	return a->x == b->x && a->y == b->y && a->z == b->z && a->w == b->w;
 //}
 //
-int vEq2(Vector2 a, Vector2 b) { return vEq2p(&a, &b); } 
-int vEq3(Vector3 a, Vector3 b) { return vEq3p(&a, &b); } 
-int vEq4(Vector4 a, Vector4 b) { return vEq4p(&a, &b); }
+int vEq2(const Vector2 a, const Vector2 b) { return vEq2p(&a, &b); } 
+int vEq3(const Vector3 a, const Vector3 b) { return vEq3p(&a, &b); } 
+int vEq4(const Vector4 a, const Vector4 b) { return vEq4p(&a, &b); }
 
-int vEq2p(Vector2* a, Vector2* b) {
+int vEq2p(const Vector2* a, const Vector2* b) {
 	return vEqEp2p(a, b, FLT_CMP_EPSILON);
 }
 
-int vEq3p(Vector3* a, Vector3* b) {
+int vEq3p(const Vector3* a, const Vector3* b) {
 	return vEqEp3p(a, b, FLT_CMP_EPSILON);
 }
 
-int vEq4p(Vector4* a, Vector4* b) {
+int vEq4p(const Vector4* a, const Vector4* b) {
 	return vEqEp4p(a, b, FLT_CMP_EPSILON);
-}
-
-int vEqEp2i(Vector2i a, Vector2i b, double epsilon) { return vEqEp2ip(&a, &b, epsilon); }
-int vEqEp2(Vector2 a, Vector2 b, float epsilon) { return vEqEp2p(&a, &b, epsilon); }
-int vEqEp3(Vector3 a, Vector3 b, float epsilon) { return vEqEp3p(&a, &b, epsilon); }
-int vEqEp4(Vector4 a, Vector4 b, float epsilon) { return vEqEp4p(&a, &b, epsilon); }
-
-int vEqEp2ip(Vector2i* a, Vector2i* b, double epsilon) {
-	double x, y, n;
-	
-	x = (double)a->x - (double)b->x;
-	y = (double)a->y - (double)b->y;
-	
-	n = fabs(x * x + y * y);
-	
-	return n <= epsilon * epsilon;
-}
-
-int vEqEp2p(Vector2* a, Vector2* b, float epsilon) {
-	float x, y, n;
-	
-	x = a->x - b->x;
-	y = a->y - b->y;
-	
-	n = fabsf(x * x + y * y);
-	
-	return n <= epsilon * epsilon;
-}
-
-int vEqEp3p(Vector3* a, Vector3* b, float epsilon) {
-	float x, y, z, n;
-	
-	x = a->x - b->x;
-	y = a->y - b->y;
-	z = a->z - b->z;
-	
-	n = fabsf(x * x + y * y + z * z);
-	
-	return n <= epsilon * epsilon;
-}
-
-int vEqEp4p(Vector4* a, Vector4* b, float epsilon) {
-	float x, y, z, w, n;
-	
-	x = a->x - b->x;
-	y = a->y - b->y;
-	z = a->z - b->z;
-	w = a->w - b->w;
-	
-	n = fabsf(x * x + y * y + z * z + w * w);
-	
-	return n <= epsilon * epsilon;
 }
 
 
@@ -272,121 +292,10 @@ void vSwap4p(Vector4* a, Vector4* b) {
 
 // Vector addition
 
-Vector2i vAdd2i(Vector2i a, Vector2i b) {
-	Vector2i out;
-	vSub2ip(&a, &b, &out);
-	return out;
-}
-
-void vAdd2ip(Vector2i* a, Vector2i* b, Vector2i* sum) {
-	sum->x = a->x + b->x;
-	sum->y = a->y + b->y;
-}
-
-Vector2 vAdd2(Vector2 a, Vector2 b) {
-	Vector2 out;
-	vAdd2p(&a, &b, &out);
-	return out;
-}
-
-void vAdd2p(Vector2* a, Vector2* b, Vector2* sum) {
-	sum->x = a->x + b->x;
-	sum->y = a->y + b->y;
-}
-
-Vector3 vAdd3(Vector3 a, Vector3 b) {
-	Vector3 out;
-	vAdd3p(&a, &b, &out);
-	return out;
-}
-
-void vAdd3p(Vector3* a, Vector3* b, Vector3* sum) {
-#ifdef C3DLAS_USE_SIMD
-	__m128 f_ = _mm_loadu_ps((float*)a);
-	__m128 w_ = _mm_loadu_ps((float*)b);
-	w_ = _mm_add_ps(f_, w_);
-	
-	_mm_maskstore_ps((float*)sum, _mm_set_epi32(0, -1, -1, -1), w_);
-#else
-	sum->x = a->x + b->x;
-	sum->y = a->y + b->y;
-	sum->z = a->z + b->z;
-#endif
-}
-
-Vector4 vAdd4(Vector4 a, Vector4 b) {
-	Vector4 out;
-	vAdd4p(&a, &b, &out);
-	return out;
-}
-
-void vAdd4p(Vector4* a, Vector4* b, Vector4* sum) {
-	sum->x = a->x + b->x;
-	sum->y = a->y + b->y;
-	sum->z = a->z + b->z;
-	sum->w = a->w + b->w;
-}
-
 
 
 
 // Vector subtraction. diff = from - what
-
-Vector2i vSub2i(Vector2i from, Vector2i what) {
-	Vector2i out;
-	vSub2ip(&from, &what, &out);
-	return out;
-}
-
-void vSub2ip(Vector2i* from, Vector2i* what, Vector2i* diff) {
-	diff->x = from->x - what->x;
-	diff->y = from->y - what->y;
-}
-
-Vector2 vSub2(Vector2 from, Vector2 what) {
-	Vector2 out;
-	vSub2p(&from, &what, &out);
-	return out;
-}
-
-void vSub2p(Vector2* from, Vector2* what, Vector2* diff) {
-	diff->x = from->x - what->x;
-	diff->y = from->y - what->y;
-}
-
-Vector3 vSub3(Vector3 from, Vector3 what) {
-	Vector3 out;
-	vSub3p(&from, &what, &out);
-	return out;
-}
-
-void vSub3p(Vector3* from, Vector3* what, Vector3* diff) {
-#ifdef C3DLAS_USE_SIMD
-	__m128 f_ = _mm_loadu_ps((float*)from);
-	__m128 w_ = _mm_loadu_ps((float*)what);
-	w_ = _mm_sub_ps(f_, w_);
-	
-	_mm_maskstore_ps((float*)diff, _mm_set_epi32(0, -1, -1, -1), w_);
-#else
-	diff->x = from->x - what->x;
-	diff->y = from->y - what->y;
-	diff->z = from->z - what->z;
-#endif
-}
-
-Vector4 vSub4(Vector4 from, Vector4 what) {
-	Vector4 out;
-	vSub4p(&from, &what, &out);
-	return out;
-}
-
-void vSub4p(Vector4* from, Vector4* what, Vector4* diff) {
-	diff->x = from->x - what->x;
-	diff->y = from->y - what->y;
-	diff->z = from->z - what->z;
-	diff->w = from->w - what->w;
-}
-
 
 
 // scalar muliplication
@@ -430,50 +339,6 @@ void vScale3p(Vector3* v, float scalar, Vector3* out) {
 	out->y = v->y * scalar;
 	out->z = v->z * scalar;
 // #endif
-}
-
-
-// Component-wise vector muliplication
-Vector2 vMul2(Vector2 a, Vector2 b) {
-	return (Vector2){
-		.x = a.x * b.x,
-		.y = a.y * b.y,
-	};
-}
-
-Vector3 vMul3(Vector3 a, Vector3 b) {
-	return (Vector3){
-		.x = a.x * b.x,
-		.y = a.y * b.y,
-		.z = a.z * b.z,
-	};
-}
-
-Vector4 vMul4(Vector4 a, Vector4 b) {
-	return (Vector4){
-		.x = a.x * b.x,
-		.y = a.y * b.y,
-		.z = a.z * b.z,
-		.w = a.w * b.w,
-	};
-}
-
-void vMul2p(Vector2* a, Vector2* b, Vector2* out) {
-	out->x = a->x * b->x;
-	out->y = a->y * b->y;
-}
-
-void vMul3p(Vector3* a, Vector3* b, Vector3* out) {
-	out->x = a->x * b->x;
-	out->y = a->y * b->y;
-	out->z = a->z * b->z;
-}
-
-void vMul4p(Vector4* a, Vector4* b, Vector4* out) {
-	out->x = a->x * b->x;
-	out->y = a->y * b->y;
-	out->z = a->z * b->z;
-	out->w = a->w * b->w;
 }
 
 
@@ -668,62 +533,9 @@ float vMag4p(const Vector4* v) {
 
 // Squared distance from one point to another
 
-double vDistSq2i(Vector2i a, Vector2i b) { return vDistSq2ip(&a, &b); } 
-float  vDistSq2(Vector2 a, Vector2 b) { return vDistSq2p(&a, &b); } 
-float  vDistSq3(Vector3 a, Vector3 b) { return vDistSq3p(&a, &b); }
-float  vDistSq4(Vector4 a, Vector4 b) { return vDistSq4p(&a, &b); }
-
-double vDistSq2ip(Vector2i* a, Vector2i* b) {
-	double x, y;
-	
-	x = a->x - b->x;
-	y = a->y - b->y;
-	
-	return x*x + y*y;
-}
-
-float vDistSq2p(Vector2* a, Vector2* b) {
-	float x, y;
-	
-	x = a->x - b->x;
-	y = a->y - b->y;
-	
-	return x*x + y*y;
-}
-
-float vDistSq3p(Vector3* a, Vector3* b) {
-	float x, y, z;
-	
-	x = a->x - b->x;
-	y = a->y - b->y;
-	z = a->z - b->z;
-	
-	return x*x + y*y + z*z;
-}
-
-float vDistSq4p(Vector4* a, Vector4* b) {
-	float x, y, z, w;
-	
-	x = a->x - b->x;
-	y = a->y - b->y;
-	z = a->z - b->z;
-	w = a->w - b->w;
-	
-	return x*x + y*y + z*z + w*w;
-}
-
 
 
 // Distance from one point to another
-
-double vDist2i(Vector2i a, Vector2i b) { return vDist2ip(&a, &b); } 
-float  vDist2(Vector2 a, Vector2 b) { return vDist2p(&a, &b); } 
-float  vDist3(Vector3 a, Vector3 b) { return vDist3p(&a, &b); }
-float  vDist4(Vector4 a, Vector4 b) { return vDist4p(&a, &b); }
-double vDist2ip(Vector2i* a, Vector2i* b) { return sqrt(vDistSq2ip(a, b)); } 
-float  vDist2p(Vector2* a, Vector2* b) { return sqrtf(vDistSq2p(a, b)); } 
-float  vDist3p(Vector3* a, Vector3* b) { return sqrtf(vDistSq3p(a, b)); }
-float  vDist4p(Vector4* a, Vector4* b) { return sqrtf(vDistSq4p(a, b)); }
 
 
 
@@ -820,132 +632,84 @@ void  vUnit4p(const Vector4* v, Vector4* out) { return vNorm4p(v, out); }
 
 
 
-// Returns the minimum values of each component
-Vector2i vMin2i(Vector2i a, Vector2i b) {
-	Vector2i out;
-	vMin2ip(&a, &b, &out);
-	return out;
-}
-
-Vector2 vMin2(Vector2 a, Vector2 b) {
-	Vector2 out;
-	vMin2p(&a, &b, &out);
-	return out;
-}
-
-Vector3 vMin3(Vector3 a, Vector3 b) {
-	Vector3 out;
-	vMin3p(&a, &b, &out);
-	return out;
-}
-
-Vector4 vMin4(Vector4 a, Vector4 b) {
-	Vector4 out;
-	vMin4p(&a, &b, &out);
-	return out;
-}
-
-void vMin2ip(Vector2i* a, Vector2i* b, Vector2i* out) {
-	out->x = MIN(a->x, b->x);
-	out->y = MIN(a->y, b->y);
-}
-void vMin2p(Vector2* a, Vector2* b, Vector2* out) {
-	out->x = fminf(a->x, b->x);
-	out->y = fminf(a->y, b->y);
-}
-
-void vMin3p(Vector3* a, Vector3* b, Vector3* out) {
-	out->x = fminf(a->x, b->x);
-	out->y = fminf(a->y, b->y);
-	out->z = fminf(a->z, b->z);
-}
-
-void vMin4p(Vector4* a, Vector4* b, Vector4* out) {
-	out->x = fminf(a->x, b->x);
-	out->y = fminf(a->y, b->y);
-	out->z = fminf(a->z, b->z);
-	out->w = fminf(a->w, b->w);
-}
 
 
+// vMin(a, b)  Returns the minimum values of each component
+// vMin(a, b)  Returns the maximum values of each component
 
-// Returns the maximum values of each component
-Vector2i vMax2i(Vector2i a, Vector2i b) {
-	Vector2i out;
-	vMax2ip(&a, &b, &out);
-	return out;
-}
-
-Vector2 vMax2(Vector2 a, Vector2 b) {
-	Vector2 out;
-	vMax2p(&a, &b, &out);
-	return out;
-}
-
-Vector3 vMax3(Vector3 a, Vector3 b) {
-	Vector3 out;
-	vMax3p(&a, &b, &out);
-	return out;
-}
-
-Vector4 vMax4(Vector4 a, Vector4 b) {
-	Vector4 out;
-	vMax4p(&a, &b, &out);
-	return out;
-}
-
-void vMax2ip(Vector2i* a, Vector2i* b, Vector2i* out) {
-	out->x = MAX(a->x, b->x);
-	out->y = MAX(a->y, b->y);
-}
-void vMax2p(Vector2* a, Vector2* b, Vector2* out) {
-	out->x = fmaxf(a->x, b->x);
-	out->y = fmaxf(a->y, b->y);
-}
-
-void vMax3p(Vector3* a, Vector3* b, Vector3* out) {
-	out->x = fmaxf(a->x, b->x);
-	out->y = fmaxf(a->y, b->y);
-	out->z = fmaxf(a->z, b->z);
-}
-
-void vMax4p(Vector4* a, Vector4* b, Vector4* out) {
-	out->x = fmaxf(a->x, b->x);
-	out->y = fmaxf(a->y, b->y);
-	out->z = fmaxf(a->z, b->z);
-	out->w = fmaxf(a->w, b->w);
-}
+#define FN(sz, suf, t) \
+void vMin##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = fmin(((t*)a)[i], ((t*)b)[i]); \
+} \
+void vMax##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = fmax(((t*)a)[i], ((t*)b)[i]); \
+} \
+Vector##sz##suf vMin##sz##suf(Vector##sz##suf a, Vector##sz##suf b) { \
+	Vector##sz##suf out; \
+	vMin##sz##suf##p(&a, &b, &out); \
+	return out; \
+} \
+Vector##sz##suf vMax##sz##suf(Vector##sz##suf a, Vector##sz##suf b) { \
+	Vector##sz##suf out; \
+	vMax##sz##suf##p(&a, &b, &out); \
+	return out; \
+} \
+Vector##sz##suf vClamp##sz##suf(Vector##sz##suf in, Vector##sz##suf min, Vector##sz##suf max) { \
+	Vector##sz##suf out; \
+	for(int i = 0; i < sz; i++) \
+		((t*)&out)[i] = fmax(((t*)&min)[i], fmin(((t*)&in)[i], ((t*)&max)[i])); \
+	return out; \
+} \
 
 
-Vector2 vClamp2f(Vector2 in, float min, float max) {
-	return (Vector2) {
-		.x = fmaxf(min, fminf(in.x, max)), 
-		.y = fmaxf(min, fminf(in.y, max)) 
-	};
-}
+FN(2,  , float)
+FN(3,  , float)
+FN(4,  , float)
+FN(2, d, double)
+FN(3, d, double)
+FN(4, d, double)
+#undef FN
 
-Vector2 vClamp2(Vector2 in, Vector2 min, Vector2 max) {
-	return (Vector2) {
-		.x = fmaxf(min.x, fminf(in.x, max.x)), 
-		.y = fmaxf(min.y, fminf(in.y, max.y)) 
-	};
-}
+#define FN(sz, suf, t) \
+void vMin##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = MIN(((t*)a)[i], ((t*)b)[i]); \
+} \
+void vMax##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = MAX(((t*)a)[i], ((t*)b)[i]); \
+} \
+Vector##sz##suf vMin##sz##suf(Vector##sz##suf a, Vector##sz##suf b) { \
+	Vector##sz##suf out; \
+	vMin##sz##suf##p(&a, &b, &out); \
+	return out; \
+} \
+Vector##sz##suf vMax##sz##suf(Vector##sz##suf a, Vector##sz##suf b) { \
+	Vector##sz##suf out; \
+	vMax##sz##suf##p(&a, &b, &out); \
+	return out; \
+} \
+Vector##sz##suf vClamp##sz##suf(Vector##sz##suf in, Vector##sz##suf min, Vector##sz##suf max) { \
+	Vector##sz##suf out; \
+	for(int i = 0; i < sz; i++) \
+		((t*)&out)[i] = MAX(((t*)&min)[i], MIN(((t*)&in)[i], ((t*)&max)[i])); \
+	return out; \
+} \
 
-Vector3 vClamp3f(Vector3 in, float min, float max) {
-	return (Vector3) {
-		.x = fmaxf(min, fminf(in.x, max)), 
-		.y = fmaxf(min, fminf(in.y, max)), 
-		.z = fmaxf(min, fminf(in.z, max)) 
-	};
-}
 
-Vector3 vClamp3(Vector3 in, Vector3 min, Vector3 max) {
-	return (Vector3) {
-		.x = fmaxf(min.x, fminf(in.x, max.x)), 
-		.y = fmaxf(min.y, fminf(in.y, max.y)), 
-		.z = fmaxf(min.z, fminf(in.z, max.z)) 
-	};
-}
+
+FN(2, i, int)
+FN(3, i, int)
+FN(4, i, int)
+FN(2, l, long)
+FN(3, l, long)
+FN(4, l, long)
+#undef FN
+
+
+
 
 
 // Coordinate system conversions

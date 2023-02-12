@@ -95,78 +95,74 @@ static const char* c3dlas_EnumString(int e) {
 	_a <= _b ? _a : _b; \
 })
 
+// suffix, type, float
+//               type
+#define C3DLAS_VECTOR_TYPE_LIST(X, ...) \
+	X(,  float,  float,  __VA_ARGS__) \
+	X(d, double, double, __VA_ARGS__) \
+	X(i, int,    double, __VA_ARGS__) \
+	X(l, long,   double, __VA_ARGS__) \
 
 
-typedef struct Vector2i {
-	int x,y;
-} Vector2i;
-
-typedef struct Vector3i {
-	int x,y,z;
-} Vector3i;
-
-typedef struct Vector4i {
-	int x,y,z,w;
-} Vector4i;
-
-
-typedef struct Vector2l {
-	long x,y;
-} Vector2l;
-
-typedef struct Vector3l {
-	long x,y,z;
-} Vector3l;
-
-typedef struct Vector4l {
-	long x,y,z,w;
-} Vector4l;
+// suffix, type, float
+//               type
+#define C3DLAS_VECTOR_LIST(X, ...) \
+	X(2,  float,  float,  __VA_ARGS__) \
+	X(3,  float,  float,  __VA_ARGS__) \
+	X(4,  float,  float,  __VA_ARGS__) \
+	X(2d, double, double, __VA_ARGS__) \
+	X(3d, double, double, __VA_ARGS__) \
+	X(4d, double, double, __VA_ARGS__) \
+	X(2i, int,    double, __VA_ARGS__) \
+	X(3i, int,    double, __VA_ARGS__) \
+	X(4i, int,    double, __VA_ARGS__) \
+	X(2l, long,   double, __VA_ARGS__) \
+	X(3l, long,   double, __VA_ARGS__) \
+	X(4l, long,   double, __VA_ARGS__) \
 
 
-typedef struct Vector2 {
-	//    cartesian  polar
-	union { float x, rho; };
-	union { float y, theta; };
-} Vector2;
+#define C3DLAS_GEN_HELPER(a, b, name, ...) Vector##a: name##a,
 
-typedef struct Vector2d {
-	//    cartesian  polar
-	union { double x, rho; };
-	union { double y, theta; };
-} Vector2d;
+
+
+
+#define X(suf, t, ...) \
+	typedef struct Vector2 ## suf { \
+		/*    cartesian polar */ \
+		union { t x, rho; }; \
+		union { t y, theta; }; \
+	} Vector2 ## suf;
+	
+	C3DLAS_VECTOR_TYPE_LIST(X)
+#undef X
 
 // The spherical coordinates use the "mathematical" conventions as opposed to the "physics" conventions
 // This is because of the struct layout convenience for overlapping with 2D polar coordinates. 
 
-typedef struct Vector3 {
-	//    cartesian  spherical  color
-	union { float x, rho,       r; }; // rho is the radius
-	union { float y, theta,     g; }; // rotation in the X-Y plane
-	union { float z, phi,       b; }; // rotation in the plane passing through the Z axis
-} Vector3;
+#define X(suf, t, ...) \
+	typedef struct Vector3 ## suf { \
+		/*    cartesian  spherical  color */ \
+		union { t x, rho,       r; }; /* rho is the radius */ \
+		union { t y, theta,     g; }; /* rotation in the X-Y plane */ \
+		union { t z, phi,       b; }; /* rotation in the plane passing through the Z axis */ \
+	} Vector3 ## suf;
+	
+	C3DLAS_VECTOR_TYPE_LIST(X)
+#undef X
 
-typedef struct Vector3d {
-	//    cartesian  spherical  color
-	union { double x, rho,       r; }; // rho is the radius
-	union { double y, theta,     g; }; // rotation in the X-Y plane
-	union { double z, phi,       b; }; // rotation in the plane passing through the Z axis
-} Vector3d;
+#define X(suf, t, ...) \
+	typedef struct Vector4 ## suf { \
+		/*    cartesian  spherical  color  quaternion basis */ \
+		union { t x, rho,       r,     i; }; /* rho = the radius */ \
+		union { t y, theta,     g,     j; }; /* theta = rotation in the X-Y plane */ \
+		union { t z, phi,       b,     k; }; /* phi = rotation in the plane passing through the Z axis */ \
+		union { t w,            a,     real; }; /* real is last for memory alignment with 4d cartesian vectors */ \
+	} Vector4 ## suf;
+	
+	C3DLAS_VECTOR_TYPE_LIST(X)
+#undef X
 
-typedef struct Vector4 {
-	//    cartesian  spherical  color  quaternion basis
-	union { float x, rho,       r,     i; }; // rho = the radius
-	union { float y, theta,     g,     j; }; // theta = rotation in the X-Y plane
-	union { float z, phi,       b,     k; }; // phi = rotation in the plane passing through the Z axis
-	union { float w,            a,     real; }; // real is last for memory alignment with 4d cartesian vectors
-} Vector4;
 
-typedef struct Vector4d {
-	//    cartesian  spherical  color  quaternion basis
-	union { double x, rho,       r,     i; }; // rho = the radius
-	union { double y, theta,     g,     j; }; // theta = rotation in the X-Y plane
-	union { double z, phi,       b,     k; }; // phi = rotation in the plane passing through the Z axis
-	union { double w,            a,     real; }; // real is last for memory alignment with 4d cartesian vectors
-} Vector4d;
 
 // Best quaternion site on the internet so far: http://www.songho.ca/math/quaternion/quaternion.html
 typedef struct Vector4 Quaternion;
@@ -319,47 +315,14 @@ typedef struct {
 } Matrix2;
 
 
-
 // axis-aligned bounding box
-typedef struct AABB2i {
-	Vector2i min;
-	Vector2i max;
-} AABB2i;
-
-typedef struct AABB3i {
-	Vector3i min;
-	Vector3i max;
-} AABB3i;
-
-typedef struct AABB2l {
-	Vector2l min;
-	Vector2l max;
-} AABB2l;
-
-typedef struct AABB3l {
-	Vector3l min;
-	Vector3l max;
-} AABB3l;
-
-typedef struct AABB2 {
-	Vector2 min;
-	Vector2 max;
-} AABB2;
-
-typedef struct AABB3 {
-	Vector3 min;
-	Vector3 max;
-} AABB3;
-
-typedef struct AABB2d {
-	Vector2d min;
-	Vector2d max;
-} AABB2d;
-
-typedef struct AABB3d {
-	Vector3d min;
-	Vector3d max;
-} AABB3d;
+#define X(suf, t, ...) \
+	typedef struct AABB ## suf { \
+		Vector ## suf min, max; \
+	} AABB ## suf;
+	
+	C3DLAS_VECTOR_LIST(X)
+#undef X
 
 
 typedef struct {
@@ -446,53 +409,57 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 //
 // Vectors
 //
+#define vSub(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vSub) default: ((void)0))(a, __VA_ARGS__)
 
 
-// exact equivalence
-int vEq2i(Vector2i a, Vector2i b); 
-int vEqExact2(Vector2 a, Vector2 b); 
-int vEqExact2i(Vector2i a, Vector2i b); 
-int vEqExact2l(Vector2l a, Vector2l b); 
-int vEqExact2d(Vector2d a, Vector2d b); 
-int vEqExact3(Vector3 a, Vector3 b); 
-int vEqExact3i(Vector3i a, Vector3i b); 
-int vEqExact3l(Vector3l a, Vector3l b); 
-int vEqExact3d(Vector3d a, Vector3d b); 
-int vEqExact4(Vector4 a, Vector4 b); 
-int vEqExact4i(Vector4i a, Vector4i b); 
-int vEqExact4l(Vector4l a, Vector4l b); 
-int vEqExact4d(Vector4d a, Vector4d b); 
-int vEq2ip(Vector2i* a, Vector2i* b); 
-int vEqExact2ip(Vector2i* a, Vector2i* b); 
-int vEqExact2lp(Vector2l* a, Vector2l* b); 
-int vEqExact2dp(Vector2d* a, Vector2d* b); 
-int vEqExact2p(Vector2* a, Vector2* b); 
-int vEqExact3p(Vector3* a, Vector3* b); 
-int vEqExact3lp(Vector3l* a, Vector3l* b); 
-int vEqExact3ip(Vector3i* a, Vector3i* b); 
-int vEqExact3dp(Vector3d* a, Vector3d* b); 
-int vEqExact4p(Vector4* a, Vector4* b); 
-int vEqExact4ip(Vector4i* a, Vector4i* b); 
-int vEqExact4lp(Vector4l* a, Vector4l* b); 
-int vEqExact4dp(Vector4d* a, Vector4d* b); 
+#define XR(suf, t, ft, ret, name, ...) \
+	ret v##name##suf(const Vector##suf a, const Vector##suf b __VA_OPT__(,) __VA_ARGS__); \
+	ret v##name##suf##p(const Vector##suf const * a, const Vector##suf const * b __VA_OPT__(,) __VA_ARGS__);
 
-// safe equivalence, to FLT_CMP_EPSILON
-int vEq2(Vector2 a, Vector2 b); 
-int vEq3(Vector3 a, Vector3 b); 
-int vEq4(Vector4 a, Vector4 b); 
-int vEq2p(Vector2* a, Vector2* b); 
-int vEq3p(Vector3* a, Vector3* b); 
-int vEq4p(Vector4* a, Vector4* b); 
+#define XT(suf, t, ft, name, ...) \
+	ft v##name##suf(const Vector##suf a, const Vector##suf b __VA_OPT__(,) __VA_ARGS__); \
+	ft v##name##suf##p(const Vector##suf const * a, const Vector##suf const * b __VA_OPT__(,) __VA_ARGS__);
 
-// safe equivalence, to arbitrary epsilon
-int vEqEp2i(Vector2i a, Vector2i b, double epsilon);
-int vEqEp2(Vector2 a, Vector2 b, float epsilon);
-int vEqEp3(Vector3 a, Vector3 b, float epsilon);
-int vEqEp4(Vector4 a, Vector4 b, float epsilon);
-int vEqEp2ip(Vector2i* a, Vector2i* b, double epsilon);
-int vEqEp2p(Vector2* a, Vector2* b, float epsilon);
-int vEqEp3p(Vector3* a, Vector3* b, float epsilon);
-int vEqEp4p(Vector4* a, Vector4* b, float epsilon);
+#define XRE(suf, t, ft, ret, name, ...) \
+	ret v##name##suf(const Vector##suf a, const Vector##suf b __VA_OPT__(,) ft __VA_ARGS__); \
+	ret v##name##suf##p(const Vector##suf const * a, const Vector##suf const * b __VA_OPT__(,) ft __VA_ARGS__);
+
+#define X1(suf, t, ft, name) \
+	Vector##suf v##name##suf(const Vector##suf a); \
+	void v##name##suf##p(const Vector##suf* a, Vector##suf* out);
+	
+#define X2(suf, t, ft, name) \
+	Vector##suf v##name##suf(const Vector##suf a, const Vector##suf b); \
+	void v##name##suf##p(const Vector##suf* a, const Vector##suf* b, Vector##suf* out);
+
+	// safe equivalence, to FLT_CMP_EPSILON
+	C3DLAS_VECTOR_LIST(XR, int, Eq)
+	
+	// exact equivalence
+	C3DLAS_VECTOR_LIST(XR, int, EqExact)
+	
+	// safe equivalence, to arbitrary epsilon
+	C3DLAS_VECTOR_LIST(XRE, int, EqEp, epsilon)
+	C3DLAS_VECTOR_LIST(X2, Add)
+	C3DLAS_VECTOR_LIST(X2, Sub)
+	C3DLAS_VECTOR_LIST(X2, Mul)
+	C3DLAS_VECTOR_LIST(X2, Min)
+	C3DLAS_VECTOR_LIST(X2, Max)
+	
+	// Squared distance from one point to another
+	C3DLAS_VECTOR_LIST(XT, DistSq)
+	
+	// Distance from one point to another
+	C3DLAS_VECTOR_LIST(XT, Dist)
+	C3DLAS_VECTOR_LIST(X1, Norm)
+	C3DLAS_VECTOR_LIST(X1, Unit)
+	C3DLAS_VECTOR_LIST(X1, Inverse)
+#undef X1
+#undef X2
+#undef XR
+
+
+
 
 // Swap two vectors
 void vSwap2ip(Vector2i* a, Vector2i* b);
@@ -501,24 +468,9 @@ void vSwap3p(Vector3* a, Vector3* b);
 void vSwap4p(Vector4* a, Vector4* b);
 
 // Vector addition
-Vector2i vAdd2i(Vector2i a, Vector2i b);
-Vector2  vAdd2(Vector2 a, Vector2 b);
-Vector3  vAdd3(Vector3 a, Vector3 b);
-Vector4  vAdd4(Vector4 a, Vector4 b);
-void     vAdd2ip(Vector2i* a, Vector2i* b, Vector2i* out);
-void     vAdd2p(Vector2* a, Vector2* b, Vector2* out);
-void     vAdd3p(Vector3* a, Vector3* b, Vector3* out);
-void     vAdd4p(Vector4* a, Vector4* b, Vector4* out);
+
 
 // Vector subtraction. diff = from - what
-Vector2i vSub2i(Vector2i from, Vector2i what);
-Vector2  vSub2(Vector2 from, Vector2 what);
-Vector3  vSub3(Vector3 from, Vector3 what);
-Vector4  vSub4(Vector4 from, Vector4 what);
-void     vSub2ip(Vector2i* from, Vector2i* what, Vector2i* diff);
-void     vSub2p(Vector2* from, Vector2* what, Vector2* diff);
-void     vSub3p(Vector3* from, Vector3* what, Vector3* diff);
-void     vSub4p(Vector4* from, Vector4* what, Vector4* diff);
 
 // Scalar muliplication
 Vector2  vScale2(Vector2 v, float scalar);
@@ -528,12 +480,7 @@ void     vScale2p(Vector2* v, float scalar, Vector2* out);
 void     vScale3p(Vector3* v, float scalar, Vector3* out);
 
 // Component-wise vector muliplication
-Vector2  vMul2(Vector2 a, Vector2 b);
-Vector3  vMul3(Vector3 a, Vector3 b);
-Vector4  vMul4(Vector4 a, Vector4 b);
-void     vMul2p(Vector2* a, Vector2* b, Vector2* out);
-void     vMul3p(Vector3* a, Vector3* b, Vector3* out);
-void     vMul4p(Vector4* a, Vector4* b, Vector4* out);
+
 
 // Dot product (inner product)
 double vDot2i(const Vector2i a, const Vector2i b);
@@ -546,6 +493,7 @@ float  vDot3p(const Vector3* a, const Vector3* b);
 float  vDot4p(const Vector4* a, const Vector4* b);
 
 // Cross product: out = a x b
+Vector3 vCross3(Vector3 a, Vector3 b);
 Vector3 vCross3(Vector3 a, Vector3 b);
 void  vCross3p(Vector3* a, Vector3* b, Vector3* out); 
 
@@ -562,9 +510,6 @@ void     vLerp3p(Vector3* a, Vector3* b, float t, Vector3* out);
 void     vLerp4p(Vector4* a, Vector4* b, float t, Vector4* out);
 
 // Vector Inverse. Returns FLT_MAX on div/0
-Vector2 vInverse2(const Vector2 v); 
-Vector3 vInverse3(const Vector3 v); 
-Vector4 vInverse4(const Vector4 v); 
 void    vInverse2p(const Vector2* v, Vector2* out); 
 void    vInverse3p(const Vector3* v, Vector3* out); 
 void    vInverse4p(const Vector4* v, Vector4* out); 
@@ -580,59 +525,9 @@ float  vMag3p(const Vector3* v);
 float  vMag4p(const Vector4* v);
 
 // Squared distance from one point to another
-double vDistSq2i(Vector2i a, Vector2i b); 
-float  vDistSq2(Vector2 a, Vector2 b); 
-float  vDistSq3(Vector3 a, Vector3 b); 
-float  vDistSq4(Vector4 a, Vector4 b); 
-double vDistSq2ip(Vector2i* a, Vector2i* b); 
-float  vDistSq2p(Vector2* a, Vector2* b); 
-float  vDistSq3p(Vector3* a, Vector3* b); 
-float  vDistSq4p(Vector4* a, Vector4* b); 
 
-// Distance from one point to another
-double vDist2i(Vector2i a, Vector2i b); 
-float  vDist2(Vector2 a, Vector2 b); 
-float  vDist3(Vector3 a, Vector3 b); 
-float  vDist4(Vector4 a, Vector4 b); 
-double vDist2ip(Vector2i* a, Vector2i* b); 
-float  vDist2p(Vector2* a, Vector2* b); 
-float  vDist3p(Vector3* a, Vector3* b); 
-float  vDist4p(Vector4* a, Vector4* b); 
 
-// Vector normalize (scale to unit length)
-Vector2 vNorm2(Vector2 v);
-Vector3 vNorm3(Vector3 v);
-Vector4 vNorm4(Vector4 v);
-void    vNorm2p(const Vector2* v, Vector2* out);
-void    vNorm3p(const Vector3* v, Vector3* out);
-void    vNorm4p(const Vector4* v, Vector4* out);
-// alternate name
-Vector2 vUnit2(Vector2 v);
-Vector3 vUnit3(Vector3 v);
-Vector4 vUnit4(Vector4 v);
-void    vUnit2p(const Vector2* v, Vector2* out); 
-void    vUnit3p(const Vector3* v, Vector3* out); 
-void    vUnit4p(const Vector4* v, Vector4* out); 
 
-// Returns the minimum values of each component
-Vector2i vMin2i(Vector2i a, Vector2i b);
-Vector2  vMin2(Vector2 a, Vector2 b);
-Vector3  vMin3(Vector3 a, Vector3 b);
-Vector4  vMin4(Vector4 a, Vector4 b);
-void     vMin2ip(Vector2i* a, Vector2i* b, Vector2i* out);
-void     vMin2p(Vector2* a, Vector2* b, Vector2* out);
-void     vMin3p(Vector3* a, Vector3* b, Vector3* out);
-void     vMin4p(Vector4* a, Vector4* b, Vector4* out);
-
-// Returns the maximum values of each component
-Vector2i vMax2i(Vector2i a, Vector2i b);
-Vector2  vMax2(Vector2 a, Vector2 b);
-Vector3  vMax3(Vector3 a, Vector3 b);
-Vector4  vMax4(Vector4 a, Vector4 b);
-void     vMax2ip(Vector2i* a, Vector2i* b, Vector2i* out);
-void     vMax2p(Vector2* a, Vector2* b, Vector2* out);
-void     vMax3p(Vector3* a, Vector3* b, Vector3* out);
-void     vMax4p(Vector4* a, Vector4* b, Vector4* out);
 
 Vector2 vClamp2f(Vector2 in, float min, float max);
 Vector2 vClamp2(Vector2 in, Vector2 min, Vector2 max);
