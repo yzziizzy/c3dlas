@@ -409,7 +409,6 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 //
 // Vectors
 //
-#define vSub(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vSub) default: ((void)0))(a, __VA_ARGS__)
 
 
 #define XR(suf, t, ft, ret, name, ...) \
@@ -448,15 +447,49 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 	
 	// Squared distance from one point to another
 	C3DLAS_VECTOR_LIST(XT, DistSq)
+	C3DLAS_VECTOR_LIST(XT, Dot)
 	
 	// Distance from one point to another
 	C3DLAS_VECTOR_LIST(XT, Dist)
 	C3DLAS_VECTOR_LIST(X1, Norm)
 	C3DLAS_VECTOR_LIST(X1, Unit)
-	C3DLAS_VECTOR_LIST(X1, Inverse)
+//	C3DLAS_VECTOR_LIST(X1, Inverse)
 #undef X1
 #undef X2
+#undef XT
 #undef XR
+#undef XRE
+
+
+#define X(sz) \
+	Vector##sz vInverse##sz(Vector##sz v); \
+	Vector##sz##d vInverse##sz##d(const Vector##sz##d v); \
+	Vector##sz##d vInverse##sz##i(const Vector##sz##i v); \
+	Vector##sz##d vInverse##sz##l(const Vector##sz##l v); \
+	void vInverse##sz##p(const Vector##sz* v, Vector##sz* out); \
+	void vInverse##sz##dp(const Vector##sz##d* v, Vector##sz##d* out); \
+	void vInverse##sz##ip(const Vector##sz##i* v, Vector##sz##d* out); \
+	void vInverse##sz##lp(const Vector##sz##l* v, Vector##sz##d* out); \
+
+	X(2) X(3) X(4)
+#undef X
+
+#define X(suf, t, ft, ...) \
+	Vector##suf vScale##suf(const Vector##suf v, ft scalar); \
+	void vScale##suf##p(const Vector##suf* v, ft scalar, Vector##suf* out);
+	C3DLAS_VECTOR_LIST(X)
+#undef X
+	
+
+#define vAdd(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vAdd) default: ((void)0))(a, __VA_ARGS__)
+#define vSub(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vSub) default: ((void)0))(a, __VA_ARGS__)
+#define vMul(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vMul) default: ((void)0))(a, __VA_ARGS__)
+#define vDist(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vDist) default: ((void)0))(a, __VA_ARGS__)
+#define vDistSq(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vDistSq) default: ((void)0))(a, __VA_ARGS__)
+#define vMin(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vMin) default: ((void)0))(a, __VA_ARGS__)
+#define vMax(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vMax) default: ((void)0))(a, __VA_ARGS__)
+#define vClamp(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vClamp) default: ((void)0))(a, __VA_ARGS__)
+
 
 
 
@@ -473,24 +506,16 @@ void vSwap4p(Vector4* a, Vector4* b);
 // Vector subtraction. diff = from - what
 
 // Scalar muliplication
-Vector2  vScale2(Vector2 v, float scalar);
-Vector3  vScale3(Vector3 v, float scalar);
-void     vScale2ip(Vector2i* v, float scalar, Vector2i* out);
-void     vScale2p(Vector2* v, float scalar, Vector2* out);
-void     vScale3p(Vector3* v, float scalar, Vector3* out);
+//Vector2  vScale2(Vector2 v, float scalar);
+//Vector3  vScale3(Vector3 v, float scalar);
+//void     vScale2ip(Vector2i* v, float scalar, Vector2i* out);
+//void     vScale2p(Vector2* v, float scalar, Vector2* out);
+//void     vScale3p(Vector3* v, float scalar, Vector3* out);
 
 // Component-wise vector muliplication
 
 
 // Dot product (inner product)
-double vDot2i(const Vector2i a, const Vector2i b);
-float  vDot2(const Vector2 a, const Vector2 b);
-float  vDot3(const Vector3 a, const Vector3 b);
-float  vDot4(const Vector4 a, const Vector4 b);
-double vDot2ip(const Vector2i* a, const Vector2i* b);
-float  vDot2p(const Vector2* a, const Vector2* b);
-float  vDot3p(const Vector3* a, const Vector3* b);
-float  vDot4p(const Vector4* a, const Vector4* b);
 
 // Cross product: out = a x b
 Vector3 vCross3(Vector3 a, Vector3 b);
@@ -509,10 +534,7 @@ void     vLerp2p(Vector2* a, Vector2* b, float t, Vector2* out);
 void     vLerp3p(Vector3* a, Vector3* b, float t, Vector3* out);
 void     vLerp4p(Vector4* a, Vector4* b, float t, Vector4* out);
 
-// Vector Inverse. Returns FLT_MAX on div/0
-void    vInverse2p(const Vector2* v, Vector2* out); 
-void    vInverse3p(const Vector3* v, Vector3* out); 
-void    vInverse4p(const Vector4* v, Vector4* out); 
+// Vector Inverse. Returns FLT/DBL_MAX on div/0. Integer functions return double vectors
 
 // Vector magnitude (length)
 double vMag2i(const Vector2i v);

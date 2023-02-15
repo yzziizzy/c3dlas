@@ -6,6 +6,8 @@
 #include <float.h>
 #include <math.h>
 #include <tgmath.h>
+#include <limits.h>
+#include <float.h>
 
 #include <x86intrin.h>
 
@@ -118,36 +120,7 @@ float frandPCG(float low, float high, PCG* pcg) {
 
 
 
-#define vSub(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vSub) default: ((void)0))(a, __VA_ARGS__)
 
-
-//#define XR(suf, t, ft, ret, name, ...) \
-//	ret v##name##suf(const Vector##suf a, const Vector##suf b __VA_OPT__(,) __VA_ARGS__); \
-//	ret v##name##suf##p(const Vector##suf* a, const Vector##suf* b __VA_OPT__(,) __VA_ARGS__);
-//
-//#define X1(suf, t, ft, name) \
-//	Vector##suf v##name##suf(const Vector##suf a); \
-//	void v##name##suf##p(const Vector##suf* a, Vector##suf* out);
-//	
-//#define X2(suf, t, ft, name) \
-//	Vector##suf v##name##suf(Vector##suf a, Vector##suf b); \
-//	void v##name##suf##p(Vector##suf* a, Vector##suf* b, Vector##suf* out);
-//
-//	C3DLAS_VECTOR_LIST(XR, int, Eq)
-//	C3DLAS_VECTOR_LIST(XR, int, EqExact)
-////	C3DLAS_VECTOR_LIST(XR, int, EqEp, double epsilon)
-//	C3DLAS_VECTOR_LIST(X2, Add)
-//	C3DLAS_VECTOR_LIST(X2, Sub)
-//	C3DLAS_VECTOR_LIST(X2, Mul)
-//	C3DLAS_VECTOR_LIST(X2, Min)
-//	C3DLAS_VECTOR_LIST(X2, Max)
-//	C3DLAS_VECTOR_LIST(X1, Norm)
-//	C3DLAS_VECTOR_LIST(X1, Unit)
-//	C3DLAS_VECTOR_LIST(X1, Inverse)
-//#undef X1
-//#undef X2
-//#undef XR
-//
 
 int vEq2i(const Vector2i a, const Vector2i b) { return vEq2ip(&a, &b); }
 int vEq2ip(const Vector2i* a, const Vector2i* b) { return vEqExact2ip(a, b); } 
@@ -216,7 +189,17 @@ void vMul##sz##suf##p(const Vector##sz##suf const * a, const Vector##sz##suf con
 		((t*)out)[i] = ((t*)a)[i] * ((t*)b)[i]; \
 	} \
 } \
-
+\
+ft vDot##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
+	return vDot##sz##suf##p(&a, &b); \
+} \
+ft vDot##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b) { \
+	ft tmp = 0; \
+	for(int i = 0; i < sz; i++) { \
+		tmp += ((t*)a)[i] * ((t*)b)[i]; \
+	} \
+	return tmp;\
+} \
 
 	C3DLAS_VECTOR_TYPE_LIST(FN, 2)
 	C3DLAS_VECTOR_TYPE_LIST(FN, 3, && a->z == b->z)
@@ -247,11 +230,6 @@ int vEq3p(const Vector3* a, const Vector3* b) {
 
 int vEq4p(const Vector4* a, const Vector4* b) {
 	return vEqEp4p(a, b, FLT_CMP_EPSILON);
-}
-
-
-void vCopy3p(const Vector3* src, Vector3* dst) {
-	*dst = *src;
 }
 
 
@@ -300,35 +278,36 @@ void vSwap4p(Vector4* a, Vector4* b) {
 
 // scalar muliplication
 
-Vector2i vScale2i(Vector2i v, float scalar) {
+Vector2i vScale2i(const Vector2i v, double scalar) {
 	Vector2i out;
 	vScale2ip(&v, scalar, &out);
 	return out;
 }
 
-void vScale2ip(Vector2i* v, float scalar, Vector2i* out) {
+void vScale2ip(const Vector2i* v, double scalar, Vector2i* out) {
 	out->x = (float)v->x * scalar;
 	out->y = (float)v->y * scalar;
 }
 
-Vector2 vScale2(Vector2 v, float scalar) {
+Vector2 vScale2(const Vector2 v, float scalar) {
 	Vector2 out;
 	vScale2p(&v, scalar, &out);
 	return out;
 }
 
-void vScale2p(Vector2* v, float scalar, Vector2* out) {
+void vScale2p(const Vector2* v, float scalar, Vector2* out) {
 	out->x = v->x * scalar;
 	out->y = v->y * scalar;
 }
 
-Vector3 vScale3(Vector3 v, float scalar) {
+Vector3 vScale3(const Vector3 v, float scalar) {
 	Vector3 out;
 	vScale3p(&v, scalar, &out);
 	return out;
 }
 
-void vScale3p(Vector3* v, float scalar, Vector3* out) {
+
+void vScale3p(const Vector3* v, float scalar, Vector3* out) {
 // #ifdef C3DLAS_USE_SIMD
 // 	__m128 v_ = _mm_loadu_ps((float*)v);
 // 	       v_ = _mm_mul_ps(v_, _mm_set_ps1(scalar));
@@ -344,25 +323,6 @@ void vScale3p(Vector3* v, float scalar, Vector3* out) {
 
 
 // Dot product (inner product)
-
-double vDot2i(const Vector2i a, const Vector2i b) { return vDot2ip(&a, &b); }
-float vDot2(const Vector2 a, const Vector2 b) { return vDot2p(&a, &b); }
-float vDot3(const Vector3 a, const Vector3 b) { return vDot3p(&a, &b); }
-float vDot4(const Vector4 a, const Vector4 b) { return vDot4p(&a, &b); }
-
-double vDot2ip(const Vector2i* a, const Vector2i* b) {
-	return ((double)a->x * (double)b->x) + ((double)a->y * (double)b->y);
-}
-float vDot2p(const Vector2* a, const Vector2* b) {
-	return (a->x * b->x) + (a->y * b->y);
-}
-float vDot3p(const Vector3* a, const Vector3* b) {
-	return (a->x * b->x) + (a->y * b->y) + (a->z * b->z);
-}
-float vDot4p(const Vector4* a, const Vector4* b) {
-	return (a->x * b->x) + (a->y * b->y) + (a->z * b->z) + (a->w * b->w);
-}
-
 
 
 
@@ -465,45 +425,6 @@ void vLerp4p(Vector4* a, Vector4* b, float t, Vector4* out) {
 
 
 // Vector Inverse. Returns FLT_MAX on div/0
-
-Vector2 vInverse2(const Vector2 v) {
-	Vector2 out;
-	vInverse2p(&v, &out);
-	return out;
-}
-
-void vInverse2p(const Vector2* v, Vector2* out) {
-	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
-	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
-}
-
-Vector3 vInverse3(const Vector3 v) {
-	Vector3 out;
-	vInverse3p(&v, &out);
-	return out;
-}
-
-void vInverse3p(const Vector3* v, Vector3* out) {
-	// yeah yeah yeah shut up. In games, pedeantic details are just annoying. 
-	// This function does what you mean rather than sucking off the IEEE Standards Committee
-	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
-	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
-	out->z = v->z == 0.0f ? FLT_MAX : 1.0f / v->z;
-}
-
-Vector4 vInverse4(const Vector4 v) {
-	Vector4 out;
-	vInverse4p(&v, &out);
-	return out;
-}
-
-void vInverse4p(const Vector4* v, Vector4* out) {
-	out->x = v->x == 0.0f ? FLT_MAX : 1.0f / v->x;
-	out->y = v->y == 0.0f ? FLT_MAX : 1.0f / v->y;
-	out->z = v->z == 0.0f ? FLT_MAX : 1.0f / v->z;
-	out->w = v->w == 0.0f ? FLT_MAX : 1.0f / v->w;
-}
-
 
 
 // Vector magnitude (length)
@@ -637,7 +558,7 @@ void  vUnit4p(const Vector4* v, Vector4* out) { return vNorm4p(v, out); }
 // vMin(a, b)  Returns the minimum values of each component
 // vMin(a, b)  Returns the maximum values of each component
 
-#define FN(sz, suf, t) \
+#define FN(sz, suf, t, maxval) \
 void vMin##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, Vector##sz##suf* out) { \
 	for(int i = 0; i < sz; i++) \
 		((t*)out)[i] = fmin(((t*)a)[i], ((t*)b)[i]); \
@@ -662,17 +583,25 @@ Vector##sz##suf vClamp##sz##suf(Vector##sz##suf in, Vector##sz##suf min, Vector#
 		((t*)&out)[i] = fmax(((t*)&min)[i], fmin(((t*)&in)[i], ((t*)&max)[i])); \
 	return out; \
 } \
+Vector##sz##suf vInverse##sz##suf(const Vector##sz##suf v) { \
+	Vector##sz##suf out; \
+	vInverse##sz##suf##p(&v, &out); \
+	return out; \
+} \
+void vInverse##sz##suf##p(const Vector##sz##suf* v, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = ((t*)v)[i] == (t)0.0 ? maxval : (t)1.0 / ((t*)v)[i]; \
+}	
 
-
-FN(2,  , float)
-FN(3,  , float)
-FN(4,  , float)
-FN(2, d, double)
-FN(3, d, double)
-FN(4, d, double)
+FN(2,  , float,  FLT_MAX)
+FN(3,  , float,  FLT_MAX)
+FN(4,  , float,  FLT_MAX)
+FN(2, d, double, DBL_MAX)
+FN(3, d, double, DBL_MAX)
+FN(4, d, double, DBL_MAX)
 #undef FN
 
-#define FN(sz, suf, t) \
+#define FN(sz, suf, t, maxval) \
 void vMin##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, Vector##sz##suf* out) { \
 	for(int i = 0; i < sz; i++) \
 		((t*)out)[i] = MIN(((t*)a)[i], ((t*)b)[i]); \
@@ -697,15 +626,23 @@ Vector##sz##suf vClamp##sz##suf(Vector##sz##suf in, Vector##sz##suf min, Vector#
 		((t*)&out)[i] = MAX(((t*)&min)[i], MIN(((t*)&in)[i], ((t*)&max)[i])); \
 	return out; \
 } \
+Vector##sz##d vInverse##sz##suf(const Vector##sz##suf v) { \
+	Vector##sz##d out; \
+	vInverse##sz##suf##p(&v, &out); \
+	return out; \
+} \
+void vInverse##sz##suf##p(const Vector##sz##suf* v, Vector##sz##d* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = ((t*)v)[i] == (t)0 ? maxval : 1.0 / (double)((t*)v)[i]; \
+}		 
 
 
-
-FN(2, i, int)
-FN(3, i, int)
-FN(4, i, int)
-FN(2, l, long)
-FN(3, l, long)
-FN(4, l, long)
+FN(2, i, int,  DBL_MAX)
+FN(3, i, int,  DBL_MAX)
+FN(4, i, int,  DBL_MAX)
+FN(2, l, long, DBL_MAX)
+FN(3, l, long, DBL_MAX)
+FN(4, l, long, DBL_MAX)
 #undef FN
 
 
@@ -1016,7 +953,7 @@ void planeFromTriangle3p(Vector3* v1, Vector3* v2, Vector3* v3, Plane* out) {
 
 // copy a plane
 void planeCopy3p(Plane* in, Plane* out) {
-	vCopy3p(&in->n, &out->n);
+	out->n = in->n;
 	out->d = in->d;
 }
 
