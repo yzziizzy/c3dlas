@@ -110,21 +110,21 @@ static const char* c3dlas_EnumString(int e) {
 // suffix, type, float
 //               type
 #define C3DLAS_VECTOR_LIST(X, ...) \
-	X(2, 2,  float,  float,  2,  FLT, __VA_OPT__(,) __VA_ARGS__) \
-	X(3, 3,  float,  float,  3,  FLT, __VA_OPT__(,) __VA_ARGS__) \
-	X(4, 4,  float,  float,  4,  FLT, __VA_OPT__(,) __VA_ARGS__) \
-	X(2, 2d, double, double, 2d, DBL, __VA_OPT__(,) __VA_ARGS__) \
-	X(3, 3d, double, double, 3d, DBL, __VA_OPT__(,) __VA_ARGS__) \
-	X(4, 4d, double, double, 4d, DBL, __VA_OPT__(,) __VA_ARGS__) \
-	X(2, 2i, int,    double, 2d, DBL, __VA_OPT__(,) __VA_ARGS__) \
-	X(3, 3i, int,    double, 3d, DBL, __VA_OPT__(,) __VA_ARGS__) \
-	X(4, 4i, int,    double, 4d, DBL, __VA_OPT__(,) __VA_ARGS__) \
-	X(2, 2l, long,   double, 2d, DBL, __VA_OPT__(,) __VA_ARGS__) \
-	X(3, 3l, long,   double, 3d, DBL, __VA_OPT__(,) __VA_ARGS__) \
-	X(4, 4l, long,   double, 4d, DBL, __VA_OPT__(,) __VA_ARGS__) \
+	X(2, 2,  float,  float,  2,  FLT __VA_OPT__(,) __VA_ARGS__) \
+	X(3, 3,  float,  float,  3,  FLT __VA_OPT__(,) __VA_ARGS__) \
+	X(4, 4,  float,  float,  4,  FLT __VA_OPT__(,) __VA_ARGS__) \
+	X(2, 2d, double, double, 2d, DBL __VA_OPT__(,) __VA_ARGS__) \
+	X(3, 3d, double, double, 3d, DBL __VA_OPT__(,) __VA_ARGS__) \
+	X(4, 4d, double, double, 4d, DBL __VA_OPT__(,) __VA_ARGS__) \
+	X(2, 2i, int,    double, 2d, DBL __VA_OPT__(,) __VA_ARGS__) \
+	X(3, 3i, int,    double, 3d, DBL __VA_OPT__(,) __VA_ARGS__) \
+	X(4, 4i, int,    double, 4d, DBL __VA_OPT__(,) __VA_ARGS__) \
+	X(2, 2l, long,   double, 2d, DBL __VA_OPT__(,) __VA_ARGS__) \
+	X(3, 3l, long,   double, 3d, DBL __VA_OPT__(,) __VA_ARGS__) \
+	X(4, 4l, long,   double, 4d, DBL __VA_OPT__(,) __VA_ARGS__) \
 
 
-#define C3DLAS_GEN_HELPER(a, b, name, ...) Vector##a: name##a,
+#define C3DLAS_GEN_HELPER(sz, suf, ty, ft, sufft, pref, name, ...) Vector##suf: name##suf,
 
 
 
@@ -432,8 +432,8 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 	Vector##suf vMul##suf(const Vector##suf a, const Vector##suf b); \
 	void vMul##suf##p(const Vector##suf* a, const Vector##suf* b, Vector##suf* out); \
 	\
-	Vector##suf vScale##suf(const Vector##suf v, ft scalar); \
-	void vScale##suf##p(const Vector##suf* v, ft scalar, Vector##suf* out); \
+	Vector##sufft vScale##suf(const Vector##suf v, ft scalar); \
+	void vScale##suf##p(const Vector##suf* v, ft scalar, Vector##sufft* out); \
 	\
 	Vector##suf vMin##suf(const Vector##suf a, const Vector##suf b); \
 	void vMin##suf##p(const Vector##suf* a, const Vector##suf* b, Vector##suf* out); \
@@ -450,11 +450,11 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 	ft vDistSq##suf(const Vector##suf a, const Vector##suf b); \
 	ft vDistSq##suf##p(const Vector##suf* a, const Vector##suf* b); \
 	\
-	Vector##suf vNorm##suf(const Vector##suf v); \
-	void vNorm##suf##p(const Vector##suf* v, Vector##suf* out); \
+	Vector##sufft vNorm##suf(const Vector##suf v); \
+	void vNorm##suf##p(const Vector##suf* v, Vector##sufft* out); \
 	\
-	Vector##suf vUnit##suf(const Vector##suf v); \
-	void vUnit##suf##p(const Vector##suf* v, Vector##suf* out); \
+	Vector##sufft vUnit##suf(const Vector##suf v); \
+	void vUnit##suf##p(const Vector##suf* v, Vector##sufft* out); \
 	\
 	ft vLen##suf(const Vector##suf v); \
 	ft vLen##suf##p(const Vector##suf* v); \
@@ -493,27 +493,32 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 
 #undef X
 
-
-#define X(sz) \
-
-	X(2) X(3) X(4)
-#undef X
-
-#define X(sz, suf, t, ft, ...) \
-	Vector##suf vScale##suf(const Vector##suf v, ft scalar); \
-	void vScale##suf##p(const Vector##suf* v, ft scalar, Vector##suf* out);
-	C3DLAS_VECTOR_LIST(X)
-#undef X
 	
 
-#define vAdd(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vAdd) default: ((void)0))(a, __VA_ARGS__)
-#define vSub(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vSub) default: ((void)0))(a, __VA_ARGS__)
-#define vMul(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vMul) default: ((void)0))(a, __VA_ARGS__)
-#define vDist(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vDist) default: ((void)0))(a, __VA_ARGS__)
-#define vDistSq(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vDistSq) default: ((void)0))(a, __VA_ARGS__)
-#define vMin(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vMin) default: ((void)0))(a, __VA_ARGS__)
-#define vMax(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vMax) default: ((void)0))(a, __VA_ARGS__)
-#define vClamp(a, ...) _Generic((a), C3DLAS_VECTOR_TYPE_LIST(C3DLAS_GEN_HELPER, vClamp) default: ((void)0))(a, __VA_ARGS__)
+#define vAdd(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vAdd) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vSub(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vSub) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vMul(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMul) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vScale(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vScale) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vLerp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vLerp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vRecip(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vRecip) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vInv(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vInv) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vMag(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMag) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vInvLen(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vInvLen) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vLen(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vLen) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vLenSq(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vLenSq) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vDist(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vDist) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vDistSq(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vDistSq) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vNorm(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vNorm) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vNeg(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vNeg) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vSign(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vSign) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vStep(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vStep) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vMin(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMin) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vMax(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMax) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vAbs(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vAbs) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vClamp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vClamp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vEq(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vEq) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vEqEp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vEqEp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vEqExact(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vEqExact) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 
 
 

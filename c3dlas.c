@@ -134,10 +134,10 @@ int vEqExact##suf##p(const Vector##suf const * a, const Vector##suf const * b) {
 } \
 \
 int vEq##suf(const Vector##suf a, const Vector##suf b) { \
-	return vEqEp##suf(a, b, FLT_CMP_EPSILON); \
+	return vEqEp##suf(a, b, pref##_CMP_EPSILON); \
 } \
 int vEq##suf##p(const Vector##suf* a, const Vector##suf* b) { \
-	return vEqEp##suf(*a, *b, FLT_CMP_EPSILON); \
+	return vEqEp##suf(*a, *b, pref##_CMP_EPSILON); \
 } \
 \
 int vEqEp##suf(const Vector##suf a, const Vector##suf b, ft epsilon) { \
@@ -209,15 +209,24 @@ ft vDot##suf##p(const Vector##suf* a, const Vector##suf* b) { \
 	return tmp;\
 } \
 \
+Vector##sufft vScale##suf(const Vector##suf v, ft scalar) { \
+	Vector##sufft out; \
+	vScale##suf##p(&v, scalar, &out); \
+	return out; \
+} \
+void vScale##suf##p(const Vector##suf* v, ft scalar, Vector##sufft* out) { \
+	for(int i = 0; i < sz; i++) \
+		((ft*)out)[i] = (ft)((ty*)v)[i] * scalar; \
+} \
+\
 Vector##sufft vLerp##suf(const Vector##suf a, const Vector##suf b, ft t) { \
 	Vector##sufft out; \
 	vLerp##suf##p(&a, &b, t, &out); \
 	return out; \
 } \
 void vLerp##suf##p(const Vector##suf* a, const Vector##suf* b, ft t, Vector##sufft* out) { \
-	for(int i = 0; i < sz; i++) { \
+	for(int i = 0; i < sz; i++) \
 		((ft*)out)[i] += (ft)((ty*)a)[i] +  ((ft)(((ty*)b)[i] - ((ty*)a)[i]) * t) ; \
-	} \
 } \
 \
 Vector##sufft vInv##suf(const Vector##suf v) { \
@@ -261,6 +270,39 @@ ft vInvLen##suf(const Vector##suf v) { \
 ft vInvLen##suf##p(const Vector##suf* v) { \
 	return vInvLen##suf(*v); \
 } \
+\
+Vector##sufft vNorm##suf(const Vector##suf v) { \
+	Vector##sufft out; \
+	vNorm##suf##p(&v, &out); \
+	return out; \
+} \
+void vNorm##suf##p(const Vector##suf* v, Vector##sufft* out) { \
+	ft n = vLenSq##suf(*v); \
+	\
+	if(n >= (ft)1.0f - pref##_CMP_EPSILON && n <= (ft)1.0 + pref##_CMP_EPSILON) { \
+		out->x = v->x; \
+		for(int i = 0; i < sz; i++) \
+			((ft*)out)[i] = (ft)((ty*)v)[i]; \
+		return;		 \
+	} \
+	else if(n == 0.0) { \
+		for(int i = 0; i < sz; i++) \
+			((ft*)out)[i] = 0; \
+		return; \
+	} \
+	 \
+	n = (ft)1.0 / sqrt(n); \
+	for(int i = 0; i < sz; i++) \
+		((ft*)out)[i] = (ft)((ty*)v)[i] * n; \
+}  \
+\
+Vector##sufft vUnit##suf(const Vector##suf v) { \
+	return vNorm##suf(v); \
+} \
+void vUnit##suf##p(const Vector##suf* v, Vector##sufft* out) { \
+	return vNorm##suf##p(v, out); \
+} \
+
 
 	C3DLAS_VECTOR_LIST(FN)
 #undef FN
@@ -305,48 +347,6 @@ void vSwap4p(Vector4* a, Vector4* b) {
 
 
 // scalar muliplication
-
-Vector2i vScale2i(const Vector2i v, double scalar) {
-	Vector2i out;
-	vScale2ip(&v, scalar, &out);
-	return out;
-}
-
-void vScale2ip(const Vector2i* v, double scalar, Vector2i* out) {
-	out->x = (float)v->x * scalar;
-	out->y = (float)v->y * scalar;
-}
-
-Vector2 vScale2(const Vector2 v, float scalar) {
-	Vector2 out;
-	vScale2p(&v, scalar, &out);
-	return out;
-}
-
-void vScale2p(const Vector2* v, float scalar, Vector2* out) {
-	out->x = v->x * scalar;
-	out->y = v->y * scalar;
-}
-
-Vector3 vScale3(const Vector3 v, float scalar) {
-	Vector3 out;
-	vScale3p(&v, scalar, &out);
-	return out;
-}
-
-
-void vScale3p(const Vector3* v, float scalar, Vector3* out) {
-// #ifdef C3DLAS_USE_SIMD
-// 	__m128 v_ = _mm_loadu_ps((float*)v);
-// 	       v_ = _mm_mul_ps(v_, _mm_set_ps1(scalar));
-// 	
-// 	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), v_);
-// #else
-	out->x = v->x * scalar;
-	out->y = v->y * scalar;
-	out->z = v->z * scalar;
-// #endif
-}
 
 
 
@@ -402,95 +402,6 @@ float vScalarTriple3p(Vector3* a, Vector3* b, Vector3* c) {
 
 
 // Vector normalize (scale to unit length)
-Vector2 vNorm2(Vector2 v) { 
-	Vector2 out;
-	vNorm2p(&v, &out);
-	return out;
-}
-
-Vector3 vNorm3(Vector3 v) { 
-	Vector3 out;
-	vNorm3p(&v, &out);
-	return out;
-}
-
-Vector4 vNorm4(Vector4 v) { 
-	Vector4 out;
-	vNorm4p(&v, &out);
-	return out;
-}
-
-void vNorm2p(const Vector2* v, Vector2* out) {
-	float n;
-	n = (v->x * v->x) + (v->y * v->y);
-	
-	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) {
-		out->x = v->x;
-		out->y = v->y;		
-	}
-	else if(n == 0.0) {
-		out->x = 0.0;
-		out->y = 0.0;
-	}
-	
-	n = 1.0f / sqrtf(n);
-	out->x = v->x * n;
-	out->y = v->y * n;
-} 
-
-void  vNorm3p(const Vector3* v, Vector3* out) {
-	float n;
-	n = (v->x * v->x) + (v->y * v->y) + (v->z * v->z);
-	
-	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) {
-		out->x = v->x;
-		out->y = v->y;		
-		out->z = v->z;		
-	}
-	else if(n == 0.0) {
-		out->x = 0.0;
-		out->y = 0.0;
-		out->z = 0.0;
-	}
-	
-	n = 1.0f / sqrtf(n);
-	out->x = v->x * n;
-	out->y = v->y * n;
-	out->z = v->z * n;
-}
-
-void  vNorm4p(const Vector4* v, Vector4* out) {
-	float n;
-	n = (v->x * v->x) + (v->y * v->y) + (v->z * v->z) + (v->w * v->w);
-	
-	if(n >= 1.0f - FLT_EPSILON && n <= 1.0f + FLT_EPSILON) {
-		out->x = v->x;
-		out->y = v->y;		
-		out->z = v->z;		
-		out->w = v->w;		
-	}
-	else if(n == 0.0) {
-		out->x = 0.0;
-		out->y = 0.0;
-		out->z = 0.0;
-		out->w = 0.0;
-	}
-	
-	n = 1.0f / sqrtf(n);
-	out->x = v->x * n;
-	out->y = v->y * n;
-	out->z = v->z * n;
-	out->w = v->w * n;
-}
-
-// alternate name
-Vector2 vUnit2(Vector2 v) { return vNorm2(v); }
-Vector3 vUnit3(Vector3 v) { return vNorm3(v); }
-Vector4 vUnit4(Vector4 v) { return vNorm4(v); }
-void  vUnit2p(const Vector2* v, Vector2* out) { return vNorm2p(v, out); } 
-void  vUnit3p(const Vector3* v, Vector3* out) { return vNorm3p(v, out); } 
-void  vUnit4p(const Vector4* v, Vector4* out) { return vNorm4p(v, out); } 
-
 
 
 
