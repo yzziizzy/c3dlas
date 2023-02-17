@@ -121,117 +121,152 @@ float frandPCG(float low, float high, PCG* pcg) {
 
 
 
-
-int vEq2i(const Vector2i a, const Vector2i b) { return vEq2ip(&a, &b); }
-int vEq2ip(const Vector2i* a, const Vector2i* b) { return vEqExact2ip(a, b); } 
-
-#define FN(suf, t, ft, sz, ...) \
-int vEqExact ## sz ## suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
-	return vEqExact##sz##suf##p(&a, &b); \
+#define FN(sz, suf, ty, ft, sufft, pref, ...) \
+\
+int vEqExact##suf(const Vector##suf a, const Vector##suf b) { \
+	return vEqExact##suf##p(&a, &b); \
 } \
-int vEqExact ## sz ## suf ## p(const Vector##sz##suf const * a, const Vector##sz##suf const * b) { \
-	return a->x == b->x && a->y == b->y __VA_ARGS__; \
-}\
-int vEqEp##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b, ft epsilon) { \
-	return vEqEp##sz##suf##p(&a, &b, epsilon); \
-} \
-int vEqEp##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, ft epsilon) { \
-	return vDistSq##sz##suf(*a, *b) <= epsilon * epsilon; \
+int vEqExact##suf##p(const Vector##suf const * a, const Vector##suf const * b) { \
+	int tmp = 0; \
+	for(int i = 0; i < sz; i++) \
+		tmp |= ((ty*)a)[i] == ((ty*)b)[i]; \
+	return tmp; \
 } \
 \
-ft vDistSq##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
-	return vDistSq##sz##suf##p(&a, &b); \
+int vEq##suf(const Vector##suf a, const Vector##suf b) { \
+	return vEqEp##suf(a, b, FLT_CMP_EPSILON); \
 } \
-ft vDistSq##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b) { \
+int vEq##suf##p(const Vector##suf* a, const Vector##suf* b) { \
+	return vEqEp##suf(*a, *b, FLT_CMP_EPSILON); \
+} \
+\
+int vEqEp##suf(const Vector##suf a, const Vector##suf b, ft epsilon) { \
+	return vEqEp##suf##p(&a, &b, epsilon); \
+} \
+int vEqEp##suf##p(const Vector##suf* a, const Vector##suf* b, ft epsilon) { \
+	return vDistSq##suf(*a, *b) <= epsilon * epsilon; \
+} \
+\
+ft vDistSq##suf(const Vector##suf a, const Vector##suf b) { \
+	return vDistSq##suf##p(&a, &b); \
+} \
+ft vDistSq##suf##p(const Vector##suf* a, const Vector##suf* b) { \
 	ft tmp = 0; \
 	for(int i = 0; i < sz; i++) { \
-		ft q = ((t*)a)[i] - ((t*)b)[i]; \
+		ft q = ((ty*)a)[i] - ((ty*)b)[i]; \
 		tmp += q * q; \
 	} \
 	return tmp;\
 } \
-ft vDist##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
-	return sqrt(vDistSq##sz##suf##p(&a, &b)); \
+ft vDist##suf(const Vector##suf a, const Vector##suf b) { \
+	return sqrt(vDistSq##suf##p(&a, &b)); \
 } \
-ft vDist##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b) { \
-	return sqrt(vDistSq##sz##suf##p(a, b)); \
+ft vDist##suf##p(const Vector##suf* a, const Vector##suf* b) { \
+	return sqrt(vDistSq##suf##p(a, b)); \
 } \
 \
-Vector##sz##suf vAdd##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
-	Vector##sz##suf out; \
-	vAdd##sz##suf##p(&a, &b, &out); \
+Vector##suf vAdd##suf(const Vector##suf a, const Vector##suf b) { \
+	Vector##suf out; \
+	vAdd##suf##p(&a, &b, &out); \
 	return out; \
 } \
-void vAdd##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b, Vector##sz##suf* out) { \
+void vAdd##suf##p(const Vector##suf* a, const Vector##suf* b, Vector##suf* out) { \
 	for(int i = 0; i < sz; i++) { \
-		((t*)out)[i] = ((t*)a)[i] + ((t*)b)[i]; \
+		((ty*)out)[i] = ((ty*)a)[i] + ((ty*)b)[i]; \
 	} \
 } \
 \
-Vector##sz##suf vSub##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
-	Vector##sz##suf out; \
-	vSub##sz##suf##p(&a, &b, &out); \
+Vector##suf vSub##suf(const Vector##suf a, const Vector##suf b) { \
+	Vector##suf out; \
+	vSub##suf##p(&a, &b, &out); \
 	return out; \
 } \
-void vSub##sz##suf##p(const Vector##sz##suf const * a, const Vector##sz##suf const * b, Vector##sz##suf* out) { \
+void vSub##suf##p(const Vector##suf const * a, const Vector##suf const * b, Vector##suf* out) { \
 	for(int i = 0; i < sz; i++) { \
-		((t*)out)[i] = ((t*)a)[i] - ((t*)b)[i]; \
+		((ty*)out)[i] = ((ty*)a)[i] - ((ty*)b)[i]; \
 	} \
 } \
 \
-Vector##sz##suf vMul##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
-	Vector##sz##suf out; \
-	vMul##sz##suf##p(&a, &b, &out); \
+Vector##suf vMul##suf(const Vector##suf a, const Vector##suf b) { \
+	Vector##suf out; \
+	vMul##suf##p(&a, &b, &out); \
 	return out; \
 } \
-void vMul##sz##suf##p(const Vector##sz##suf const * a, const Vector##sz##suf const * b, Vector##sz##suf* out) { \
+void vMul##suf##p(const Vector##suf const * a, const Vector##suf const * b, Vector##suf* out) { \
 	for(int i = 0; i < sz; i++) { \
-		((t*)out)[i] = ((t*)a)[i] * ((t*)b)[i]; \
+		((ty*)out)[i] = ((ty*)a)[i] * ((ty*)b)[i]; \
 	} \
 } \
 \
-ft vDot##sz##suf(const Vector##sz##suf a, const Vector##sz##suf b) { \
-	return vDot##sz##suf##p(&a, &b); \
+ft vDot##suf(const Vector##suf a, const Vector##suf b) { \
+	return vDot##suf##p(&a, &b); \
 } \
-ft vDot##sz##suf##p(const Vector##sz##suf* a, const Vector##sz##suf* b) { \
+ft vDot##suf##p(const Vector##suf* a, const Vector##suf* b) { \
 	ft tmp = 0; \
 	for(int i = 0; i < sz; i++) { \
-		tmp += ((t*)a)[i] * ((t*)b)[i]; \
+		tmp += ((ty*)a)[i] * ((ty*)b)[i]; \
 	} \
 	return tmp;\
 } \
+\
+Vector##sufft vLerp##suf(const Vector##suf a, const Vector##suf b, ft t) { \
+	Vector##sufft out; \
+	vLerp##suf##p(&a, &b, t, &out); \
+	return out; \
+} \
+void vLerp##suf##p(const Vector##suf* a, const Vector##suf* b, ft t, Vector##sufft* out) { \
+	for(int i = 0; i < sz; i++) { \
+		((ft*)out)[i] += (ft)((ty*)a)[i] +  ((ft)(((ty*)b)[i] - ((ty*)a)[i]) * t) ; \
+	} \
+} \
+\
+Vector##sufft vInv##suf(const Vector##suf v) { \
+	Vector##sufft out; \
+	vInv##suf##p(&v, &out); \
+	return out; \
+} \
+void vInv##suf##p(const Vector##suf* v, Vector##sufft* out) { \
+	for(int i = 0; i < sz; i++) \
+		((ft*)out)[i] = (((ty*)v)[i] == 0) ? pref##_MAX : ((ft)1.0 /  (ft)((ty*)v)[i]); \
+} \
+\
+ft vLen##suf(const Vector##suf v) { \
+	return vLen##suf##p(&v); \
+} \
+ft vLen##suf##p(const Vector##suf* v) { \
+	ft tmp = 0.0; \
+	for(int i = 0; i < sz; i++) \
+		tmp += (ft)((ty*)v)[i] * (ft)((ty*)v)[i]; \
+	return sqrt(tmp); \
+} \
+\
+ft vLenSq##suf(const Vector##suf v) { \
+	return vLenSq##suf##p(&v); \
+} \
+ft vLenSq##suf##p(const Vector##suf* v) { \
+	return vDot##suf##p(v, v); \
+} \
+\
+ft vMag##suf(const Vector##suf v) { \
+	return vLen##suf##p(&v); \
+} \
+ft vMag##suf##p(const Vector##suf* v) { \
+	return vLen##suf##p(v); \
+} \
+\
+ft vInvLen##suf(const Vector##suf v) { \
+	ft tmp = vLen##suf(v); \
+	return tmp == 0 ? pref##_MAX : (ft)1.0 / tmp; \
+} \
+ft vInvLen##suf##p(const Vector##suf* v) { \
+	return vInvLen##suf(*v); \
+} \
 
-	C3DLAS_VECTOR_TYPE_LIST(FN, 2)
-	C3DLAS_VECTOR_TYPE_LIST(FN, 3, && a->z == b->z)
-	C3DLAS_VECTOR_TYPE_LIST(FN, 4, && a->z == b->z && a->w == b->w)
+	C3DLAS_VECTOR_LIST(FN)
 #undef FN
 
 
  
-//int vEqExact3p(Vector3* a, Vector3* b) {
-//	return a->x == b->x && a->y == b->y && a->z == b->z;
-//}
-// 
-//int vEqExact4p(Vector4* a, Vector4* b) {
-//	return a->x == b->x && a->y == b->y && a->z == b->z && a->w == b->w;
-//}
-//
-int vEq2(const Vector2 a, const Vector2 b) { return vEq2p(&a, &b); } 
-int vEq3(const Vector3 a, const Vector3 b) { return vEq3p(&a, &b); } 
-int vEq4(const Vector4 a, const Vector4 b) { return vEq4p(&a, &b); }
-
-int vEq2p(const Vector2* a, const Vector2* b) {
-	return vEqEp2p(a, b, FLT_CMP_EPSILON);
-}
-
-int vEq3p(const Vector3* a, const Vector3* b) {
-	return vEqEp3p(a, b, FLT_CMP_EPSILON);
-}
-
-int vEq4p(const Vector4* a, const Vector4* b) {
-	return vEqEp4p(a, b, FLT_CMP_EPSILON);
-}
-
 
 
 
@@ -267,13 +302,6 @@ void vSwap4p(Vector4* a, Vector4* b) {
 
 
 
-
-// Vector addition
-
-
-
-
-// Vector subtraction. diff = from - what
 
 
 // scalar muliplication
@@ -356,100 +384,12 @@ float vScalarTriple3p(Vector3* a, Vector3* b, Vector3* c) {
 
 
 
-// Linear interpolation between two vectors
-
-Vector2 vLerp2(Vector2 a, Vector2 b, float t) {
-	Vector2 out;
-	vLerp2p(&a, &b, t, &out);
-	return out;
-}
-
-void vLerp2p(Vector2* a, Vector2* b, float t, Vector2* out) {
-	out->x = a->x + ((b->x - a->x) * t);
-	out->y = a->y + ((b->y - a->y) * t);
-}
-
-Vector3 vLerp3(Vector3 a, Vector3 b, float t) {
-	Vector3 out;
-	vLerp3p(&a, &b, t, &out);
-	return out;	
-}
-
-void vLerp3p(Vector3* a, Vector3* b, float t, Vector3* out) {
-#ifdef C3DLAS_USE_SIMD
-	__m128 a_ = _mm_loadu_ps((float*)a);
-	__m128 b_ = _mm_loadu_ps((float*)b);
-	__m128 t_ = _mm_set_ps1(t);
-	
-	__m128 q = _mm_sub_ps(b_, a_);
-	       q = _mm_mul_ps(q, t_);
-	       q = _mm_add_ps(q, a_);
-	
-	_mm_maskstore_ps((float*)out, _mm_set_epi32(0, -1, -1, -1), q);
-#else
-	out->x = a->x + ((b->x - a->x) * t);
-	out->y = a->y + ((b->y - a->y) * t);
-	out->z = a->z + ((b->z - a->z) * t);
-#endif
-}
-
-
-Vector4 vLerp4(Vector4 a, Vector4 b, float t) {
-	Vector4 out; // the compiler seems to properly inline this way but not the other way around
-	vLerp4p(&a, &b, t, &out);
-	return out;
-}
-
-void vLerp4p(Vector4* a, Vector4* b, float t, Vector4* out) {
-
-#ifdef C3DLAS_HAS_SSE1
-	// seems to be equivalent to the best compiler-generated code. 
-	__m128 a_ = _mm_loadu_ps((float*)a);
-	__m128 b_ = _mm_loadu_ps((float*)b);
-	__m128 t_ = _mm_set_ps1(t);
-	
-	__m128 q = _mm_sub_ps(b_, a_);
-	       q = _mm_mul_ps(q, t_);
-	       q = _mm_add_ps(q, a_);
-	
-	_mm_storeu_ps((float*)out, q);
-#else
-	out->x = a->x + ((b->x - a->x) * t);
-	out->y = a->y + ((b->y - a->y) * t);
-	out->z = a->z + ((b->z - a->z) * t);
-	out->w = a->w + ((b->w - a->w) * t);
-#endif
-}
-
-
 
 
 // Vector Inverse. Returns FLT_MAX on div/0
 
 
 // Vector magnitude (length)
-
-double vMag2i(const Vector2i v) { return vMag2ip(&v); }
-float  vMag2(const Vector2 v) { return vMag2p(&v); }
-float  vMag3(const Vector3 v) { return vMag3p(&v); }
-float  vMag4(const Vector4 v) { return vMag4p(&v); }
-
-double vMag2ip(const Vector2i* v) {
-	return sqrt((double)v->x * (double)v->x + (double)v->y * (double)v->y);
-}
-
-float vMag2p(const Vector2* v) {
-	return sqrtf((v->x * v->x) + (v->y * v->y));
-}
-
-float vMag3p(const Vector3* v) {
-	return sqrtf((v->x * v->x) + (v->y * v->y) + (v->z * v->z));
-}
-
-float vMag4p(const Vector4* v) {
-	return sqrtf((v->x * v->x) + (v->y * v->y) + (v->z * v->z) + (v->w * v->w));
-}
-
 
 
 // Squared distance from one point to another
@@ -583,15 +523,34 @@ Vector##sz##suf vClamp##sz##suf(Vector##sz##suf in, Vector##sz##suf min, Vector#
 		((t*)&out)[i] = fmax(((t*)&min)[i], fmin(((t*)&in)[i], ((t*)&max)[i])); \
 	return out; \
 } \
-Vector##sz##suf vInverse##sz##suf(const Vector##sz##suf v) { \
+Vector##sz##suf vAbs##sz##suf(const Vector##sz##suf v) { \
 	Vector##sz##suf out; \
-	vInverse##sz##suf##p(&v, &out); \
+	vAbs##sz##suf##p(&v, &out); \
 	return out; \
 } \
-void vInverse##sz##suf##p(const Vector##sz##suf* v, Vector##sz##suf* out) { \
+void vAbs##sz##suf##p(const Vector##sz##suf* v, Vector##sz##suf* out) { \
 	for(int i = 0; i < sz; i++) \
-		((t*)out)[i] = ((t*)v)[i] == (t)0.0 ? maxval : (t)1.0 / ((t*)v)[i]; \
-}	
+		((t*)out)[i] = fabs( ((t*)v)[i] ); \
+} \
+Vector##sz##suf vSign##sz##suf(const Vector##sz##suf v) { \
+	Vector##sz##suf out; \
+	vSign##sz##suf##p(&v, &out); \
+	return out; \
+} \
+void vSign##sz##suf##p(const Vector##sz##suf* v, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = copysign((t)1.0, ((t*)v)[i] ); \
+} \
+Vector##sz##suf vStep##sz##suf(const Vector##sz##suf edge, const Vector##sz##suf v) { \
+	Vector##sz##suf out; \
+	vStep##sz##suf##p(&edge, &v, &out); \
+	return out; \
+} \
+void vStep##sz##suf##p(const Vector##sz##suf* edge, const Vector##sz##suf* v, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = ((t*)v)[i] < ((t*)edge)[i] ? 0.0 : 1.0; \
+} \
+
 
 FN(2,  , float,  FLT_MAX)
 FN(3,  , float,  FLT_MAX)
@@ -626,15 +585,33 @@ Vector##sz##suf vClamp##sz##suf(Vector##sz##suf in, Vector##sz##suf min, Vector#
 		((t*)&out)[i] = MAX(((t*)&min)[i], MIN(((t*)&in)[i], ((t*)&max)[i])); \
 	return out; \
 } \
-Vector##sz##d vInverse##sz##suf(const Vector##sz##suf v) { \
-	Vector##sz##d out; \
-	vInverse##sz##suf##p(&v, &out); \
+Vector##sz##suf vAbs##sz##suf(const Vector##sz##suf v) { \
+	Vector##sz##suf out; \
+	vAbs##sz##suf##p(&v, &out); \
 	return out; \
 } \
-void vInverse##sz##suf##p(const Vector##sz##suf* v, Vector##sz##d* out) { \
+void vAbs##sz##suf##p(const Vector##sz##suf* v, Vector##sz##suf* out) { \
 	for(int i = 0; i < sz; i++) \
-		((t*)out)[i] = ((t*)v)[i] == (t)0 ? maxval : 1.0 / (double)((t*)v)[i]; \
-}		 
+		((t*)out)[i] = labs( ((t*)v)[i] ); \
+} \
+Vector##sz##suf vSign##sz##suf(const Vector##sz##suf v) { \
+	Vector##sz##suf out; \
+	vSign##sz##suf##p(&v, &out); \
+	return out; \
+} \
+void vSign##sz##suf##p(const Vector##sz##suf* v, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = ((t*)v)[i] < 0 ? -1 : 1; \
+} \
+Vector##sz##suf vStep##sz##suf(const Vector##sz##suf edge, const Vector##sz##suf v) { \
+	Vector##sz##suf out; \
+	vStep##sz##suf##p(&edge, &v, &out); \
+	return out; \
+} \
+void vStep##sz##suf##p(const Vector##sz##suf* edge, const Vector##sz##suf* v, Vector##sz##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((t*)out)[i] = ((t*)v)[i] < ((t*)edge)[i] ? 0.0 : 1.0; \
+} \
 
 
 FN(2, i, int,  DBL_MAX)
@@ -959,7 +936,7 @@ void planeCopy3p(Plane* in, Plane* out) {
 
 // reverses the plane's direction
 void planeInverse3p(Plane* in, Plane* out) {
-	vInverse3p(&in->n, &out->n);
+	vInv3p(&in->n, &out->n);
 	out->d = -in->d;
 }
 
@@ -2068,7 +2045,7 @@ int boxRayIntersectFast3p(const AABB3* b, const Ray3* r) {
 	float tmin, tmax;
 	Vector3 id;
 	
-	vInverse3p(&r->d, &id);
+	vInv3p(&r->d, &id);
 	
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
@@ -2095,7 +2072,7 @@ int boxRayIntersectFast2(const AABB2* b, const Ray2* r) {
 	float tmin, tmax;
 	Vector2 id;
 	
-	vInverse2p(&r->d, &id);
+	vInv2p(&r->d, &id);
 	
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
@@ -2118,7 +2095,7 @@ int boxRayIntersect3p(const AABB3* b, const Ray3* r, Vector3* ipoint, float* idi
 	Vector3 t1, t2, id;
 	float tmin, tmax;
 	
-	vInverse3p(&r->d, &id);
+	vInv3p(&r->d, &id);
 		
 	t1.x = (b->min.x - r->o.x) * id.x;
 	t2.x = (b->max.x - r->o.x) * id.x;
@@ -2310,6 +2287,7 @@ Vector3 evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 
 
 
 
+#include "matrix3.c"
 #include "matrix4.c"
 #include "quaternion.c"
 
