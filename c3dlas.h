@@ -76,27 +76,22 @@ static const char* c3dlas_EnumString(int e) {
 	}
 }
 
+#ifndef MAX
+	#define MAX(a,b) ({ \
+		__typeof__ (a) _a = (a); \
+		__typeof__ (b) _b = (b); \
+		_a > _b ? _a : _b; \
+	})
+#endif
 
-#define MAX(a,b) ({ \
-	__typeof__ (a) _a = (a); \
-	__typeof__ (b) _b = (b); \
-	_a > _b ? _a : _b; \
-})
-#define MIN(a,b) ({ \
-	__typeof__ (a) _a = (a); \
-	__typeof__ (b) _b = (b); \
-	_a < _b ? _a : _b; \
-})
-#define MAXE(a,b) ({ \
-	__typeof__ (a) _a = (a); \
-	__typeof__ (b) _b = (b); \
-	_a >= _b ? _a : _b; \
-})
-#define MINE(a,b) ({ \
-	__typeof__ (a) _a = (a); \
-	__typeof__ (b) _b = (b); \
-	_a <= _b ? _a : _b; \
-})
+#ifndef MIN
+	#define MIN(a,b) ({ \
+		__typeof__ (a) _a = (a); \
+		__typeof__ (b) _b = (b); \
+		_a < _b ? _a : _b; \
+	})
+#endif
+
 
 // suffix, type, float
 //               type
