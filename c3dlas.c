@@ -219,6 +219,16 @@ void vScale##suf##p(const Vector##suf* v, ft scalar, Vector##sufft* out) { \
 		((ft*)out)[i] = (ft)((ty*)v)[i] * scalar; \
 } \
 \
+Vector##suf vNeg##suf(const Vector##suf v) { \
+	Vector##suf out; \
+	vNeg##suf##p(&v, &out); \
+	return out; \
+} \
+void vNeg##suf##p(const Vector##suf* v, Vector##suf* out) { \
+	for(int i = 0; i < sz; i++) \
+		((ty*)out)[i] = -((ty*)v)[i]; \
+} \
+\
 Vector##sufft vLerp##suf(const Vector##suf a, const Vector##suf b, ft t) { \
 	Vector##sufft out; \
 	vLerp##suf##p(&a, &b, t, &out); \
@@ -226,7 +236,7 @@ Vector##sufft vLerp##suf(const Vector##suf a, const Vector##suf b, ft t) { \
 } \
 void vLerp##suf##p(const Vector##suf* a, const Vector##suf* b, ft t, Vector##sufft* out) { \
 	for(int i = 0; i < sz; i++) \
-		((ft*)out)[i] += (ft)((ty*)a)[i] +  ((ft)(((ty*)b)[i] - ((ty*)a)[i]) * t) ; \
+		((ft*)out)[i] = (ft)((ty*)a)[i] + ((ft)(((ty*)b)[i] - ((ty*)a)[i]) * t) ; \
 } \
 \
 Vector##sufft vInv##suf(const Vector##suf v) { \

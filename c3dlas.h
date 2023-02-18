@@ -501,6 +501,7 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 #define vInvLen(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vInvLen) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vLen(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vLen) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vLenSq(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vLenSq) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vDot(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vDot) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vDist(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vDist) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vDistSq(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vDistSq) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vNorm(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vNorm) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
