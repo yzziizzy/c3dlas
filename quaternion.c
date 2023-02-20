@@ -37,10 +37,17 @@ Quaternion qDiv(Quaternion n, Quaternion d) {
 
 // rotate one quaternion by another
 // aka "conjugation"
-Quaternion qRot(Quaternion r, Quaternion a) {
-	return qMul(qMul(r, a), qInv(r));
+Quaternion qRot(Quaternion a, Quaternion r) {
+	return qMul(qMul(r, a), qConj(r));
 }
-Quaternion qConjugation(Quaternion r, Quaternion a) {
+
+Vector3 qRot3(Vector3 a, Quaternion r) {
+	Vector4 a4 = {a.x, a.y, a.z, 1.0};
+	a4 = qMul(qMul(r, a4), qConj(r));
+	return (Vector3){a4.x, a4.y, a4.z};
+}
+
+Quaternion qConjugation(Quaternion a, Quaternion r) {
 	return qMul(qMul(r, a), qInv(r));
 }
 
