@@ -16,10 +16,10 @@ Quaternion qScale(Quaternion q, float s) {
 
 Quaternion qMul(Quaternion l, Quaternion r) {
 	return (Quaternion){
-		.i = r.real*r.i + r.i*l.real - r.j*l.k    + r.k*l.j,
-		.j = r.real*r.j + r.i*l.k    + r.j*l.real - r.k*l.i,
-		.k = r.real*r.k - r.i*l.j    + r.j*l.i    + r.k*l.real,
-		.real = l.real*r.real - l.i*r.i - l.j*r.j - l.k*r.k
+		.i    = l.real*r.i    + l.i*r.real + l.j*r.k    - l.k*r.j,
+		.j    = l.real*r.j    - l.i*r.k    + l.j*r.real + l.k*r.i,
+		.k    = l.real*r.k    + l.i*r.j    - l.j*r.i    + l.k*r.real,
+		.real = l.real*r.real - l.i*r.i    - l.j*r.j    - l.k*r.k
 	};
 }
 
@@ -95,6 +95,10 @@ float qMag(Quaternion q) {
 
 float qLen(Quaternion q) {
 	return vMag4(q);
+}
+
+Quaternion qNorm(Quaternion q) {
+	return vNorm4(q);
 }
 
 

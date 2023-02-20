@@ -886,6 +886,7 @@ Quaternion qDiv(Quaternion n, Quaternion d);
 Quaternion qRot(Quaternion r, Quaternion a);
 Quaternion qConj(Quaternion q);
 Quaternion qInv(Quaternion q);
+Quaternion qNorm(Quaternion q);
 
 // these appear to all mean the same thing for quaternions.
 float qMod(Quaternion q);

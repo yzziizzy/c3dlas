@@ -290,7 +290,6 @@ void vNorm##suf##p(const Vector##suf* v, Vector##sufft* out) { \
 	ft n = vLenSq##suf(*v); \
 	\
 	if(n >= (ft)1.0f - pref##_CMP_EPSILON && n <= (ft)1.0 + pref##_CMP_EPSILON) { \
-		out->x = v->x; \
 		for(int i = 0; i < sz; i++) \
 			((ft*)out)[i] = (ft)((ty*)v)[i]; \
 		return;		 \
