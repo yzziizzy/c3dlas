@@ -219,6 +219,18 @@ void vScale##suf##p(const Vector##suf* v, ft scalar, Vector##sufft* out) { \
 		((ft*)out)[i] = (ft)((ty*)v)[i] * scalar; \
 } \
 \
+\
+Vector##sufft vAvg##suf(const Vector##suf a, const Vector##suf b) { \
+	Vector##sufft out; \
+	vAvg##suf##p(&a, &b, &out); \
+	return out; \
+} \
+void vAvg##suf##p(const Vector##suf* a, const Vector##suf* b, Vector##sufft* out) { \
+	for(int i = 0; i < sz; i++) { \
+		((ty*)out)[i] = (((ty*)a)[i] + ((ty*)b)[i]) / (ft)2.0; \
+	} \
+} \
+\
 Vector##suf vNeg##suf(const Vector##suf v) { \
 	Vector##suf out; \
 	vNeg##suf##p(&v, &out); \

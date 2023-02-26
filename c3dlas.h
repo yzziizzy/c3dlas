@@ -439,6 +439,9 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 	ft vDot##suf(const Vector##suf a, const Vector##suf b); \
 	ft vDot##suf##p(const Vector##suf* a, const Vector##suf* b); \
 	\
+	Vector##sufft vAvg##suf(const Vector##suf a, const Vector##suf b); \
+	void vAvg##suf##p(const Vector##suf* a, const Vector##suf* b, Vector##sufft* out); \
+	\
 	ft vDist##suf(const Vector##suf a, const Vector##suf b); \
 	ft vDist##suf##p(const Vector##suf* a, const Vector##suf* b); \
 	\
@@ -511,6 +514,7 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 #define vMin(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMin) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vMax(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMax) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vAbs(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vAbs) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vAvg(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vAvg) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vClamp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vClamp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vEq(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vEq) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vEqEp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vEqEp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
