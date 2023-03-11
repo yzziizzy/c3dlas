@@ -890,79 +890,6 @@ int planeClassifyPointEps3p(Plane* p, Vector3* pt, float epsilon) {
 
 
 
-// C3DLAS_INTERSECT, _COPLANAR or _DISJOINT
-int planeLineFindIntersect3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out) {
-	Vector3 ldir;
-	float da, db;
-	
-	vSub3p(lb, la, &ldir);
-	
-	da = vDot3p(la, &pl->n) - pl->d;
-	
-	// bail if the line and plane are parallel
-	if(fabs(vDot3p(&pl->n, &ldir)) < FLT_CMP_EPSILON) {
-		
-		// check coplanarity
-		if(fabs(da) < FLT_CMP_EPSILON) {
-			return C3DLAS_COPLANAR; // the end is on the plane, so the other is too
-		}
-		
-		return C3DLAS_DISJOINT;
-	}
-	
-
-	db = vDot3p(lb, &pl->n) - pl->d;
-	
-	// check if one of the points is on the plane
-	if(fabs(da) < FLT_CMP_EPSILON) {
-		*out = *la;
-		return C3DLAS_INTERSECT;
-	}
-	if(fabs(db) < FLT_CMP_EPSILON) {
-		*out = *lb;
-		return C3DLAS_INTERSECT;
-	}
-	
-	Vector3 p0, g, j;
-	vScale3p(&pl->n, pl->d, &p0);
-	vSub3p(&p0, la, &g);
-	float h = vDot3p(&g, &pl->n);
-	float i = vDot3p(&ldir, &pl->n);
-	float d = i != 0 ? h / i : 0;
-	
-	// check if the plane intersects outside the two points
-	if(d < 0 || d > vDist3p(la, lb)) {
-		return C3DLAS_DISJOINT;
-	}
-	
-	vScale3p(&ldir, d, &j);
-	vAdd3p(la, &j, out);
-	
-	return C3DLAS_INTERSECT;
-}
-
-
-// Assumes full proper intersection.
-// C3DLAS_INTERSECT
-int planeLineFindIntersectFast3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out) {
-	Vector3 ldir, p0, g, j;
-	float h, i, d;
-	
-	vSub3p(lb, la, &ldir);
-	
-	vScale3p(&pl->n, pl->d, &p0);
-	vSub3p(&p0, la, &g);
-	h = vDot3p(&g, &pl->n);
-	i = vDot3p(&ldir, &pl->n);
-	d = i != 0 ? h / i : 0;
-	
-	vScale3p(&ldir, d, &j);
-	vAdd3p(la, &j, out);
-	
-	return C3DLAS_INTERSECT;
-}
-
-
 // C3DLAS_COPLANAR, _PARALLEL, _INTERSECT, or _DISJOINT
 // aboveCnt and belowCnt are always set.
 int linePlaneClip3p(
@@ -1969,94 +1896,6 @@ void makeRay2(Vector2* origin, Vector2* direction, Ray2* out) {
 	vNorm2p(direction, &out->d);
 }
 
-// this version has no branching, but only answers yes or no.
-// algorithm explanation here. hopefully my extrapolation into 3 dimensions is correct.
-// http://tavianator.com/fast-branchless-raybounding-box-intersections/
-int boxRayIntersectFast3p(const AABB3* b, const Ray3* r) {
-	Vector3 t1, t2;
-	float tmin, tmax;
-	Vector3 id;
-	
-	vInv3p(&r->d, &id);
-	
-	t1.x = (b->min.x - r->o.x) * id.x;
-	t2.x = (b->max.x - r->o.x) * id.x;
-	tmin = fminf(t1.x, t2.x);
-	tmax = fmaxf(t1.x, t2.x);
-	
-	t1.y = (b->min.y - r->o.y) * id.y;
-	t2.y = (b->max.y - r->o.y) * id.y;
-	tmin = fmaxf(tmin, fminf(t1.y, t2.y));
-	tmax = fminf(tmax, fmaxf(t1.y, t2.y));
-	
-	t1.z = (b->min.z - r->o.z) * id.z;
-	t2.z = (b->max.z - r->o.z) * id.z;
-	tmin = fmaxf(tmin, fminf(t1.z, t2.z));
-	tmax = fminf(tmax, fmaxf(t1.z, t2.z));
-
-	return tmax >= tmin && tmax > 0.0f;
-}
-
-// this version has no branching, but only answers yes or no.
-// http://tavianator.com/fast-branchless-raybounding-box-intersections/
-int boxRayIntersectFast2(const AABB2* b, const Ray2* r) {
-	Vector2 t1, t2;
-	float tmin, tmax;
-	Vector2 id;
-	
-	vInv2p(&r->d, &id);
-	
-	t1.x = (b->min.x - r->o.x) * id.x;
-	t2.x = (b->max.x - r->o.x) * id.x;
-	tmin = fminf(t1.x, t2.x);
-	tmax = fmaxf(t1.x, t2.x);
-	
-	t1.y = (b->min.y - r->o.y) * id.y;
-	t2.y = (b->max.y - r->o.y) * id.y;
-//	tmin = fmaxf(tmin, fminf(t1.y, t2.y));
-	tmax = fminf(tmax, fmaxf(t1.y, t2.y));
-	
-	return tmax >= tmin && tmax > 0.0f;
-}
-
-
-// this version gives the point of intersection as well as distance
-// algorithm explanation here. hopefully my extrapolation into 3 dimensions is correct.
-// http://tavianator.com/fast-branchless-raybounding-box-intersections/
-int boxRayIntersect3p(const AABB3* b, const Ray3* r, Vector3* ipoint, float* idist) {
-	Vector3 t1, t2, id;
-	float tmin, tmax;
-	
-	vInv3p(&r->d, &id);
-		
-	t1.x = (b->min.x - r->o.x) * id.x;
-	t2.x = (b->max.x - r->o.x) * id.x;
-	tmin = fminf(t1.x, t2.x);
-	tmax = fmaxf(t1.x, t2.x);
-	
-	t1.y = (b->min.y - r->o.y) * id.y;
-	t2.y = (b->max.y - r->o.y) * id.y;
-	tmin = fmaxf(tmin, fminf(t1.y, t2.y));
-	tmax = fminf(tmax, fmaxf(t1.y, t2.y));
-	
-	t1.z = (b->min.z - r->o.z) * id.z;
-	t2.z = (b->max.z - r->o.z) * id.z;
-	tmin = fmaxf(tmin, fminf(t1.z, t2.z));
-	tmax = fminf(tmax, fmaxf(t1.z, t2.z));
-	
-	if(tmax < tmin) return 0;
-	
-	if(idist) *idist = tmin;
-	
-	if(ipoint) {
-		ipoint->x = r->o.x + (r->d.x * tmin);
-		ipoint->y = r->o.y + (r->d.y * tmin);
-		ipoint->z = r->o.z + (r->d.z * tmin);
-	}
-	
-	return 1;
-}
-
 
 // returns a local t value for the segment the normalized value falls into
 static float bsNormalToLocalT2(BezierSpline2* bs, float normalT, int* segNum) {
@@ -2222,6 +2061,8 @@ Vector3 evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 
 #include "matrix3.c"
 #include "matrix4.c"
 #include "quaternion.c"
+#include "intersect/plane.c"
+#include "intersect/box.c"
 
 
 

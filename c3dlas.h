@@ -225,9 +225,19 @@ typedef struct {
 } Plane;
 
 typedef struct {
+	Vector3 n; // normal
+	Vector3 p; // a point on the plane
+} PlaneP;
+
+typedef struct {
 	Vector3 center;
 	float r;
 } Sphere;
+
+typedef struct {
+	Vector3 a, b; // the two centroids
+	float r; // radius
+} Capsule;
 
 typedef struct {
 	Plane planes[6]; // near, far, sides[4]
@@ -772,17 +782,26 @@ void mPerspSetNF_ZUp(Matrix* m, float near, float far);
 // same div/0 warnings.
 void mOrtho(float left, float right, float top, float bottom, float near, float far, Matrix* out);
 
+// calculates a cubical orthographic matrix with a side length of 2*r
+void mOrthoFromRadius(float r, Matrix* out);
+
 // calculates an orthographic matrix that encloses the sphere, looking from eyePos
 void mOrthoFromSphere(Sphere s, Vector3 eyePos, Vector3 up, Matrix* out);
 
 // extract the planes from an orthographic projection matrix.
 void mOrthoExtractPlanes(Matrix* m, float* left, float* right, float* top, float* bottom, float* near, float* far);
 
+void mOrthoSetNF(Matrix* m, float near, float far);
+
 
 // analgous to gluLookAt
 // up is not required to be orthogonal to anything, so long as it's not parallel to anything
 // http://www.songho.ca/opengl/gl_camera.html#lookat
 void mLookAt(Vector3 eye, Vector3 center, Vector3 up, Matrix* out);
+
+
+void mLookDir(Vector3 eye, Vector3 center, Vector3 dir, Vector3 up, Matrix* out);
+
 
 void mPrint(Matrix* m, FILE* f);
 
@@ -849,7 +868,8 @@ void boxExpandTo3(AABB3* b, Vector3 p);
 void makeRay3p(Vector3* origin, Vector3* direction, Ray3* out);
 int boxRayIntersectFast3p(const AABB3* b, const Ray3* r);
 int boxRayIntersect3p(const AABB3* b, const Ray3* r, Vector3* ipoint, float* idist);
-
+int intersectBoxLine3p(const AABB3* b, const Line3* l, Vector3* ipoint, float* idist);
+int intersectBoxLine3(AABB3 b, Line3 l, Vector3* ipoint, float* idist);
 
 // 2D versions
 int boxDisjoint2p(const AABB2* a, const AABB2* b);

@@ -108,6 +108,25 @@ Quaternion qNorm(Quaternion q) {
 	return vNorm4(q);
 }
 
+Quaternion qSlerp(Quaternion a, Quaternion b, float t) {
+	float d = vDot4(a, b);
+	if(d >= 1.0) return a;
+	
+	float th = acos(d);
+	float inv_s_th = 1.0 / sin(th);
+	
+	float ca = sin((1.0 - t) * th) * inv_s_th;
+	float cb = sin(t * th) * inv_s_th;
+	
+	return (Quaternion){
+		.x = a.x * ca + b.x * cb,
+		.y = a.y * ca + b.y * cb,
+		.z = a.z * ca + b.z * cb,
+		.w = a.w * ca + b.w * cb,
+	};
+}
+
+
 
 // Applies the full conjugate multiplication qvq*
 void qNonUnitToMatrix(Quaternion q, Matrix* out) {

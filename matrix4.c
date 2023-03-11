@@ -313,48 +313,34 @@ void mOrtho(float left, float right, float top, float bottom, float near, float 
 }
 
 
+
+void mOrthoFromRadius(float r, Matrix* out) {
+	Matrix m;
+	
+	float right = -r ;
+	float left = r;
+	float top = r;
+	float bottom = -r;
+	float near = -r;
+	float far = r;
+	
+	*out = IDENT_MATRIX;
+	out->m[0 + (0*4)] = 2. / (right - left);
+	out->m[1 + (1*4)] = 2. / (top - bottom);
+	out->m[2 + (2*4)] = -2. / (far - near);
+	
+	out->m[0 + (3*4)] = -(top + bottom) / (top - bottom);
+	out->m[1 + (3*4)] = -(right + left) / (right - left);
+	out->m[2 + (3*4)] = -(far + near) / (far - near);
+	out->m[3 + (3*4)] = 1;
+}	
+
 //void mOrthoFromSphere(Sphere* s, Vector3* eyePos, Matrix* out) {
 void mOrthoFromSphere(Sphere s, Vector3 eyePos, Vector3 up, Matrix* out) {
 	Matrix m;
-	
-	float right = -s.r ;
-	float left = s.r;
-	float top = s.r;
-	float bottom = -s.r;
-	float near = -s.r;
-	float far = s.r;
-	
-	// this is the ortho projection matrix
-	/*
-	m = IDENT_MATRIX;
-	m.m[0] = 2. / (right - left);
-	m.m[5] = 2. / (top - bottom);
-	m.m[10] = -2. / (far - near);
-	m.m[12] = -(right + left) / (right - left);
-	m.m[13] = -(top + bottom) / (top - bottom);
-	m.m[14] = -(far + near) / (far - near);
-	m.m[15] = 1;
-*/
 
-	m = IDENT_MATRIX;
-	m.m[0 + (0*4)] = 2. / (right - left);
-	m.m[1 + (1*4)] = 2. / (top - bottom);
-	m.m[2 + (2*4)] = -2. / (far - near);
-	
-	m.m[0 + (3*4)] = -(top + bottom) / (top - bottom);
-	m.m[1 + (3*4)] = -(right + left) / (right - left);
-	m.m[2 + (3*4)] = -(far + near) / (far - near);
-	m.m[3 + (3*4)] = 1;
-	
-	
-	Matrix zup = {
-		1, 0, 0, 0, // 0 1 2 3
-		0, 0, 1, 0, // 4 5(6)7
-		0, 1, 0, 0, // 8(9)0 1
-		0, 0, 0, 1  // 2 3 4 5
-	};
-//	mMul(&zup, &m);
-	
+	mOrthoFromRadius(s.r, &m);
+
 	Vector3 d = vNorm3(vSub3(s.center, eyePos));
 	
 	Matrix m2;
@@ -375,6 +361,11 @@ void mOrthoExtractPlanes(Matrix* m, float* left, float* right, float* top, float
 }
 
 
+void mOrthoSetNF(Matrix* m, float near, float far) {
+	m->m[2 + (2*4)] = -2. / (far - near);
+	m->m[2 + (3*4)] = -(far + near) / (far - near);
+}
+
 // analgous to gluLookAt
 // up is not required to be orthogonal to anything, so long as it's not parallel to anything
 // http://www.songho.ca/opengl/gl_camera.html#lookat
@@ -385,6 +376,39 @@ void mLookAt(Vector3 eye, Vector3 center, Vector3 up, Matrix* out) {
 	
 	
 	forward = vNorm3(vSub3(eye, center));
+	left = vNorm3(vCross3(forward, up));
+	upn = vCross3(left, forward);
+	
+	m.m[0+(0*4)] = left.x;
+	m.m[1+(0*4)] = upn.x;
+	m.m[2+(0*4)] = forward.x;
+	m.m[3+(0*4)] = 0;
+
+	m.m[0+(1*4)] = left.y;
+	m.m[1+(1*4)] = upn.y;
+	m.m[2+(1*4)] = forward.y;
+	m.m[3+(1*4)] = 0;
+	
+	m.m[0+(2*4)] = left.z;
+	m.m[1+(2*4)] = upn.z;
+	m.m[2+(2*4)] = forward.z;
+	m.m[3+(2*4)] = 0;
+	
+	m.m[0+(3*4)] = -left.x * center.x    - left.y * center.y    - left.z * center.z;
+	m.m[1+(3*4)] = -upn.x * center.x     - upn.y * center.y     - upn.z * center.z;
+	m.m[2+(3*4)] = -forward.x * center.x - forward.y * center.y - forward.z * center.z;
+	m.m[3+(3*4)] = 1;
+	
+	*out = m;
+}
+
+void mLookDir(Vector3 eye, Vector3 center, Vector3 dir, Vector3 up, Matrix* out) {
+	
+	Vector3 forward, left, upn;
+	Matrix m;
+	
+	
+	forward = dir; //vNorm3(vSub3(eye, center));
 	left = vNorm3(vCross3(forward, up));
 	upn = vCross3(left, forward);
 	
