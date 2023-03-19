@@ -147,6 +147,18 @@ void mTranspose(Matrix* in, Matrix* out) {
 }
 
 
+void mAdd(Matrix* a, Matrix* b, Matrix* out) {
+	for(int i = 0; i < 16; i++) {
+		out->m[i] = a->m[i] + b->m[i];
+	}
+}
+
+void mScalarMul(Matrix* a, float f, Matrix* out) {
+	for(int i = 0; i < 16; i++) {
+		out->m[i] = a->m[i] * f;
+	}
+}
+
 
 float mDeterminate(Matrix* m) {
 	return

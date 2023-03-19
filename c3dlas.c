@@ -587,6 +587,37 @@ Vector3 vS2C3(Vector3 s) {
 }
 
 
+Vector3 closestPointToRay3(Vector3 p, Ray3 r) {
+	Vector3 po = vSub3(p, r.o); // vector from the starting point to p
+	
+	float t = vDot3(po, r.d); // project the pa onto the ray direction
+	fclamp(t, 0.0, 1.0); // clamp t to between the endpoints of the line segment
+
+	return vSub3(po, vScale3(r.d, t));
+}
+
+
+// completely untested.
+// can probably be optimized
+// This function is poorly named. It is designed to check if a bounding sphere intersects a cone surrounding a viewing frustum.
+int distanceSphereToCone(Vector3 spc, float spr, Vector3 c1, Vector3 c2, float cr1, float cr2) {
+	
+	Vector3 cnorm = vNorm(vSub(c2, c1)); // normal pointing down the center of the cone
+	
+	Vector3 sp_c1 = vSub(spc, c1); // vector pointing from c1 to the sphere center
+	Vector3 up = vCross3(spc, cnorm); // vector perpendicular to the plane containing the cone's centerline and the sphere center.
+	Vector3 perp_toward_sp = vNorm(vCross3(cnorm, up)); // vector perpendicular to the cone's centerline within the plane, towards the sphere
+	Vector3 outer_c1 = vAdd(c1, vScale(perp_toward_sp, cr1)); // point in the plane on the outer edge of the cone
+	Vector3 outer_c2 = vAdd(c2, vScale(perp_toward_sp, cr2)); // point in the plane on the outer edge of the cone
+	Vector3 closest = closestPointToRay3(spc, (Ray3){.o = outer_c1, .d = vNorm(vSub(outer_c2, outer_c1))}); // point on the cone closest to the sphere
+	
+	// this part is probably wrong
+	if(vDot(perp_toward_sp, vSub(spc, closest)) < 0) return 1; // is the sphere center inside the cone?
+
+	return (vDist(closest, spc) - spr) <= 0;
+}
+
+
 
 // Muchas gracias, Inigo.  
 // https://iquilezles.org/articles/distfunctions2d/
@@ -853,6 +884,10 @@ int IntersectPlaneRay3p(Plane* p, Ray3* r, Vector3* out) {
 	return C3DLAS_INTERSECT;
 }
 
+void planeFromPointNormal(Vector3* p, Vector3* norm, Plane* out) {
+	out->n = *norm;
+	out->d = vDot3p(norm, p);
+}
 
 // calculates a plane from a triangle
 void planeFromTriangle3p(Vector3* v1, Vector3* v2, Vector3* v3, Plane* out) {

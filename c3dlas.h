@@ -646,6 +646,7 @@ void  vpTriFaceNormal3p(Vector3* tri, Vector3* out); // returns a normalized fac
 void  vProjectOntoPlane3p(Vector3* v, Plane* p, Vector3* out);
 void  vProjectOntoPlaneNormalized3p(Vector3* v, Plane* p, Vector3* out);
 
+void  planeFromPointNormal(Vector3* p, Vector3* norm, Plane* out);
 void  planeFromTriangle3p(Vector3* v1, Vector3* v2, Vector3* v3, Plane* out); // calculates a plane form a triangle
 void  planeCopy3p(Plane* in, Plane* out); // copy a plane
 void  planeInverse3p(Plane* in, Plane* out); // flips the plane's direction
@@ -741,6 +742,7 @@ Vector3 vMatrixMul3(Vector3 in, Matrix* m);
 Vector4 vMatrixMul4(Vector4 in, Matrix* m);
 Vector3 vMatrixMulProjectedMagic3(Vector3 in, Matrix* m);
 
+// These are 3d spatial operations
 void mIdent(Matrix* m); // set m to the identity matrix
 void mCopy(Matrix* in, Matrix* out);
 void mFastMul(Matrix* a, Matrix* b, Matrix* out); // a and b cannot also be out. mostly internal use.
@@ -758,6 +760,10 @@ void mTranspose(Matrix* in, Matrix* out);
 void mTransposeFast(Matrix* in, Matrix* out); // in cannot be out
 float mDeterminate(Matrix* m);
 int mInverse(Matrix* in, Matrix* out); // returns 0 on success, 1 if there is no inverse; out remains unchanged
+
+// simple component-wise mathematical operations
+void mAdd(Matrix* a, Matrix* b, Matrix* out); 
+void mScalarMul(Matrix* a, float f, Matrix* out);
 
 
 // analogous to glFrustum
