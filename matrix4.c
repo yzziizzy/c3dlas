@@ -147,6 +147,11 @@ void mTranspose(Matrix* in, Matrix* out) {
 }
 
 
+float mTrace(Matrix* m) {
+	return m->m[0+0*4] + m->m[1+1*4] + m->m[2+2*4] + m->m[3+3*4];
+}
+
+
 void mAdd(Matrix* a, Matrix* b, Matrix* out) {
 	for(int i = 0; i < 16; i++) {
 		out->m[i] = a->m[i] + b->m[i];

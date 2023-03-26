@@ -80,6 +80,8 @@ void mScalarMul3(Matrix3* m, float scalar, Matrix3* out) {
 }
 
 
-
+float mTrace3(Matrix3* m) {
+	return m->m[0+0*3] + m->m[1+1*3] + m->m[2+2*3];
+}
 
 

@@ -730,7 +730,7 @@ float mDeterminate3(Matrix3* m);
 void mInverse3(Matrix3* m, Matrix3* out);
 void mScalarMul3(Matrix3* m, float scalar, Matrix3* out);
 Vector3 vMatrix3Mul(Vector3 v, Matrix3* restrict m);
-
+float mTrace3(Matrix3* m); // sum of the diagonal elements
 
 
 
@@ -760,6 +760,7 @@ void mTranspose(Matrix* in, Matrix* out);
 void mTransposeFast(Matrix* in, Matrix* out); // in cannot be out
 float mDeterminate(Matrix* m);
 int mInverse(Matrix* in, Matrix* out); // returns 0 on success, 1 if there is no inverse; out remains unchanged
+float mTrace(Matrix* m); // sum of the diagonal elements
 
 // simple component-wise mathematical operations
 void mAdd(Matrix* a, Matrix* b, Matrix* out); 
@@ -924,6 +925,13 @@ float qMod(Quaternion q);
 float qMag(Quaternion q);
 float qLen(Quaternion q);
 
+
+// Applies the full conjugate multiplication qvq*
+void qNonUnitToMatrix(Quaternion q, Matrix* out)
+
+// faster
+void qUnitToMatrix3(Quaternion q, Matrix3* out);
+void qUnitToMatrix(Quaternion q, Matrix* out);
 
 #endif // __c3dlas_h__
 
