@@ -5,10 +5,11 @@
 
 
 
-const Matrix3 IDENT_MATRIX3 = { { 1, 0, 0,
-                                 0, 1, 0,
-                                 0, 0, 1,
-                                  } };
+const Matrix3 IDENT_MATRIX3 = {{
+	1, 0, 0,
+	0, 1, 0,
+	0, 0, 1,
+}};
 
 
 
@@ -77,6 +78,29 @@ void mInverse3(Matrix3* m, Matrix3* out) {
 
 void mScalarMul3(Matrix3* m, float scalar, Matrix3* out) {
 	for(int i = 0; i < 9; i++) out->m[i] = m->m[i] * scalar;
+}
+
+
+void mTranspose3(Matrix3* m, Matrix3* out) {
+	float tmp;
+	
+	out->m[0+0*3] = m->m[0+0*3];
+	out->m[1+1*3] = m->m[1+1*3];
+	out->m[2+2*3] = m->m[2+2*3];
+	
+	tmp = m->m[0+1*3];
+	out->m[0+1*3] = m->m[1+0*3];
+	out->m[1+0*3] = tmp;
+	
+	tmp = m->m[0+2*3];
+	out->m[0+2*3] = m->m[2+0*3];
+	out->m[2+0*3] = tmp;
+	
+	tmp = m->m[2+1*3];
+	out->m[2+1*3] = m->m[1+2*3];
+	out->m[1+2*3] = tmp;
+	
+
 }
 
 

@@ -42,10 +42,26 @@ Quaternion qRot(Quaternion a, Quaternion r) {
 }
 
 Vector3 qRot3(Vector3 a, Quaternion r) {
-	Vector4 a4 = {a.x, a.y, a.z, 1.0};
+	Vector4 a4 = {a.x, a.y, a.z, 0.0};
 	a4 = qMul(qMul(r, a4), qConj(r));
 	return (Vector3){a4.x, a4.y, a4.z};
 }
+
+/*
+vec3 quaternion_apply_to_vec3(const Quaternion* q, vec3 v) {
+	r64 ix = q->w * v.x + q->y * v.z - q->z * v.y;
+	r64 iy = q->w * v.y + q->z * v.x - q->x * v.z;
+	r64 iz = q->w * v.z + q->x * v.y - q->y * v.x;
+	r64 iw = - q->x * v.x - q->y * v.y - q->z * v.z;
+
+	return (vec3) {
+		(ix * q->w) + (iw * -q->x) + (iy * -q->z) - (iz * -q->y),
+		(iy * q->w) + (iw * -q->y) + (iz * -q->x) - (ix * -q->z),
+		(iz * q->w) + (iw * -q->z) + (ix * -q->y) - (iy * -q->x)
+	};
+}
+*/
+
 
 Quaternion qConjugation(Quaternion a, Quaternion r) {
 	return qMul(qMul(r, a), qInv(r));
@@ -214,13 +230,13 @@ void qUnitToMatrix3(Quaternion q, Matrix3* out) {
 	out->m[1] = xy + sz;
 	out->m[2] = xz - sy;
 	
-	out->m[4] = xy - sz;
-	out->m[5] = 1.0 - x2 - z2;
-	out->m[6] = yz + sx;
+	out->m[3] = xy - sz;
+	out->m[4] = 1.0 - x2 - z2;
+	out->m[5] = yz + sx;
 	
-	out->m[8] = xz + sy;
-	out->m[9] = yz - sx;
-	out->m[10] = 1.0 - x2 - y2;
+	out->m[6] = xz + sy;
+	out->m[7] = yz - sx;
+	out->m[8] = 1.0 - x2 - y2;
 }
 
 

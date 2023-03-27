@@ -340,6 +340,7 @@ typedef struct {
 
 
 extern const Matrix IDENT_MATRIX;
+extern const Matrix3 IDENT_MATRIX3;
 
 // utilities
 
@@ -730,6 +731,7 @@ float mDeterminate3(Matrix3* m);
 void mInverse3(Matrix3* m, Matrix3* out);
 void mScalarMul3(Matrix3* m, float scalar, Matrix3* out);
 Vector3 vMatrix3Mul(Vector3 v, Matrix3* restrict m);
+void mTranspose3(Matrix3* m, Matrix3* out);
 float mTrace3(Matrix3* m); // sum of the diagonal elements
 
 
@@ -927,7 +929,7 @@ float qLen(Quaternion q);
 
 
 // Applies the full conjugate multiplication qvq*
-void qNonUnitToMatrix(Quaternion q, Matrix* out)
+void qNonUnitToMatrix(Quaternion q, Matrix* out);
 
 // faster
 void qUnitToMatrix3(Quaternion q, Matrix3* out);
