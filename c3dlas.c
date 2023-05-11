@@ -1473,19 +1473,6 @@ void quadCenterp3p(Vector3* a, Vector3* b, Vector3* c, Vector3* d, Vector3* out)
 	vScale3p(&sum, 0.25f, out);
 }
 
-// closest distance from an arbitrary point to the plane 
-float planePointDist3p(Plane* pl, Vector3* p) {
-	Vector3 a;
-	vScale3p(&pl->n, pl->d, &a);
-	return fabs(vDot3p(&a, p));
-} 
-
-// signed closest distance from an arbitrary point to the plane 
-float planePointDistSigned3p(Plane* pl, Vector3* p) {
-	Vector3 a;
-	vScale3p(&pl->n, pl->d, &a);
-	return vDot3p(&a, p);
-} 
 
 void vPointAvg3p(Vector3* a, Vector3* b, Vector3* out) {
 	Vector3 sum;

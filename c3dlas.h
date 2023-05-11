@@ -1,4 +1,3 @@
-
 #ifndef __c3dlas_h__
 #define __c3dlas_h__
 
@@ -221,12 +220,12 @@ typedef struct {
 
 typedef struct {
 	Vector3 n; // normal
-	float d; // distance along normal to the origin
+	float d; // distance along normal from the origin
 } Plane;
 
 typedef struct {
 	Vector3 n; // normal
-	Vector3 p; // a point on the plane
+	Vector3 p; // an arbitrary point on the plane
 } PlaneP;
 
 typedef struct {
@@ -754,6 +753,7 @@ void mTrans3f(float x, float y, float z, Matrix* out); // translation
 void mScalev(Vector3* v, Matrix* out);
 void mScale3f(float x, float y, float z, Matrix* out);
 void mRotv(Vector3* v, float theta, Matrix* out); // rotate about a vector
+//void mRotq(Vector3* v, float theta, Matrix* out); // rotate by a Quaternion
 void mRot3f(float x, float y, float z, float theta, Matrix* out); // rotate about a vector
 void mRotX(float theta, Matrix* out); //
 void mRotY(float theta, Matrix* out); // rotate about axes

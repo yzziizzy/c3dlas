@@ -459,7 +459,7 @@ void mPrint(Matrix* m, FILE* f) {
 	if(!f) f = stdout;
 	
 	for(r = 0; r < 4; r++) {
-		fprintf(f, "% .3e % .3e % .3e % .3e\n", m->m[r*4], m->m[r*4+1], m->m[r*4+2], m->m[r*4+3]);
+		fprintf(f, "% .3e % .3e % .3e % .3e\n", m->m[r], m->m[r+4], m->m[r+8], m->m[r+12]);
 	}
 	
 	fprintf(f, "\n");

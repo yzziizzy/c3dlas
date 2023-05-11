@@ -1,6 +1,21 @@
 
 
 
+// closest distance from an arbitrary point to the plane 
+float planePointDist3p(Plane* pl, Vector3* p) {
+	Vector3 a;
+	vScale3p(&pl->n, pl->d, &a);
+	return fabs(vDot3p(&a, p));
+} 
+
+
+// signed closest distance from an arbitrary point to the plane 
+float planePointDistSigned3p(Plane* pl, Vector3* p) {
+	Vector3 a;
+	vScale3p(&pl->n, pl->d, &a);
+	return vDot3p(&a, p);
+}
+
 
 // C3DLAS_INTERSECT, _COPLANAR or _DISJOINT
 int planeLineFindIntersect3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out) {
