@@ -142,6 +142,10 @@ Quaternion qSlerp(Quaternion a, Quaternion b, float t) {
 	};
 }
 
+Quaternion qNlerp(Quaternion a, Quaternion b, float t) {
+	return qNorm(vLerp4(a, b, t));
+}
+
 
 
 // Applies the full conjugate multiplication qvq*

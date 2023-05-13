@@ -922,6 +922,9 @@ Quaternion qConj(Quaternion q);
 Quaternion qInv(Quaternion q);
 Quaternion qNorm(Quaternion q);
 
+Quaternion qSlerp(Quaternion a, Quaternion b, float t);
+Quaternion qNlerp(Quaternion a, Quaternion b, float t);
+
 // these appear to all mean the same thing for quaternions.
 float qMod(Quaternion q);
 float qMag(Quaternion q);
