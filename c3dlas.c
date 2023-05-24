@@ -924,6 +924,188 @@ int planeClassifyPointEps3p(Plane* p, Vector3* pt, float epsilon) {
 }
 
 
+// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+// returns _INTERSECT or _DISJOINT
+int rayTriangleIntersect(
+	Vector3* a, Vector3* b, Vector3* c, // triangle
+	Vector3* ray_origin, Vector3* ray_dir, // ray
+	float* u, float* v, float* t // barycentric out coords, t of intersection point along ray 
+) {
+
+	Vector3 ab = vSub3(*b, *a);
+	Vector3 ac = vSub3(*c, *a);
+	
+	Vector3 n = vCross3(ab, ac);
+	
+	float det = -vDot3(*ray_dir, n);
+	if(fabsf(det) <= FLT_CMP_EPSILON) {
+		return C3DLAS_DISJOINT; // the ray is parallel to the triangle
+	}
+	
+	float idet = 1.0f / det;
+	
+	Vector3 ao = vSub3(*ray_origin, *a);
+	Vector3 dao = vCross3(ao, *ray_dir);
+	
+	*u = vDot3(ac, dao) * idet;
+	if(*u < 0.f) return C3DLAS_DISJOINT; // barycentric coord is outside the triangle
+	
+	*v = -vDot3(ab, dao) * idet;
+	if(*v < 0.f || *u + *v > 1.f) return C3DLAS_DISJOINT; // barycentric coord is outside the triangle
+	
+	
+	*t = vDot3(ao, n) * idet;
+//	if(*t < 0.0f) return C3DLAS_DISJOINT; // the ray intersects the triangle behind the origin
+	
+	return C3DLAS_INTERSECT;
+}
+
+
+
+
+// returns _INTERSECT or _DISJOINT
+Vector3 triangleClosestPoint_Reference(
+	Vector3* a, Vector3* b, Vector3* c, // triangle
+	Vector3* p, // test point
+	float* out_u, float* out_v // barycentric out coords of closest point 
+) {
+
+	Vector3 ab = vSub3(*b, *a);
+	Vector3 ac = vSub3(*c, *a);
+	
+	Vector3 n = vCross3(ab, ac);
+	Vector3 ray_dir = vNeg3(vNorm(n));
+	
+	float idet = 1.0f / -vDot3(ray_dir, n);
+	
+	Vector3 ao = vSub3(*p, *a);
+	Vector3 dao = vCross3(ao, ray_dir);
+	
+//	printf("idet = %f, n = %f,%f,%f\n", idet, n.x, n.y, n.z);
+	
+	float u = vDot3(ac, dao) * idet;
+	float v = -vDot3(ab, dao) * idet;
+//	printf("u,v = %f, %f\n", u, v);
+	if(u >= 0 && v >= 0.f && u + v <= 1.f) {
+		float nt = vDot3(ao, n);
+		Vector3 planep = vAdd3(*p, vScale3(vNeg3(n), nt));
+		return planep; // the ray intersects the triangle
+	}
+	
+	float t_ab, t_bc, t_ca;
+	
+	// collect all the possible locations
+	float dist[6];
+	
+	dist[0] = vDistTPointLine3(*p, (Line3){*a, *b}, &t_ab);
+	dist[1] = vDistTPointLine3(*p, (Line3){*b, *c}, &t_bc);
+	dist[2] = vDistTPointLine3(*p, (Line3){*c, *a}, &t_ca);
+
+	dist[3] = vDist(*a, *p);
+	dist[4] = vDist(*b, *p);
+	dist[5] = vDist(*c, *p);
+
+	// find the smallest distance
+	float min = dist[0];
+	int mini = 0;
+	
+	for(int i = 1; i < 6; i++) {
+		if(dist[i] < min) {
+			min = dist[i];
+			mini = i;
+		}
+	}
+	
+	switch(mini) {
+		case 0: return vLerp(*a, *b, t_ab);
+		case 1: return vLerp(*b, *c, t_bc);
+		case 2: return vLerp(*c, *a, t_ca);
+		case 3: return *a;
+		case 4: return *b;
+		case 5: return *c;
+	}
+	
+	return (Vector3){0,0,0}; // HACK just return something
+}
+
+
+/*
+// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+// returns _INTERSECT or _DISJOINT
+vec3 triangleClosestPoint(
+	Vector3* a, Vector3* b, Vector3* c, // triangle
+	Vector3* p, // test point
+	float* out_u, float* out_v // barycentric out coords of closest point 
+) {
+
+	Vector3 ab = vSub3(*b, *a); 
+	Vector3 ac = vSub3(*c, *a);
+	
+	Vector3 n = vCross3(ab, ac); // triangle plane normal
+	
+
+	
+	Vector3 ap = vSub3(*p, *a);
+	Vector3 dap = vCross3(ap, vNeg(n)); // p projected onto the triangle's plane, relative to a
+	
+//	p = w*a + u*b + v*c;
+	
+	float u = vDot3(ac, dap); // inversely proportional to distance from _b_, aka "beta"
+	// u < 0 means outside the triangle past the a/c edge
+	// u > 1 means outside the triangle past b
+	// u == 0 means somewhere on the a/c edge
+
+//	if(*u < 0.f) return C3DLAS_DISJOINT; // barycentric coord is outside the triangle
+	
+	float v = -vDot3(ab, dap); // inversely proportional to distance from _c_, aka "gamma"
+	// v < 0 means outside the triangle past the a/b edge
+	// v > 1 means outside the triangle past c
+	// v == 0 means somewhere on the a/b edge
+
+//	if(*u < 0.f || *u + *v < 1.0f) return C3DLAS_DISJOINT; // barycentric coord is outside the triangle
+	
+	float w = 1.0f - u - v; // inversely proportional to distance from _a_, aka "alpha"
+	// w < 0 means outside the triangle past the b/c edge
+	// w > 1 means outside the triangle past a
+	// w == 0 means somewhere on the b/c edge
+	
+	
+	if(u > 0 && v > 0 && w > 0) // point inside triangle
+		float t = vDot3(ap, n);
+		vec3 closest = vAdd3(*p, vScale3(vNeg(n), t)); 
+		return closest;
+	}
+	
+	float new_u = 0, new_v = 0, new_w = 0;
+	
+	
+	if(w < 0) {
+		float t = fclamp(0f, 1f, vDot3() / vDot3());
+		new_v = 1.f - t;
+		new_w = t;
+	}
+	else if(v < 0) {
+		float t = fclamp(0f, 1f, vDot3() / vDot3());
+		new_u = t;
+		new_w = 1.f - t;
+	}
+	else if(u < 0) {
+		float t = fclamp(0f, 1f, vDot3() / vDot3());
+		new_u = 1.f - t;
+		new_v = t;
+	}
+	
+	
+//	if(*t < 0.0f) return C3DLAS_DISJOINT; // the ray intersects the triangle behind the origin
+	
+	return C3DLAS_INTERSECT;
+}
+
+
+*/
+
+
+
 
 // C3DLAS_COPLANAR, _PARALLEL, _INTERSECT, or _DISJOINT
 // aboveCnt and belowCnt are always set.

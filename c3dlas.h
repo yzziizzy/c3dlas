@@ -667,6 +667,27 @@ int planeLineFindIntersectFast3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* o
 // C3DLAS_INTERSECT, or _DISJOINT
 int IntersectPlaneRay3p(Plane* p, Ray3* r, Vector3* out);
 
+// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+// returns _INTERSECT or _DISJOINT
+int rayTriangleIntersect(
+	Vector3* a, Vector3* b, Vector3* c, // triangle
+	Vector3* ray_origin, Vector3* ray_dir, // ray
+	float* u, float* v, float* t // barycentric out coords, t of intersection point along ray 
+);
+
+Vector3 triangleClosestPoint(
+	Vector3* a, Vector3* b, Vector3* c, // triangle
+	Vector3* p, // test point
+	float* out_u, float* out_v // barycentric out coords of closest point 
+);
+
+Vector3 triangleClosestPoint_Reference(
+	Vector3* a, Vector3* b, Vector3* c, // triangle
+	Vector3* p, // test point
+	float* out_u, float* out_v // barycentric out coords of closest point 
+);
+
+
 
 // C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
 int triPlaneTestIntersect3p(Vector3* pTri, Plane* pl);

@@ -34,9 +34,7 @@ void mFastMul(Matrix* restrict a, Matrix* restrict b, Matrix* restrict out) {
 
 // out cannot overlap with a. make a copy first if you want to do weird stuff.
 void mMul(Matrix* restrict a, Matrix* restrict out) {
-	Matrix b;
-	
-	mCopy(out, &b);
+	Matrix b = *out;
 	
 	mFastMul(a, &b, out);
 }
