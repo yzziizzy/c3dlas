@@ -413,6 +413,12 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 }
 
 
+// Returns an arbitrary unit vector perpendicular to the input
+// The input vector does not need to be normalized
+void vPerp2p(Vector2* n, Vector2* out);
+Vector2 vPerp2(Vector2 n);
+void vPerp3p(Vector3* n, Vector3* out);
+Vector3 vPerp3(Vector3 n);
 
 //
 // Vectors
@@ -445,6 +451,12 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 	\
 	Vector##suf vMax##suf(const Vector##suf a, const Vector##suf b); \
 	void vMax##suf##p(const Vector##suf* a, const Vector##suf* b, Vector##suf* out); \
+	\
+	int vMinComp##suf(const Vector##suf a); \
+	int vMinComp##suf##p(const Vector##suf* a); \
+	\
+	int vMaxComp##suf(const Vector##suf a); \
+	int vMaxComp##suf##p(const Vector##suf* a); \
 	\
 	ft vDot##suf(const Vector##suf a, const Vector##suf b); \
 	ft vDot##suf##p(const Vector##suf* a, const Vector##suf* b); \
@@ -523,6 +535,8 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 #define vStep(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vStep) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vMin(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMin) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vMax(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMax) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vMinComp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMinComp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vMaxComp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMaxComp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vAbs(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vAbs) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vAvg(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vAvg) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vClamp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vClamp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)

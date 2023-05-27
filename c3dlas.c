@@ -449,6 +449,39 @@ Vector##sz##suf vMax##sz##suf(Vector##sz##suf a, Vector##sz##suf b) { \
 	vMax##sz##suf##p(&a, &b, &out); \
 	return out; \
 } \
+\
+int vMinComp##sz##suf##p(const Vector##sz##suf* a) { \
+	t best = ((t*)a)[0]; \
+	int best_ind = 0; \
+	for(int i = 1; i < sz; i++) { \
+		if(((t*)a)[i] < best) { \
+			best = ((t*)a)[i]; \
+			best_ind = i; \
+		} \
+	} \
+	return best_ind; \
+} \
+\
+int vMaxComp##sz##suf##p(const Vector##sz##suf* a) { \
+	t best = ((t*)a)[0]; \
+	int best_ind = 0; \
+	for(int i = 1; i < sz; i++) { \
+		if(((t*)a)[i] > best) { \
+			best = ((t*)a)[i]; \
+			best_ind = i; \
+		} \
+	} \
+	return best_ind; \
+} \
+\
+int vMinComp##sz##suf(const Vector##sz##suf a) { \
+	return vMinComp##sz##suf##p(&a); \
+} \
+\
+int vMaxComp##sz##suf(const Vector##sz##suf a) { \
+	return vMaxComp##sz##suf##p(&a); \
+} \
+\
 Vector##sz##suf vClamp##sz##suf(Vector##sz##suf in, Vector##sz##suf min, Vector##sz##suf max) { \
 	Vector##sz##suf out; \
 	for(int i = 0; i < sz; i++) \
@@ -556,6 +589,57 @@ FN(4, l, long, DBL_MAX)
 
 
 
+// Returns an arbitrary unit vector perpendicular to the input
+// The input vector does not need to be normalized
+void vPerp3p(Vector3* n, Vector3* out) {
+	*out = vPerp3(*n);
+}
+
+Vector3 vPerp3(Vector3 n) {
+	float f, d;
+	
+	if(n.x < n.y) {
+		if(n.x < n.z) goto MIN_X;
+		goto MIN_Z;
+	}
+	if(n.y < n.z) goto MIN_Y;
+	goto MIN_Z;
+	
+MIN_X: 
+	d = 1.0f / sqrtf(n.z * n.z + n.y * n.y); 
+	f = n.z;
+	n.z = n.y * d;
+	n.y = -f * d;
+	n.x = 0;
+	return n;
+	
+MIN_Y: 
+	d = 1.0f / sqrtf(n.z * n.z + n.x * n.x); 
+	f = n.x;
+	n.x = n.z * d;
+	n.z = -f * d;
+	n.y = 0;
+	return n;
+	
+MIN_Z: 
+	d = 1.0f / sqrtf(n.x * n.x + n.y * n.y); 
+	f = n.y;
+	n.y = n.x * d;
+	n.x = -f * d;
+	n.z = 0;
+	return n;
+}
+
+
+// Returns an arbitrary unit vector perpendicular to the input
+// The input vector does not need to be normalized
+void vPerp2p(Vector2* n, Vector2* out) {
+	*out = vPerp2(*n);
+}
+
+Vector2 vPerp2(Vector2 n) {
+	return vNorm2((Vector2){.x = -n.y, .y = n.x});
+}
 
 
 // Coordinate system conversions
