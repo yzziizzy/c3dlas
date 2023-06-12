@@ -619,6 +619,7 @@ float vDistPointLine3(Vector3 p, Line3 ls);
 float vDistTPointLine2(Vector2 p, Line2 ls, float* T);
 float vDistTPointLine3(Vector3 p, Line3 ls, float* T);
 
+float distLineLine3(Line3* a, Line3* b);
 
 int vInsidePolygon(Vector2 p, Polygon* poly);
 

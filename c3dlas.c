@@ -943,7 +943,7 @@ void vProjectOntoPlane3p(Vector3* v, Plane* p, Vector3* out) {
 	
 	// get the component of v that's perpendicular to the plane
 	vProjectNorm3p(v, &p->n, &v_ortho);
-	
+
 	// subtract it from v
 	vSub3p(v, &v_ortho, out);
 }
@@ -1188,7 +1188,67 @@ vec3 triangleClosestPoint(
 
 */
 
+float distLineLine3(Line3* a, Line3* b) {
+	
+	Vector3 ea = vSub3(a->end, a->start);
+	Vector3 eb = vSub3(b->end, b->start);
+	Vector3 q = vSub(b->start, a->start);
+	
+	
+	float vaa = vLenSq3(ea);
+	float vbb = vLenSq3(eb);
+	float vba = vDot3(ea, eb);
+	float vba_a = vDot3(q, ea);
+	
+	float den = vba * vba - vbb * vaa;
+	
+	float ta, tb;
+	if(fabs(den) < 1e-6) {
+		ta = 0;
+		tb = -vba_a / vba; // vba can never be zero here
+	}
+	else {
+		float vba_b = vDot3(q, eb);
+		
+		ta = (vba_b * vba - vbb * vba_a) / den;
+		tb = (-vba_a * vba - vaa * vba_b) / den;
+	}
+	
+	ta = fclamp(0, 1, ta);
+	tb = fclamp(0, 1, tb);
+	
+	Vector3 pa = vAdd(a->start, vScale(ea, ta));
+	Vector3 pb = vAdd(b->start, vScale(eb, tb));
 
+	return vDist(pa, pb);
+}
+
+
+/*
+float distLineLine3Slow(Line3* a, Line3* b) {
+	
+	Vector3 ea = vSub3(a->end, a->start);
+	Vector3 eb = vSub3(b->end, b->start);
+	
+	Vector3 n = vCross3(ea, eb);
+	float nsq = vLenSq3(n);
+	
+	// TODO: handle parallel lines
+	
+	vec3 b1ma1 = vSub(b->start, a->start);
+	
+	float ta = vDot3(vCross3(eb, n), b1ma1) / nsq;
+	float tb = vDot3(vCross3(ea, n), b1ma1) / nsq;
+	
+	ta = fclamp(0, 1, ta);
+	tb = fclamp(0, 1, tb);
+	
+	vec3 pa = vAdd(a->start, vScale(ea, ta));
+	vec3 pb = vAdd(b->start, vScale(eb, tb));
+	
+	return vDist3(pa, pb);
+}
+*/
 
 
 // C3DLAS_COPLANAR, _PARALLEL, _INTERSECT, or _DISJOINT
