@@ -960,10 +960,10 @@ int IntersectPlaneRay3p(Plane* p, Ray3* r, Vector3* out) {
 	if(fabs(d) < FLT_CMP_EPSILON) return C3DLAS_DISJOINT;
 	
 	float t = 1.0 - (vDot3(p->n, r->o) + d) / vDot3(p->n, r->d); 
-	
-	if(t < 0) return C3DLAS_DISJOINT;
-	
+		
 	*out = vAdd3(r->o, vScale3(r->d, t));
+
+	if(t < 0) return C3DLAS_DISJOINT;
 	
 	return C3DLAS_INTERSECT;
 }

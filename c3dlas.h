@@ -183,7 +183,8 @@ typedef struct {
 } Line2;
 
 typedef struct {
-	Vector3 start, end;
+	union { Vector3 start, a; };
+	union { Vector3 end, b; };
 } Line3;
 
 // Polygons are 2-dimensional by definition

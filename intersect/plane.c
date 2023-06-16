@@ -5,7 +5,7 @@
 float planePointDist3p(Plane* pl, Vector3* p) {
 	Vector3 a;
 	vScale3p(&pl->n, pl->d, &a);
-	return fabs(vDot3p(&a, p));
+	return fabs(vDot3(vSub3(a, *p), pl->n));
 } 
 
 
@@ -13,7 +13,7 @@ float planePointDist3p(Plane* pl, Vector3* p) {
 float planePointDistSigned3p(Plane* pl, Vector3* p) {
 	Vector3 a;
 	vScale3p(&pl->n, pl->d, &a);
-	return vDot3p(&a, p);
+	return vDot3(vSub3(a, *p), pl->n);
 }
 
 
