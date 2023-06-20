@@ -148,6 +148,22 @@ Quaternion qNlerp(Quaternion a, Quaternion b, float t) {
 
 
 
+Quaternion qFromBasis(Vector3 bx, Vector3 by, Vector3 bz) {
+	
+	float w = sqrtf(1 + bx.x + by.y + bz.z) * .5f;
+	float invw4 = 1.f / (4.0 * w);
+	
+	Quaternion q = (Quaternion){
+		.real = w,
+		.i = (by.z - bz.y) * invw4,
+		.j = (bz.x - bx.z) * invw4,
+		.k = (bx.y - by.x) * invw4,
+	};
+	
+	return q;
+}
+
+
 // Applies the full conjugate multiplication qvq*
 void qNonUnitToMatrix(Quaternion q, Matrix* out) {
 	float s2 = q.real * q.real;

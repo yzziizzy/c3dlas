@@ -968,6 +968,8 @@ float qMag(Quaternion q);
 float qLen(Quaternion q);
 
 
+Quaternion qFromBasis(Vector3 bx, Vector3 by, Vector3 bz);
+
 // Applies the full conjugate multiplication qvq*
 void qNonUnitToMatrix(Quaternion q, Matrix* out);
 
