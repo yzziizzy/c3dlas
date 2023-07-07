@@ -453,6 +453,9 @@ Vector3 vPerp3(Vector3 n);
 	Vector##suf vMax##suf(const Vector##suf a, const Vector##suf b); \
 	void vMax##suf##p(const Vector##suf* a, const Vector##suf* b, Vector##suf* out); \
 	\
+	Vector##suf vClamp##suf(const Vector##suf in, const Vector##suf min, const Vector##suf max); \
+	void vClamp##suf##p(const Vector##suf* in, const Vector##suf* min, const Vector##suf* max, Vector##suf* out); \
+	\
 	int vMinComp##suf(const Vector##suf a); \
 	int vMinComp##suf##p(const Vector##suf* a); \
 	\
@@ -601,9 +604,7 @@ float  vMag4p(const Vector4* v);
 
 
 Vector2 vClamp2f(Vector2 in, float min, float max);
-Vector2 vClamp2(Vector2 in, Vector2 min, Vector2 max);
 Vector3 vClamp3f(Vector3 in, float min, float max);
-Vector3 vClamp3(Vector3 in, Vector3 min, Vector3 max);
 
 // Cartesian to Spherical
 Vector3 vC2S3(Vector3 cart);
