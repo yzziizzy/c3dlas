@@ -750,6 +750,25 @@ float vDistTPointLine3(Vector3 p, Line3 ls, float* T) {
 // ----
 
 
+float distTPointRay3(Vector3 p, Ray3 r, float* T) {
+	Vector3 pa = vSub3(p, r.o);
+	Vector3 ba = vNeg3(r.d);// vSub3(ls.end, ls.start);
+	
+	float t = vDot3(pa, ba) / vDot3(ba, ba);
+	if(T) *T = t;
+	return vLen3(vSub3(pa, vScale3(ba, t)));
+}
+
+float dist2TPointRay3(Vector3 p, Ray3 r, float* T) {
+	Vector3 pa = vSub3(p, r.o);
+	Vector3 ba = vNeg3(r.d);// vSub3(ls.end, ls.start);
+	
+	float t = vDot3(pa, ba) / vDot3(ba, ba);
+	if(T) *T = t;
+	return vLenSq3(vSub3(pa, vScale3(ba, t)));
+}
+
+
 int vInsidePolygon(Vector2 p, Polygon* poly) {
 	int inside = 0;
 	int cnt = poly->pointCount;

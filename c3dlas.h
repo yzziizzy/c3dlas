@@ -623,6 +623,9 @@ float vDistTPointLine3(Vector3 p, Line3 ls, float* T);
 
 float distLineLine3(Line3* a, Line3* b);
 
+float distTPointRay3(Vector3 p, Ray3 r, float* T);
+float dist2TPointRay3(Vector3 p, Ray3 r, float* T);
+
 int vInsidePolygon(Vector2 p, Polygon* poly);
 
 // Returns the distance from p to the closest point on the polygon.
