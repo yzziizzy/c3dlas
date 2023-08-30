@@ -291,8 +291,22 @@ void mPerspExtractNF(Matrix* m, double* near, double* far) {
 	double a = m->m[10];
 	double b = m->m[14];
 	
-	*far = b / (1.0 + a);
-	*near = (-a * b) / (a - 1.0);
+	*far = b / (1.0f + a);
+	*near = (-a * b) / (a - 1.0f);
+// 	printf("a: %f, b: %f, f: %f, n: %f\n", a, b, f, n);
+}
+
+// extract the near and far planes from a prespective matrix
+void mPerspExtractNFVK(Matrix* m, double* near, double* far) {
+	
+	// perspective computations can be sensitive to precision.
+	double a = m->m[10]; // =  c->far / (c->far - c->near);
+	double b = m->m[14]; // = -c->near * (c->far / (c->far - c->near));
+
+	// per wolfram alpha:
+	// https://www.wolframalpha.com/input?i=+solve+a+%3D+f+%2F+%28f+-+n%29%2C+b+%3D+-n+*+%28f+%2F+%28f+-+n%29%29+for+n%2C+f
+	*far = -b / (a - 1.f); 
+	*near = -b / a;
 // 	printf("a: %f, b: %f, f: %f, n: %f\n", a, b, f, n);
 }
 
@@ -300,29 +314,54 @@ void mPerspExtractNF(Matrix* m, double* near, double* far) {
 // set the near and far planes for an existing prespective matrix
 void mPerspSetNF_ZUp(Matrix* m, float near, float far) { // Z-up
 	m->m[6] = (far + near) / (near - far);
-	m->m[14] = (2.0 * far * near) / (near - far);
+	m->m[14] = (2.0f * far * near) / (near - far);
 }
+
+// set the near and far planes for an existing prespective matrix
+void mPerspSetNF_ZUpVK(Matrix* m, float near, float far) { // Z-up
+	m->m[6] = far / (far - near);
+	m->m[14] = -near * (far / (far - near));
+}
+
 
 void mPerspSetNF(Matrix* m, float near, float far) { // Y-up	
 	m->m[10] = (far + near) / (far - near);
-	m->m[14] = (2.0 * far * near) / (far - near);
+	m->m[14] = (2.0f * far * near) / (far - near);
 }
 
 
-// orthographic projection. use this for a "2D" look.
+// orthographic projection.
 void mOrtho(float left, float right, float top, float bottom, float near, float far, Matrix* out) {
 	
 	Matrix m;
 	
 	m = IDENT_MATRIX;
 	
-	m.m[0] = 2 / (right - left);
-	m.m[5] = 2 / (top - bottom);
-	m.m[10] = -2 / (far - near);
+	m.m[0] = 2.f / (right - left);
+	m.m[5] = 2.f / (top - bottom);
+	m.m[10] = -2.f / (far - near);
 	m.m[12] = -(right + left) / (right - left);
 	m.m[13] = -(top + bottom) / (top - bottom);
 	m.m[14] = -(far + near) / (far - near);
-	m.m[15] = 1;
+	m.m[15] = 1.f;
+	
+	mMul(&m, out);
+}
+
+// orthographic projection.
+void mOrthoVK(float left, float right, float top, float bottom, float near, float far, Matrix* out) {
+	
+	Matrix m;
+	
+	m = IDENT_MATRIX;
+	
+	m.m[0] = 2.f / (right - left);
+	m.m[5] = 2.f / (bottom - top);
+	m.m[10] = -1.f / (far - near);
+	m.m[12] = -(right + left) / (right - left);
+	m.m[13] = -(top + bottom) / (bottom - top);
+	m.m[14] = near / (near - far); // already at z = 0;
+	m.m[15] = 1.f;
 	
 	mMul(&m, out);
 }
@@ -340,14 +379,35 @@ void mOrthoFromRadius(float r, Matrix* out) {
 	float far = r;
 	
 	*out = IDENT_MATRIX;
-	out->m[0 + (0*4)] = 2. / (right - left);
-	out->m[1 + (1*4)] = 2. / (top - bottom);
-	out->m[2 + (2*4)] = -2. / (far - near);
+	out->m[0 + (0*4)] = 2.f / (right - left);
+	out->m[1 + (1*4)] = 2.f / (top - bottom);
+	out->m[2 + (2*4)] = -2.f / (far - near);
 	
 	out->m[0 + (3*4)] = -(top + bottom) / (top - bottom);
 	out->m[1 + (3*4)] = -(right + left) / (right - left);
 	out->m[2 + (3*4)] = -(far + near) / (far - near);
-	out->m[3 + (3*4)] = 1;
+	out->m[3 + (3*4)] = 1.f;
+}	
+
+void mOrthoFromRadiusVK(float r, Matrix* out) {
+	Matrix m;
+	
+	float right = -r ;
+	float left = r;
+	float top = r;
+	float bottom = -r;
+	float near = -r;
+	float far = r;
+	
+	*out = IDENT_MATRIX;
+	out->m[0 + (0*4)] = 2.f / (right - left);
+	out->m[1 + (1*4)] = 2.f / (bottom - top);
+	out->m[2 + (2*4)] = 1.f / (far - near);
+	
+	out->m[0 + (3*4)] = -(top + bottom) / (bottom - top);
+	out->m[1 + (3*4)] = -(right + left) / (right - left);
+	out->m[2 + (3*4)] = near / (near - far);
+	out->m[3 + (3*4)] = 1.f;
 }	
 
 //void mOrthoFromSphere(Sphere* s, Vector3* eyePos, Matrix* out) {
@@ -355,6 +415,20 @@ void mOrthoFromSphere(Sphere s, Vector3 eyePos, Vector3 up, Matrix* out) {
 	Matrix m;
 
 	mOrthoFromRadius(s.r, &m);
+
+	Vector3 d = vNorm3(vSub3(s.center, eyePos));
+	
+	Matrix m2;
+	mLookAt(eyePos, s.center, up, &m2);
+	
+	mFastMul(&m2, &m, out);
+}
+
+//void mOrthoFromSphere(Sphere* s, Vector3* eyePos, Matrix* out) {
+void mOrthoFromSphereVK(Sphere s, Vector3 eyePos, Vector3 up, Matrix* out) {
+	Matrix m;
+
+	mOrthoFromRadiusVK(s.r, &m);
 
 	Vector3 d = vNorm3(vSub3(s.center, eyePos));
 	
@@ -375,11 +449,30 @@ void mOrthoExtractPlanes(Matrix* m, float* left, float* right, float* top, float
 	*far = (m->m[14] - 1) / m->m[10];
 }
 
+// BUG: probably completely wrong
+// extract the planes from an orthographic projection matrix.
+void mOrthoExtractPlanesVK(Matrix* m, float* left, float* right, float* top, float* bottom, float* near, float* far) {
+	
+	*left = (m->m[12] + 1) / -m->m[0]; 
+	*right = (-m->m[12] + 1) / m->m[0]; 
+	*bottom = (m->m[13] + 1) / m->m[5]; 
+	*top = (-m->m[13] + 1) / m->m[5]; 
+	*near = (m->m[14] + 1) / m->m[10];
+	*far = (m->m[14] - 1) / m->m[10];
+}
+
 
 void mOrthoSetNF(Matrix* m, float near, float far) {
 	m->m[2 + (2*4)] = -2. / (far - near);
 	m->m[2 + (3*4)] = -(far + near) / (far - near);
 }
+
+
+void mOrthoSetNFVK(Matrix* m, float near, float far) {
+	m->m[2 + (2*4)] = -1.f / (far - near);
+	m->m[2 + (3*4)] = -(far + near) / (far - near);
+}
+
 
 // analgous to gluLookAt
 // up is not required to be orthogonal to anything, so long as it's not parallel to anything
@@ -417,7 +510,7 @@ void mLookAt(Vector3 eye, Vector3 center, Vector3 up, Matrix* out) {
 	*out = m;
 }
 
-void mLookDir(Vector3 eye, Vector3 center, Vector3 dir, Vector3 up, Matrix* out) {
+void mLookDir(Vector3 eye, Vector3 dir, Vector3 up, Matrix* out) {
 	
 	Vector3 forward, left, upn;
 	Matrix m;
@@ -442,9 +535,9 @@ void mLookDir(Vector3 eye, Vector3 center, Vector3 dir, Vector3 up, Matrix* out)
 	m.m[2+(2*4)] = forward.z;
 	m.m[3+(2*4)] = 0;
 	
-	m.m[0+(3*4)] = -left.x * center.x    - left.y * center.y    - left.z * center.z;
-	m.m[1+(3*4)] = -upn.x * center.x     - upn.y * center.y     - upn.z * center.z;
-	m.m[2+(3*4)] = -forward.x * center.x - forward.y * center.y - forward.z * center.z;
+	m.m[0+(3*4)] = -left.x * eye.x    - left.y * eye.y    - left.z * eye.z;
+	m.m[1+(3*4)] = -upn.x * eye.x     - upn.y * eye.y     - upn.z * eye.z;
+	m.m[2+(3*4)] = -forward.x * eye.x - forward.y * eye.y - forward.z * eye.z;
 	m.m[3+(3*4)] = 1;
 	
 	*out = m;

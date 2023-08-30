@@ -140,8 +140,8 @@ static const char* c3dlas_EnumString(int e) {
 	typedef struct Vector3 ## suf { \
 		/*    cartesian  spherical  color */ \
 		union { t x, rho,       r; }; /* rho is the radius */ \
-		union { t y, theta,     g; }; /* rotation in the X-Y plane */ \
-		union { t z, phi,       b; }; /* rotation in the plane passing through the Z axis */ \
+		union { t y, theta,     g; }; /* rotation in the X-Y plane, with positive x axis being 0, and pi/2 being positive y axis */ \
+		union { t z, phi,       b; }; /* rotation in the plane passing through the Z axis, with 0 being the positive z axis */ \
 	} Vector3 ## suf;
 	
 	C3DLAS_VECTOR_TYPE_LIST(X)
@@ -740,6 +740,7 @@ void frustumBoundingSphere(Frustum* f, Sphere* out);
 void quadCenterp3p(Vector3* a, Vector3* b, Vector3* c, Vector3* d, Vector3* out);
 
 void frustumFromMatrix(Matrix* m, Frustum* out);
+void frustumFromMatrixVK(Matrix* m, Frustum* out);
 void frustumInnerBoundingSphere(Frustum* f, Sphere* out);
 void frustumOuterBoundingSphere(Frustum* f, Sphere* out);
 
@@ -832,16 +833,28 @@ void mPerspSetNF_ZUp(Matrix* m, float near, float far);
 // same div/0 warnings.
 void mOrtho(float left, float right, float top, float bottom, float near, float far, Matrix* out);
 
+// orthographic projection. use this for a "2D" look.
+void mOrthoVK(float left, float right, float top, float bottom, float near, float far, Matrix* out);
+
 // calculates a cubical orthographic matrix with a side length of 2*r
 void mOrthoFromRadius(float r, Matrix* out);
+
+// calculates a cubical orthographic matrix with a side length of 2*r
+void mOrthoFromRadiusVK(float r, Matrix* out);
 
 // calculates an orthographic matrix that encloses the sphere, looking from eyePos
 void mOrthoFromSphere(Sphere s, Vector3 eyePos, Vector3 up, Matrix* out);
 
+// calculates an orthographic matrix that encloses the sphere, looking from eyePos
+void mOrthoFromSphereVK(Sphere s, Vector3 eyePos, Vector3 up, Matrix* out);
+
 // extract the planes from an orthographic projection matrix.
 void mOrthoExtractPlanes(Matrix* m, float* left, float* right, float* top, float* bottom, float* near, float* far);
+// extract the planes from an orthographic projection matrix.
+void mOrthoExtractPlanesVK(Matrix* m, float* left, float* right, float* top, float* bottom, float* near, float* far);
 
 void mOrthoSetNF(Matrix* m, float near, float far);
+void mOrthoSetNFVK(Matrix* m, float near, float far);
 
 
 // analgous to gluLookAt
@@ -850,7 +863,7 @@ void mOrthoSetNF(Matrix* m, float near, float far);
 void mLookAt(Vector3 eye, Vector3 center, Vector3 up, Matrix* out);
 
 
-void mLookDir(Vector3 eye, Vector3 center, Vector3 dir, Vector3 up, Matrix* out);
+void mLookDir(Vector3 eye, Vector3 dir, Vector3 up, Matrix* out);
 
 
 void mPrint(Matrix* m, FILE* f);
