@@ -817,17 +817,23 @@ void mFrustum(float left, float right, float top, float bottom, float near, floa
 
 // analogous to gluPerspective
 // same div/0 warnings apply. if you get an FP exception you deserve it.
-// use a double for fov; the precision matters often.
 // https://www.opengl.org/archives/resources/faq/technical/transformations.htm
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
-void mPerspective(double fov, float aspect, float near, float far, Matrix* out);
+void mPerspective(float fov, float aspect, float near, float far, Matrix* out);
+
+// analogous to gluPerspective
+// same div/0 warnings apply. if you get an FP exception you deserve it.
+void mPerspectiveVK(float fov, float aspect, float near, float far, Matrix* out);
+void mPerspectiveVK_ZUp(float fov, float aspect, float near, float far, Matrix* out);
 
 // extract the near and far planes from a prespective matrix
 void mPerspExtractNF(Matrix* m, double* near, double* far);
 
 // set the near and far planes for an existing prespective matrix
 void mPerspSetNF(Matrix* m, float near, float far);
+void mPerspSetNFVK(Matrix* m, float near, float far);
 void mPerspSetNF_ZUp(Matrix* m, float near, float far);
+void mPerspSetNFVK_ZUp(Matrix* m, float near, float far);
 
 // orthographic projection. use this for a "2D" look.
 // same div/0 warnings.

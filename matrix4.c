@@ -261,16 +261,15 @@ void mFrustum(float left, float right, float top, float bottom, float near, floa
 
 // analogous to gluPerspective
 // same div/0 warnings apply. if you get an FP exception you deserve it.
-// use a double for fov; the precision matters often.
 // https://www.opengl.org/archives/resources/faq/technical/transformations.htm
 // https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
-void mPerspective(double fov, float aspect, float near, float far, Matrix* out) {
+void mPerspective(float fov, float aspect, float near, float far, Matrix* out) {
 	
 	Matrix m;
 	double f;
 	
 	m = IDENT_MATRIX;
-	f = 1.0 / tan(fov * DEG2RAD / 2.0);
+	f = 1.0 / tan(fov * DEG2RAD * .5);
 	
 	m.m[0] = f / aspect;
 	m.m[5] = f;
@@ -280,6 +279,40 @@ void mPerspective(double fov, float aspect, float near, float far, Matrix* out) 
 	m.m[15] = 0.0;
 
 	mMul(&m, out);
+}
+
+// analogous to gluPerspective
+// same div/0 warnings apply. if you get an FP exception you deserve it.
+void mPerspectiveVK(float fov, float aspect, float near, float far, Matrix* out) {
+	
+	*out = IDENT_MATRIX;
+	float f;
+	
+	f = 1.0 / tan(fov * DEG2RAD * .5);
+	
+	out->m[0] = f / aspect;
+	out->m[5] = -f;
+	out->m[10] = far / (near - far);
+	out->m[11] = -1.0;
+	out->m[14] = (far * near) / (near - far);
+	out->m[15] = 0.0;
+}
+
+// analogous to gluPerspective
+// same div/0 warnings apply. if you get an FP exception you deserve it.
+void mPerspectiveVK_ZUp(float fov, float aspect, float near, float far, Matrix* out) {
+	
+	*out = IDENT_MATRIX;
+	float f;
+	
+	f = 1.0 / tan(fov * DEG2RAD * .5);
+	
+	out->m[0] = f / aspect;
+	out->m[5] = f;
+	out->m[10] = far / (far - near);
+	out->m[11] = 1.0;
+	out->m[14] = -(far * near) / (far - near);
+	out->m[15] = 0.0;
 }
 
 
@@ -318,15 +351,20 @@ void mPerspSetNF_ZUp(Matrix* m, float near, float far) { // Z-up
 }
 
 // set the near and far planes for an existing prespective matrix
-void mPerspSetNF_ZUpVK(Matrix* m, float near, float far) { // Z-up
-	m->m[6] = far / (far - near);
-	m->m[14] = -near * (far / (far - near));
+void mPerspSetNFVK_ZUp(Matrix* m, float near, float far) { // Z-up
+	m->m[10] = far / (far - near);
+	m->m[14] = -(far * near) / (far - near);
 }
 
 
 void mPerspSetNF(Matrix* m, float near, float far) { // Y-up	
 	m->m[10] = (far + near) / (far - near);
 	m->m[14] = (2.0f * far * near) / (far - near);
+}
+
+void mPerspSetNFVK(Matrix* m, float near, float far) { // Y-up	
+	m->m[10] = far / (near - far);
+	m->m[14] = (far * near) / (near - far);
 }
 
 
