@@ -554,7 +554,7 @@ void mLookDir(Vector3 eye, Vector3 dir, Vector3 up, Matrix* out) {
 	Matrix m;
 	
 	
-	forward = dir; //vNorm3(vSub3(eye, center));
+	forward = vNeg(dir); //vNorm3(vSub3(eye, center));
 	left = vNorm3(vCross3(forward, up));
 	upn = vCross3(left, forward);
 	

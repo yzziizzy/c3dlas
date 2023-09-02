@@ -741,6 +741,7 @@ void quadCenterp3p(Vector3* a, Vector3* b, Vector3* c, Vector3* d, Vector3* out)
 
 void frustumFromMatrix(Matrix* m, Frustum* out);
 void frustumFromMatrixVK(Matrix* m, Frustum* out);
+void frustumFromMatrixVK_ZUP(Matrix* m, Frustum* out);
 void frustumInnerBoundingSphere(Frustum* f, Sphere* out);
 void frustumOuterBoundingSphere(Frustum* f, Sphere* out);
 

@@ -1777,6 +1777,38 @@ void frustumFromMatrixVK(Matrix* m, Frustum* out) {
 	planeFromTriangle3p(&out->points[3], &out->points[7], &out->points[2], &out->planes[5]);
 }
 
+void frustumFromMatrixVK_ZUP(Matrix* m, Frustum* out) {
+	
+	Matrix inv;
+	
+	mInverse(m, &inv);
+	
+	*out = (Frustum){0};
+	// first the points
+	// these MUST be in this order
+	// near
+	vMatrixMulf3p(-1,-1, 0, &inv, &out->points[0]); // BUG this order is likely wrong for the planes but results in a sane wireframe.
+	vMatrixMulf3p( 1,-1, 0, &inv, &out->points[1]);
+	vMatrixMulf3p(-1, 1, 0, &inv, &out->points[2]);
+	vMatrixMulf3p( 1, 1, 0, &inv, &out->points[3]);
+	// far
+	vMatrixMulf3p(-1,-1, 1, &inv, &out->points[4]);
+	vMatrixMulf3p(1, -1, 1, &inv, &out->points[5]);
+	vMatrixMulf3p( -1,1, 1, &inv, &out->points[6]);
+	vMatrixMulf3p( 1, 1, 1, &inv, &out->points[7]);
+	
+	
+	// now the planes
+	// near and far
+	planeFromTriangle3p(&out->points[0], &out->points[1], &out->points[2], &out->planes[0]);
+	planeFromTriangle3p(&out->points[4], &out->points[5], &out->points[6], &out->planes[1]);
+	// sides
+	planeFromTriangle3p(&out->points[0], &out->points[4], &out->points[1], &out->planes[2]);
+	planeFromTriangle3p(&out->points[0], &out->points[4], &out->points[2], &out->planes[3]);
+	planeFromTriangle3p(&out->points[3], &out->points[7], &out->points[1], &out->planes[4]);
+	planeFromTriangle3p(&out->points[3], &out->points[7], &out->points[2], &out->planes[5]);
+}
+
 
 void frustumCenter(Frustum* f, Vector3* out) {
 	Vector3 sum = {0.0f,0.0f,0.0f};
