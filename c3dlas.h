@@ -5,7 +5,6 @@
 #include <stdlib.h> // rand() et al.
 #include <stdint.h> 
 #include <math.h> // fmin/fmax
-#include <tgmath.h> // fmin/fmax
 
 #undef I // because of some bullshit in <complex.h>
 
@@ -413,6 +412,17 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 	return a  + ((b - a) * xt);
 }
 
+static inline float fsmootherstep(float a, float b, float t) {
+	if(t < 0.f) return a;
+	if(t > 1.f) return b;
+	return (b - a) * ((t * (t * 6.0f - 15.0f) + 10.0f) * t * t * t) + a;
+}
+static inline double dsmootherstep(double a, double b, double t) {
+	if(t < 0.0) return a;
+	if(t > 1.0) return b;
+	return (b - a) * ((t * (t * 6.0 - 15.0) + 10.0) * t * t * t) + a;
+}
+
 
 // Returns an arbitrary unit vector perpendicular to the input
 // The input vector does not need to be normalized
@@ -600,7 +610,23 @@ float  vMag4p(const Vector4* v);
 
 // Squared distance from one point to another
 
+Vector4i vFloor4(const Vector4 v);
+Vector3i vFloor3(const Vector3 v);
+Vector2i vFloor2(const Vector2 v);
+Vector4i vCeil4(const Vector4 v);
+Vector3i vCeil3(const Vector3 v);
+Vector2i vCeil2(const Vector2 v);
 
+Vector4l vFloor4d(const Vector4d v);
+Vector3l vFloor3d(const Vector3d v);
+Vector2l vFloor2d(const Vector2d v);
+Vector4l vCeil4d(const Vector4d v);
+Vector3l vCeil3d(const Vector3d v);
+Vector2l vCeil2d(const Vector2d v);
+
+Vector2 vModPositive2(Vector2 v, Vector2 m);
+Vector3 vModPositive3(Vector3 v, Vector3 m);
+Vector4 vModPositive4(Vector4 v, Vector4 m);
 
 
 Vector2 vClamp2f(Vector2 in, float min, float max);
@@ -642,11 +668,17 @@ void  vPointAvg3p(Vector3* a, Vector3* b, Vector3* out);
 
 void vRandomPCG3p(Vector3* end1, Vector3* end2, PCG* pcg, Vector3* out);
 Vector3 vRandomPCG3(Vector3 end1, Vector3 end2, PCG* pcg);
+void vRandomNormPCG3p(PCG* pcg, Vector3* out);
+Vector3 vRandomNormPCG3(PCG* pcg);
+
+void vRandomPCG2p(Vector2* end1, Vector2* end2, PCG* pcg, Vector2* out);
+Vector2 vRandomPCG2(Vector2 end1, Vector2 end2, PCG* pcg);
+void vRandomNormPCG2p(PCG* pcg, Vector2* out);
+Vector2 vRandomNormPCG2(PCG* pcg);
 
 void vRandom3p(Vector3* end1, Vector3* end2, Vector3* out);
 Vector3 vRandom3(Vector3 end1, Vector3 end2);
 void vRandomNorm3p(Vector3* out);
-
 
 
 // http://geomalgorithms.com/a07-_distance.html
@@ -812,6 +844,8 @@ void mAdd(Matrix* a, Matrix* b, Matrix* out);
 void mScalarMul(Matrix* a, float f, Matrix* out);
 
 
+void mDecompose(Matrix* mat, Vector3* trans, Quaternion* rot, Vector3* scale);
+
 // analogous to glFrustum
 // no div/0 checking here for right == left etc. just don't be an idiot.
 void mFrustum(float left, float right, float top, float bottom, float near, float far, Matrix* out);
@@ -964,6 +998,18 @@ void quadCenter2p(const Quad2* in, Vector2* out);
 void quadRoundOutward2p(const Quad2* in, Quad2i* out);
 void quadRoundInward2p(const Quad2* in, Quad2i* out);
 
+
+float evalCatmullRom1D(float t, float a, float b, float c, float d);
+Vector2 evalCatmullRom2D(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d);
+Vector3 evalCatmullRom3D(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d);
+
+float evalCatmullRom1D_dt(float t, float a, float b, float c, float d);
+Vector2 evalCatmullRom2D_dt(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d);
+Vector3 evalCatmullRom3D_dt(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d);
+
+float evalCatmullRom1D_both(float t, float a, float b, float c, float d, float* dt);
+Vector2 evalCatmullRom2D_both(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d, Vector2* dt);
+Vector3 evalCatmullRom3D_both(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3* dt);
 
 float   evalCubicHermite1D(float t, float p0, float p1, float m0, float m1);
 Vector2 evalCubicHermite2D(float t, Vector2 p0, Vector2 p1, Vector2 m0, Vector2 m1); 

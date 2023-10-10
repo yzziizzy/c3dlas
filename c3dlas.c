@@ -5,13 +5,47 @@
 #include <string.h>
 #include <float.h>
 #include <math.h>
-#include <tgmath.h>
 #include <limits.h>
 #include <float.h>
 
 #include <x86intrin.h>
 
 #include "c3dlas.h"
+
+#ifdef C3DLAS_USE_BUILTINS
+
+	#define abs_double __builtin_fabs
+	#define abs_float  __builtin_fabsf
+#else
+	#define abs_double fabs
+	#define abs_float  fabsf
+#endif
+
+
+#ifdef C3DLAS_NO_TGMATH
+	// requires GCC probably
+	
+		/*
+	#define FD_CHOOSE_1(a, b, fn_f, fn_d)\
+		__builtin_choose_expr( \
+			__builtin_types_compatible_p(__typeof__(a), double), \
+				fn_d(a), \
+				fn_f(a))
+		
+	#define FD_CHOOSE_2(a, b, fn_f, fn_d)\
+		__builtin_choose_expr( \
+			__builtin_types_compatible_p(__typeof__(a), double) || __builtin_types_compatible_p(__typeof__(b), double), \
+				fn_d(a, b), \
+				fn_f(a, b))
+	
+	#define fmax(a,b) FD_CHOOSE_2(a, b, fmaxf, fmax)
+	#define fmin(a,b) FD_CHOOSE_2(a, b, fminf, fmin)
+	#define fabs(a)   FD_CHOOSE_1(a, fabsf, fabs)
+	#define sqrt(a)   FD_CHOOSE_1(a, sqrtf, sqrt)
+		*/
+#else
+	#include <tgmath.h>
+#endif
 
 
 
@@ -495,7 +529,7 @@ Vector##sz##suf vAbs##sz##suf(const Vector##sz##suf v) { \
 } \
 void vAbs##sz##suf##p(const Vector##sz##suf* v, Vector##sz##suf* out) { \
 	for(int i = 0; i < sz; i++) \
-		((t*)out)[i] = fabs( ((t*)v)[i] ); \
+		((t*)out)[i] = abs_##t( ((t*)v)[i] ); \
 } \
 Vector##sz##suf vSign##sz##suf(const Vector##sz##suf v) { \
 	Vector##sz##suf out; \
@@ -868,6 +902,33 @@ void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out) { // faster; on
 
 
 
+void vRandomPCG2p(Vector2* end1, Vector2* end2, PCG* pcg, Vector2* out) {
+	out->x = frandPCG(fminf(end1->x, end2->x), fmaxf(end1->x, end2->x), pcg);
+	out->y = frandPCG(fminf(end1->y, end2->y), fmaxf(end1->y, end2->y), pcg);
+}
+
+Vector2 vRandomPCG2(Vector2 end1, Vector2 end2, PCG* pcg) {
+	Vector2 o;
+	vRandomPCG2p(&end1, &end2, pcg, &o);
+	return o;
+}
+
+void vRandomNormPCG2p(PCG* pcg, Vector2* out) {
+	float th = frandPCG(0, 2.0 * F_PI, pcg);
+	float sth, cth;
+	
+	sincosf(th, &sth, &cth);
+	out->x = cth;
+	out->y = sth;
+}
+
+Vector2 vRandomNormPCG2(PCG* pcg) {
+	Vector2 o;
+	vRandomNormPCG2p(pcg, &o);
+	return o;
+}
+
+
 void vRandomPCG3p(Vector3* end1, Vector3* end2, PCG* pcg, Vector3* out) {
 	out->x = frandPCG(fminf(end1->x, end2->x), fmaxf(end1->x, end2->x), pcg);
 	out->y = frandPCG(fminf(end1->y, end2->y), fmaxf(end1->y, end2->y), pcg);
@@ -877,6 +938,25 @@ void vRandomPCG3p(Vector3* end1, Vector3* end2, PCG* pcg, Vector3* out) {
 Vector3 vRandomPCG3(Vector3 end1, Vector3 end2, PCG* pcg) {
 	Vector3 o;
 	vRandomPCG3p(&end1, &end2, pcg, &o);
+	return o;
+}
+
+// This algorithm is uniformly distributed over the surface of a sphere. There is no clustering at the poles.
+void vRandomNormPCG3p(PCG* pcg, Vector3* out) {
+	float u = frandPCG(-1.f, 1.f, pcg);
+	float th = frandPCG(0.f, 2.f * F_PI, pcg);
+	float q = sqrtf(1.f - u * u);
+	float sth, cth;
+	
+	sincosf(th, &sth, &cth);
+	out->x = u * cth;
+	out->y = u * sth;
+	out->z = u;
+}
+
+Vector3 vRandomNormPCG3(PCG* pcg) {
+	Vector3 o;
+	vRandomNormPCG3p(pcg, &o);
 	return o;
 }
 
@@ -913,6 +993,82 @@ void vRandomNorm3p(Vector3* out) {
 	out->z = u;
 }
 
+
+Vector4i vFloor4(const Vector4 v) {
+	return (Vector4i){.x = floorf(v.x), .y = floorf(v.y), .z = floorf(v.z), .w = floorf(v.w)};
+}
+
+Vector4i vCeil4(const Vector4 v) {
+	return (Vector4i){.x = ceilf(v.x), .y = ceilf(v.y), .z = ceilf(v.z), .w = ceilf(v.w)};
+}
+
+Vector3i vFloor3(const Vector3 v) {
+	return (Vector3i){.x = floorf(v.x), .y = floorf(v.y), .z = floorf(v.z)};
+}
+
+Vector3i vCeil3(const Vector3 v) {
+	return (Vector3i){.x = ceilf(v.x), .y = ceilf(v.y), .z = ceilf(v.z)};
+}
+
+Vector2i vFloor2(const Vector2 v) {
+	return (Vector2i){.x = floorf(v.x), .y = floorf(v.y)};
+}
+
+Vector2i vCeil2(const Vector2 v) {
+	return (Vector2i){.x = ceilf(v.x), .y = ceilf(v.y)};
+}
+
+
+
+Vector4l vFloor4d(const Vector4d v) {
+	return (Vector4l){.x = floor(v.x), .y = floor(v.y), .z = floor(v.z), .w = floor(v.w)};
+}
+
+Vector4l vCeil4d(const Vector4d v) {
+	return (Vector4l){.x = ceil(v.x), .y = ceil(v.y), .z = ceil(v.z), .w = ceil(v.w)};
+}
+
+Vector3l vFloor3d(const Vector3d v) {
+	return (Vector3l){.x = floor(v.x), .y = floor(v.y), .z = floor(v.z)};
+}
+
+Vector3l vCeil3d(const Vector3d v) {
+	return (Vector3l){.x = ceil(v.x), .y = ceil(v.y), .z = ceil(v.z)};
+}
+
+Vector2l vFloor2d(const Vector2d v) {
+	return (Vector2l){.x = floor(v.x), .y = floor(v.y)};
+}
+
+Vector2l vCeil2d(const Vector2d v) {
+	return (Vector2l){.x = ceil(v.x), .y = ceil(v.y)};
+}
+
+
+
+Vector2 vModPositive2(Vector2 v, Vector2 m) {
+	return (Vector2){
+		.x = fmodf(fmodf(v.x, m.x) + m.x, m.x),
+		.y = fmodf(fmodf(v.y, m.y) + m.y, m.y),
+	};
+}
+
+Vector3 vModPositive3(Vector3 v, Vector3 m) {
+	return (Vector3){
+		.x = fmodf(fmodf(v.x, m.x) + m.x, m.x),
+		.y = fmodf(fmodf(v.y, m.y) + m.y, m.y),
+		.z = fmodf(fmodf(v.z, m.z) + m.z, m.z),
+	};
+}
+
+Vector4 vModPositive4(Vector4 v, Vector4 m) {
+	return (Vector4){
+		.x = fmodf(fmodf(v.x, m.x) + m.x, m.x),
+		.y = fmodf(fmodf(v.y, m.y) + m.y, m.y),
+		.z = fmodf(fmodf(v.z, m.z) + m.z, m.z),
+		.w = fmodf(fmodf(v.w, m.w) + m.w, m.w),
+	};
+}
 
 
 // reflects the distance from v to pivot across pivot.
@@ -2410,6 +2566,175 @@ void bsEvenLines(BezierSpline2* bs, int lineCount, Vector2* linePoints) {
 }
 
 
+
+// Catmull-Rom Spline
+
+float evalCatmullRom1D(float t, float a, float b, float c, float d) {
+	
+	float t2 = t * t;
+	float t3 = t2 * t;
+
+	return 0.5f * (   	
+		(2.f * b) + 
+		(-a + c) * t +
+		(2.f * a - 5.f * b + 4.f * c - d) * t2 +
+		(-a + 3.f * b - 3.f * c + d) * t3
+	);
+
+}
+
+Vector2 evalCatmullRom2D(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d) {
+	
+	float t2 = t * t;
+	float t3 = t2 * t;
+	
+	float q0 = -t3 + 2.f * t2 - t;
+	float q1 = 3.f * t3 - 5.f * t2 + 2.f;
+	float q2 = -3.f * t3 + 4.f * t2 + t;
+	float q3 = t3 - t2;
+	
+	return (Vector2){
+		.x = 0.5f * (a.x * q0 + b.x * q1 + c.x * q2 + d.x * q3),
+		.y = 0.5f * (a.y * q0 + b.y * q1 + c.y * q2 + d.y * q3)
+	};
+}
+
+Vector3 evalCatmullRom3D(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d) {
+	
+	float t2 = t * t;
+	float t3 = t2 * t;
+	
+	float q0 = -t3 + 2.f * t2 - t;
+	float q1 = 3.f * t3 - 5.f * t2 + 2.f;
+	float q2 = -3.f * t3 + 4.f * t2 + t;
+	float q3 = t3 - t2;
+	
+	return (Vector3){
+		.x = 0.5f * (a.x * q0 + b.x * q1 + c.x * q2 + d.x * q3),
+		.y = 0.5f * (a.y * q0 + b.y * q1 + c.y * q2 + d.y * q3),
+		.z = 0.5f * (a.z * q0 + b.z * q1 + c.z * q2 + d.z * q3)
+	};
+}
+
+
+float evalCatmullRom1D_dt(float t, float a, float b, float c, float d) {
+	
+	float t2 = t * t;
+	
+	float q0 = -3.f * t2 + 4.f * t - 1.f;
+	float q1 = 9.f * t2 - 10.f * t;
+	float q2 = -9.f * t2 + 8.f * t + 1.f;
+	float q3 = 3.f * t2 - 2.f * t;
+	
+	return 0.5f * (a * q0 + b * q1 + c * q2 + d * q3);
+}
+
+Vector2 evalCatmullRom2D_dt(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d) {
+	
+	float t2 = t * t;
+	
+	float q0 = -3.f * t2 + 4.f * t - 1.f;
+	float q1 = 9.f * t2 - 10.f * t;
+	float q2 = -9.f * t2 + 8.f * t + 1.f;
+	float q3 = 3.f * t2 - 2.f * t;
+	
+	return (Vector2){
+		.x = 0.5f * (a.x * q0 + b.x * q1 + c.x * q2 + d.x * q3),
+		.y = 0.5f * (a.y * q0 + b.y * q1 + c.y * q2 + d.y * q3)
+	};
+}
+
+Vector3 evalCatmullRom3D_dt(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d) {
+	
+	float t2 = t * t;
+	
+	float q0 = -3.f * t2 + 4.f * t - 1.f;
+	float q1 = 9.f * t2 - 10.f * t;
+	float q2 = -9.f * t2 + 8.f * t + 1.f;
+	float q3 = 3.f * t2 - 2.f * t;
+	
+	return (Vector3){
+		.x = 0.5f * (a.x * q0 + b.x * q1 + c.x * q2 + d.x * q3),
+		.y = 0.5f * (a.y * q0 + b.y * q1 + c.y * q2 + d.y * q3),
+		.z = 0.5f * (a.z * q0 + b.z * q1 + c.z * q2 + d.z * q3)
+	};
+}
+
+
+float evalCatmullRom1D_both(float t, float a, float b, float c, float d, float* dt) {
+	
+	float t2 = t * t;
+	float t3 = t2 * t;
+	
+	float q0 = -t3 + 2.f * t2 - t;
+	float q1 = 3.f * t3 - 5.f * t2 + 2.f;
+	float q2 = -3.f * t3 + 4.f * t2 + t;
+	float q3 = t3 - t2;
+	
+	float dq0 = -3.f * t2 + 4.f * t - 1.f;
+	float dq1 = 9.f * t2 - 10.f * t;
+	float dq2 = -9.f * t2 + 8.f * t + 1.f;
+	float dq3 = 3.f * t2 - 2.f * t;
+	
+	*dt = 0.5f * (a * dq0 + b * dq1 + c * dq2 + d * dq3);
+	
+	return 0.5f * (a * q0 + b * q1 + c * q2 + d * q3);
+}
+
+
+Vector2 evalCatmullRom2D_both(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d, Vector2* dt) {
+	
+	float t2 = t * t;
+	float t3 = t2 * t;
+	
+	float q0 = -t3 + 2.f * t2 - t;
+	float q1 = 3.f * t3 - 5.f * t2 + 2.f;
+	float q2 = -3.f * t3 + 4.f * t2 + t;
+	float q3 = t3 - t2;
+	
+	float dq0 = -3.f * t2 + 4.f * t - 1.f;
+	float dq1 = 9.f * t2 - 10.f * t;
+	float dq2 = -9.f * t2 + 8.f * t + 1.f;
+	float dq3 = 3.f * t2 - 2.f * t;
+	
+	*dt = (Vector2){
+		.x = 0.5f * (a.x * dq0 + b.x * dq1 + c.x * dq2 + d.x * dq3),
+		.y = 0.5f * (a.y * dq0 + b.y * dq1 + c.y * dq2 + d.y * dq3)
+	};
+	
+	return (Vector2){
+		.x = 0.5f * (a.x * q0 + b.x * q1 + c.x * q2 + d.x * q3),
+		.y = 0.5f * (a.y * q0 + b.y * q1 + c.y * q2 + d.y * q3)
+	};
+}
+
+Vector3 evalCatmullRom3D_both(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3* dt) {
+	
+	float t2 = t * t;
+	float t3 = t2 * t;
+	
+	float q0 = -t3 + 2.f * t2 - t;
+	float q1 = 3.f * t3 - 5.f * t2 + 2.f;
+	float q2 = -3.f * t3 + 4.f * t2 + t;
+	float q3 = t3 - t2;
+	
+	float dq0 = -3.f * t2 + 4.f * t - 1.f;
+	float dq1 = 9.f * t2 - 10.f * t;
+	float dq2 = -9.f * t2 + 8.f * t + 1.f;
+	float dq3 = 3.f * t2 - 2.f * t;
+	
+	*dt = (Vector3){
+		.x = 0.5f * (a.x * dq0 + b.x * dq1 + c.x * dq2 + d.x * dq3),
+		.y = 0.5f * (a.y * dq0 + b.y * dq1 + c.y * dq2 + d.y * dq3),
+		.z = 0.5f * (a.z * dq0 + b.z * dq1 + c.z * dq2 + d.z * dq3)
+	};
+	
+	return (Vector3){
+		.x = 0.5f * (a.x * q0 + b.x * q1 + c.x * q2 + d.x * q3),
+		.y = 0.5f * (a.y * q0 + b.y * q1 + c.y * q2 + d.y * q3),
+		.z = 0.5f * (a.z * q0 + b.z * q1 + c.z * q2 + d.z * q3)
+	};
+}
 
 
 // Cubic Hermite Splines

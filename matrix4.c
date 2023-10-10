@@ -582,6 +582,71 @@ void mLookDir(Vector3 eye, Vector3 dir, Vector3 up, Matrix* out) {
 }
 
 
+
+void mDecompose(Matrix* mat, Vector3* trans, Quaternion* rot, Vector3* scale) {
+
+	// translation is just column 3
+	*trans = (Vector3){mat->m[3*4+0], mat->m[3*4+1], mat->m[3*4+2]};
+	
+	// scale is extracted out of the rows
+	float s0 = vLen3((Vector3){mat->m[0*4+0], mat->m[1*4+0], mat->m[2*4+0]});  
+	float s1 = vLen3((Vector3){mat->m[0*4+1], mat->m[1*4+1], mat->m[2*4+1]});  
+	float s2 = vLen3((Vector3){mat->m[0*4+2], mat->m[1*4+2], mat->m[2*4+2]});  
+	
+	// sometimes scale needs to be flipped
+	float det = mDeterminate(mat);
+	if(det < 0) s0 = -s0;
+	
+	scale->x = s0;
+	scale->y = s1;
+	scale->z = s2;
+	
+	float invs0 = 1.0f / s0; 
+	float invs1 = 1.0f / s1; 
+	float invs2 = 1.0f / s2; 
+
+	// construct a 3x3 rotation mat by dividing out the scale
+	float m00 = mat->m[0*4+0] * invs0;
+	float m01 = mat->m[0*4+1] * invs1;
+	float m02 = mat->m[0*4+2] * invs2;
+	float m10 = mat->m[1*4+0] * invs0;
+	float m11 = mat->m[1*4+1] * invs1;
+	float m12 = mat->m[1*4+2] * invs2;
+	float m20 = mat->m[2*4+0] * invs0;
+	float m21 = mat->m[2*4+1] * invs1;
+	float m22 = mat->m[2*4+2] * invs2;
+
+	// there's a nice, small, good paper from Insomniac Games about this algorithm
+	float t;
+	if(m22 < 0.f) {
+		if(m00 > m11) {
+			t = 1.f + m00 - m11 - m22;
+			*rot = (Quaternion){t, m01 + m10, m20 + m02, m12 - m21};
+		}
+		else {
+			t = 1.f - m00 + m11 - m22;
+			*rot = (Quaternion){m01 + m10, t, m12 + m21, m20 - m02};
+		}
+	}
+	else {
+		if(m00 < -m11) {
+			t = 1.f - m00 - m11 + m22;
+			*rot = (Quaternion){m20 + m02, m12 + m21, t, m01 - m10};
+		}
+		else {
+			t = 1.f + m00 + m11 + m22;
+			*rot = (Quaternion){m12 - m21, m20 - m02, m01 - m10, t};
+		}
+	}
+	
+	vScale4p(rot, 0.5f / sqrtf(t), rot);
+}
+
+
+
+
+
+
 void mPrint(Matrix* m, FILE* f) {
 	int r;
 	
