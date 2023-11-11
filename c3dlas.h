@@ -647,6 +647,8 @@ float vDistPointLine3(Vector3 p, Line3 ls);
 float vDistTPointLine2(Vector2 p, Line2 ls, float* T);
 float vDistTPointLine3(Vector3 p, Line3 ls, float* T);
 
+float projPointLine2(Vector2 p, Line2 ls);
+
 float distLineLine3(Line3* a, Line3* b);
 
 float distTPointRay3(Vector3 p, Ray3 r, float* T);
@@ -845,6 +847,7 @@ void mScalarMul(Matrix* a, float f, Matrix* out);
 
 
 void mDecompose(Matrix* mat, Vector3* trans, Quaternion* rot, Vector3* scale);
+void mRecompose(Vector3* trans, Quaternion* rot, Vector3* scale, Matrix* out);
 
 // analogous to glFrustum
 // no div/0 checking here for right == left etc. just don't be an idiot.

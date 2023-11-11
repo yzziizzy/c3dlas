@@ -783,6 +783,14 @@ float vDistTPointLine3(Vector3 p, Line3 ls, float* T) {
 // ----
 
 
+float projPointLine2(Vector2 p, Line2 ls) {
+	Vector2 pa = vSub2(p, ls.start);
+	Vector2 ba = vSub2(ls.end, ls.start);
+	
+	return vDot2(pa, ba) / vDot2(ba, ba);
+}
+
+
 float distTPointRay3(Vector3 p, Ray3 r, float* T) {
 	Vector3 pa = vSub3(p, r.o);
 	Vector3 ba = vNeg3(r.d);// vSub3(ls.end, ls.start);

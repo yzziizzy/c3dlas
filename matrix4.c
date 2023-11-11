@@ -582,6 +582,20 @@ void mLookDir(Vector3 eye, Vector3 dir, Vector3 up, Matrix* out) {
 }
 
 
+void mRecompose(Vector3* trans, Quaternion* rot, Vector3* scale, Matrix* out) {
+	
+	*out = IDENT_MATRIX;
+	
+	mTransv(trans, out);
+	
+	Matrix qm;
+	qUnitToMatrix(*rot, &qm);
+	
+	mMul(&qm, out);
+	
+	mScalev(scale, out);
+}
+
 
 void mDecompose(Matrix* mat, Vector3* trans, Quaternion* rot, Vector3* scale) {
 
