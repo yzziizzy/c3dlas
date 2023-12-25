@@ -1393,7 +1393,7 @@ float distLineLine3(Line3* a, Line3* b) {
 		float vba_b = vDot3(q, eb);
 		
 		ta = (vba_b * vba - vbb * vba_a) / den;
-		tb = (-vba_a * vba - vaa * vba_b) / den;
+		tb = (-vba_a * vba + vaa * vba_b) / den;
 	}
 	
 	ta = fclamp(0, 1, ta);
@@ -1880,6 +1880,45 @@ int shortestLineFromRayToRay3p(Ray3* r1, Ray3* r2, Vector3* pOut) {
 	
 	return C3DLAS_DISJOINT;
 }
+
+//
+Line3 shortestLineFromLineToLine(Line3* a, Line3* b) {
+	
+	Vector3 ea = vSub3(a->end, a->start);
+	Vector3 eb = vSub3(b->end, b->start);
+	Vector3 q = vSub(b->start, a->start);
+	
+	float vaa = vLenSq3(ea);
+	float vbb = vLenSq3(eb);
+	
+	float vba = vDot3(ea, eb);
+	float vba_a = vDot3(q, ea);
+	
+	float den = vba * vba - vbb * vaa;
+	
+	float ta, tb;
+	if(fabs(den) < 1e-6) {
+		ta = 0;
+		tb = -vba_a / vba; // vba can never be zero here
+	}
+	else {
+		float vba_b = vDot3(q, eb);
+		
+		ta = (vba_b * vba - vbb * vba_a) / den;
+		tb = (-vba_a * vba + vaa * vba_b) / den;
+	}
+	
+	ta = fclamp(ta, 0, 1);
+	tb = fclamp(tb, 0, 1);
+	
+	Vector3 pa = vAdd(a->start, vScale(ea, ta));
+	Vector3 pb = vAdd(b->start, vScale(eb, tb));
+
+	return (Line3){pa, pb};
+}
+
+
+
 
 void frustumFromMatrix(Matrix* m, Frustum* out) {
 	
