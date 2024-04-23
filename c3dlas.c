@@ -1113,6 +1113,20 @@ Vector3 vTriFaceNormal3(Vector3 a, Vector3 b, Vector3 c) {
 }
 
 // calculate a unit vector normal to a triangle's face.
+Vector3 vTriFaceNormalArea3(Vector3 a, Vector3 b, Vector3 c, float* area) {
+	Vector3 b_a, c_a, out;
+	
+	b_a = vSub3(b, a);
+	c_a = vSub3(c, a);
+	
+	Vector3 n = vCross3(b_a, c_a);
+	
+	if(area) *area = vLen(n) * .5f;
+	
+	return vNorm3(n);
+}
+
+// calculate a unit vector normal to a triangle's face.
 void  vpTriFaceNormal3p(Vector3* tri, Vector3* out) {
 	vTriFaceNormal3p(tri+0, tri+1, tri+2, out);
 }
