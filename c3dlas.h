@@ -1022,6 +1022,7 @@ Vector3  evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3
 
 
 Quaternion qFromRTheta(Vector3 r, float theta);
+void qToRTheta(Quaternion q, Vector3* r, float* theta);
 
 Quaternion qAdd(Quaternion l, Quaternion r);
 Quaternion qSub(Quaternion l, Quaternion r);
@@ -1036,6 +1037,8 @@ Quaternion qNorm(Quaternion q);
 
 Quaternion qSlerp(Quaternion a, Quaternion b, float t);
 Quaternion qNlerp(Quaternion a, Quaternion b, float t);
+
+float qAngleBetween(Quaternion a, Quaternion b);
 
 // these appear to all mean the same thing for quaternions.
 float qMod(Quaternion q);

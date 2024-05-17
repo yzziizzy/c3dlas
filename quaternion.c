@@ -81,6 +81,29 @@ Quaternion qFromRTheta(Vector3 r, float theta) {
 	};
 }
 
+// transform a quaternion back into axis-angle representation
+// the axis may not be numerically stable if the rotation represented by the quaternion is very small
+//    this is an inherent property of quaterions, not a deficiency in the function below
+void qToRTheta(Quaternion q, Vector3* r, float* theta) {
+	float l2 = q.x * q.x + q.y * q.y + q.z * q.z;
+	
+	if(fabs(l2) > FLT_CMP_EPSILON) {
+		float l = sqrtf(l2);
+	
+//	*theta = 2.f * acos(q.w); // original algorithm from the internet
+		*theta = -2.f * acos(q.w); // algorithm that works; maybe left-handed vs right-handed?
+		r->x = q.x / l;
+		r->y = q.y / l;
+		r->z = q.z / l;
+	}
+	else {
+		*theta = 0;
+		r->x = q.x;
+		r->y = q.y;
+		r->z = q.z;	
+	}
+}
+
 
 // conjugate
 Quaternion qConj(Quaternion q) {
@@ -146,6 +169,12 @@ Quaternion qNlerp(Quaternion a, Quaternion b, float t) {
 	return qNorm(vLerp4(a, b, t));
 }
 
+
+
+float qAngleBetween(Quaternion a, Quaternion b) {
+	float g = vDot4(a, b);
+	return acos(2.f * g * g - 1.f);
+}
 
 
 Quaternion qFromBasis(Vector3 bx, Vector3 by, Vector3 bz) {
