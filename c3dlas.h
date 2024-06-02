@@ -342,6 +342,10 @@ typedef struct {
 	#include "short_macros.h"
 #endif
 
+#ifndef C3DLAS_NO_GENERIC_FNS
+	#include "generic_vectors.h"
+#endif
+
 
 
 extern const Matrix IDENT_MATRIX;
