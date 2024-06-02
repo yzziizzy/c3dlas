@@ -338,6 +338,12 @@ typedef struct {
 
 
 
+#ifndef C3DLAS_NO_SHORT_TYPENAMES
+	#include "short_macros.h"
+#endif
+
+
+
 extern const Matrix IDENT_MATRIX;
 extern const Matrix3 IDENT_MATRIX3;
 

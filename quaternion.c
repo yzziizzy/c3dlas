@@ -69,7 +69,18 @@ Quaternion qConjugation(Quaternion a, Quaternion r) {
 
 // create a quaternion representing a rotation of theta around vector r
 Quaternion qFromRTheta(Vector3 r, float theta) {
-	float t_2 = theta / 2.0f;
+	
+	float tm2p = fmod(fmod(theta, F_2PI) + F_2PI, F_2PI);
+	if(tm2p < 0.0001 || tm2p > 6.2831) {
+		return (Quaternion){
+			.real = 1,
+			.i = 0,
+			.j = 0,
+			.k = 0
+		};
+	}
+	
+	float t_2 = tm2p / 2.0f;
 	float st_2, ct_2;
 	sincosf(t_2, &st_2, &ct_2);
 	
@@ -85,19 +96,21 @@ Quaternion qFromRTheta(Vector3 r, float theta) {
 // the axis may not be numerically stable if the rotation represented by the quaternion is very small
 //    this is an inherent property of quaterions, not a deficiency in the function below
 void qToRTheta(Quaternion q, Vector3* r, float* theta) {
-	float l2 = q.x * q.x + q.y * q.y + q.z * q.z;
+//	float l2 = q.x * q.x + q.y * q.y + q.z * q.z;
 	
-	if(fabs(l2) > FLT_CMP_EPSILON) {
-		float l = sqrtf(l2);
+	float l = sqrtf(1.f - (q.w * q.w));
+
+	*theta = 2.f * acos(q.w); // original algorithm from the internet
 	
-//	*theta = 2.f * acos(q.w); // original algorithm from the internet
-		*theta = -2.f * acos(q.w); // algorithm that works; maybe left-handed vs right-handed?
+	if(fabs(l) > 0.0001) {
+		
+//		*theta = -2.f * acos(q.w); // algorithm that works; maybe left-handed vs right-handed?
 		r->x = q.x / l;
 		r->y = q.y / l;
 		r->z = q.z / l;
 	}
 	else {
-		*theta = 0;
+//		*theta = 0;
 		r->x = q.x;
 		r->y = q.y;
 		r->z = q.z;	
