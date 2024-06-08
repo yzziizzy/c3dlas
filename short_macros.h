@@ -70,6 +70,9 @@ typedef Vector4l vec4l;
 
 
 _VECTOR_GETTERS(_GETTER_FN)
+#ifndef CAT
+	#define CAT(a,b) a##b
+#endif
 
 #define CAT4(a,b,c,d) a##b##c##d
 

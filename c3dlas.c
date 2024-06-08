@@ -632,11 +632,14 @@ void vPerp3p(Vector3* n, Vector3* out) {
 Vector3 vPerp3(Vector3 n) {
 	float f, d;
 	
-	if(n.x < n.y) {
+	float absx = fabs(n.x);
+	float absy = fabs(n.y);
+	
+	if(absx < absy) {
 		if(n.x < n.z) goto MIN_X;
 		goto MIN_Z;
 	}
-	if(n.y < n.z) goto MIN_Y;
+	if(absy < fabs(n.z)) goto MIN_Y;
 	goto MIN_Z;
 	
 MIN_X: 
