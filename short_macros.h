@@ -89,17 +89,20 @@ _VECTOR_GETTERS(_GETTER_FN)
 #define V2(...) V__N(V2_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V2_1(a)  ((Vector2){.x=_V_GET(a, x, 0),.y=_V_GET(a, y, 0)})
 #define V2_2(_x,_y) ((Vector2){.x=(_x),.y=(_y)})
+#define V2_3(_x,_y,...) ((Vector2){.x=(_x),.y=(_y)})
 
 #define V3(...) V__N(V3_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V3_1(a)  ((Vector3){.x=_V_GET(a, x, 0),.y=_V_GET(a, y, 0),.z=_V_GET(a, z, 0)})
 #define V3_2(a, _z)  ((Vector3){.x=_V_GET(a, x, 0),.y=_V_GET(a, y, 0),.z=_z})
 #define V3_3(_x,_y,_z) ((Vector3){.x=(_x),.y=(_y),.z=(_z)})
+#define V3_4(_x,_y,_z,...) ((Vector3){.x=(_x),.y=(_y),.z=(_z)})
 
 #define V4(...) V__N(V4_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V4_1(a) ((Vector4){.x=_V_GET(a, x, 0),.y=_V_GET(a, y, 0),.z=_V_GET(a, z, 0),.w=_V_GET(a, w, 1)})
 #define V4_2(a, b) ((Vector4){.x=_V_GET(a, x, 0),.y=_V_GET(a, y, 0),.z=_V_GET(a, z, 0),b})
 #define V4_3(_x,_y,_z) ((Vector4){.x=(_x),.y=(_y),.z=(_z),.w=1})
 #define V4_4(_x,_y,_z,_w) ((Vector4){.x=(_x),.y=(_y),.z=(_z),.w=(_w)})
+#define V4_5(_x,_y,_z,_w,...) ((Vector4){.x=(_x),.y=(_y),.z=(_z),.w=(_w)})
 
 
 
@@ -111,17 +114,20 @@ _VECTOR_GETTERS(_GETTER_FN)
 #define V2i(...) V__N(V2i_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V2i_1(a)  ((Vector2i){.x=_Vi_GET(a, x, 0),.y=_Vi_GET(a, y, 0)})
 #define V2i_2(_x,_y) ((Vector2i){.x=(_x),.y=(_y)})
+#define V2i_3(_x,_y,...) ((Vector2i){.x=(_x),.y=(_y)})
 
 #define V3i(...) V__N(V3i_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V3i_1(a)  ((Vector3i){.x=_Vi_GET(a, x, 0),.y=_Vi_GET(a, y, 0),.z=_Vi_GET(a, z, 0)})
 #define V3i_2(a, _z)  ((Vector3i){.x=_Vi_GET(a, x, 0),.y=_Vi_GET(a, y, 0),.z=_z})
 #define V3i_3(_x,_y,_z) ((Vector3i){.x=(_x),.y=(_y),.z=(_z)})
+#define V3i_4(_x,_y,_z,...) ((Vector3i){.x=(_x),.y=(_y),.z=(_z)})
 
 #define V4i(...) V__N(V4i_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V4i_1(a) ((Vector4i){.x=_Vi_GET(a, x, 0),.y=_Vi_GET(a, y, 0),.z=_Vi_GET(a, z, 0),.w=_Vi_GET(a, w, 1)})
 #define V4i_2(a, b) ((Vector4i){.x=_Vi_GET(a, x, 0),.y=_Vi_GET(a, y, 0),.z=_Vi_GET(a, z, 0),b})
 #define V4i_3(_x,_y,_z) ((Vector4i){.x=(_x),.y=(_y),.z=(_z),.w=1})
 #define V4i_4(_x,_y,_z,_w) ((Vector4i){.x=(_x),.y=(_y),.z=(_z),.w=(_w)})
+#define V4i_5(_x,_y,_z,_w,...) ((Vector4i){.x=(_x),.y=(_y),.z=(_z),.w=(_w)})
 
 
 
@@ -133,17 +139,20 @@ _VECTOR_GETTERS(_GETTER_FN)
 #define V2l(...) V__N(V2l_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V2l_1(a)  ((Vector2l){.x=_Vl_GET(a, x, 0),.y=_Vl_GET(a, y, 0)})
 #define V2l_2(_x,_y) ((Vector2l){.x=(_x),.y=(_y)})
+#define V2l_3(_x,_y,...) ((Vector2l){.x=(_x),.y=(_y)})
 
 #define V3l(...) V__N(V3l_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V3l_1(a)  ((Vector3l){.x=_Vl_GET(a, x, 0),.y=_Vl_GET(a, y, 0),.z=_Vl_GET(a, z, 0)})
 #define V3l_2(a, _z)  ((Vector3l){.x=_Vl_GET(a, x, 0),.y=_Vl_GET(a, y, 0),.z=_z})c,
 #define V3l_3(_x,_y,_z) ((Vector3l){.x=(_x),.y=(_y),.z=(_z)})
+#define V3l_4(_x,_y,_z,...) ((Vector3l){.x=(_x),.y=(_y),.z=(_z)})
 
 #define V4l(...) V__N(V4l_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V4l_1(a) ((Vector4l){.x=_Vl_GET(a, x, 0),.y=_Vl_GET(a, y, 0),.z=_Vl_GET(a, z, 0),.w=_Vl_GET(a, w, 1)})
 #define V4l_2(a, b) ((Vector4l){.x=_Vl_GET(a, x, 0),.y=_Vl_GET(a, y, 0),.z=_Vl_GET(a, z, 0),b})
 #define V4l_3(_x,_y,_z) ((Vector4l){.x=(_x),.y=(_y),.z=(_z),.w=1})
 #define V4l_4(_x,_y,_z,_w) ((Vector4l){.x=(_x),.y=(_y),.z=(_z),.w=(_w)})
+#define V4l_5(_x,_y,_z,_w,...) ((Vector4l){.x=(_x),.y=(_y),.z=(_z),.w=(_w)})
 
 
 
@@ -155,17 +164,20 @@ _VECTOR_GETTERS(_GETTER_FN)
 #define V2d(...) V__N(V2d_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V2d_1(a)  ((Vector2d){.x=_Vd_GET(a, x, 0),.y=_Vd_GET(a, y, 0)})
 #define V2d_2(_x,_y) ((Vector2d){.x=(_x),.y=(_y)})
+#define V2d_3(_x,_y,...) ((Vector2d){.x=(_x),.y=(_y)})
 
 #define V3d(...) V__N(V3d_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V3d_1(a)  ((Vector3d){.x=_Vd_GET(a, x, 0),.y=_Vd_GET(a, y, 0),.z=_Vd_GET(a, z, 0)})
 #define V3d_2(a, _z)  ((Vector3d){.x=_Vd_GET(a, x, 0),.y=_Vd_GET(a, y, 0),.z=_z})c,
 #define V3d_3(_x,_y,_z) ((Vector3d){.x=(_x),.y=(_y),.z=(_z)})
+#define V3d_4(_x,_y,_z,...) ((Vector3d){.x=(_x),.y=(_y),.z=(_z)})
 
 #define V4d(...) V__N(V4d_, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 #define V4d_1(a) ((Vector4d){.x=_Vd_GET(a, x, 0),.y=_Vd_GET(a, y, 0),.z=_Vd_GET(a, z, 0),.w=_Vd_GET(a, w, 1)})
 #define V4d_2(a, b) ((Vector4d){.x=_Vd_GET(a, x, 0),.y=_Vd_GET(a, y, 0),.z=_Vd_GET(a, z, 0),b})
 #define V4d_3(_x,_y,_z) ((Vector4d){.x=(_x),.y=(_y),.z=(_z),.w=1})
 #define V4d_4(_x,_y,_z,_w) ((Vector4d){.x=(_x),.y=(_y),.z=(_z),.w=(_w)})
+#define V4d_5(_x,_y,_z,_w,...) ((Vector4d){.x=(_x),.y=(_y),.z=(_z),.w=(_w)})
 
 
 
