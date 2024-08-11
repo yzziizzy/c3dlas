@@ -853,6 +853,9 @@ float mDeterminate(Matrix* m);
 int mInverse(Matrix* in, Matrix* out); // returns 0 on success, 1 if there is no inverse; out remains unchanged
 float mTrace(Matrix* m); // sum of the diagonal elements
 
+// removes translation, scale and perspective
+void mRotationOnly(Matrix* in, Matrix* out);
+
 // simple component-wise mathematical operations
 void mAdd(Matrix* a, Matrix* b, Matrix* out); 
 void mScalarMul(Matrix* a, float f, Matrix* out);

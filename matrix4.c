@@ -125,6 +125,36 @@ void mRotZ(float theta, Matrix* out) {
 }
 
 
+// removes translation, scale and perspective
+void mRotationOnly(Matrix* in, Matrix* out) {
+	
+	// normalize scale
+	float invc =  1.f / sqrtf(in->m[0]*in->m[0] + in->m[5]*in->m[5] + in->m[10]*in->m[10] + in->m[15]*in->m[15]);
+	
+	out->m[0] = in->m[0] * invc;
+	out->m[5] = in->m[5] * invc;
+	out->m[10] = in->m[10] * invc;
+
+	// perspective
+	out->m[3] = 0;
+	out->m[7] = 0;
+	out->m[11] = 0;
+	
+	// translation
+	out->m[12] = 0;
+	out->m[13] = 0;
+	out->m[14] = 0;
+	out->m[15] = 1;
+	
+	// copy rotation, without scale
+	out->m[1] = in->m[1] * invc;
+	out->m[2] = in->m[2] * invc;
+	out->m[4] = in->m[4] * invc;
+	out->m[6] = in->m[6] * invc;
+	out->m[8] = in->m[8] * invc;
+	out->m[9] = in->m[9] * invc;
+}
+
 void mTransposeFast(Matrix* in, Matrix* out) {
 	int i;
 	
