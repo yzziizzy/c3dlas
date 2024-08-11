@@ -1153,19 +1153,7 @@ void vProjectOntoPlaneNormalized3p(Vector3* v, Plane* p, Vector3* out) {
 }
 
 
-int IntersectPlaneRay3p(Plane* p, Ray3* r, Vector3* out) {
-	float d = vDot3p(&p->n, &r->d);
-	
-	if(fabs(d) < FLT_CMP_EPSILON) return C3DLAS_DISJOINT;
-	
-	float t = 1.0 - (vDot3(p->n, r->o) + d) / vDot3(p->n, r->d); 
-		
-	*out = vAdd3(r->o, vScale3(r->d, t));
 
-	if(t < 0) return C3DLAS_DISJOINT;
-	
-	return C3DLAS_INTERSECT;
-}
 
 void planeFromPointNormal(Vector3* p, Vector3* norm, Plane* out) {
 	out->n = *norm;

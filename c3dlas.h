@@ -730,8 +730,9 @@ int planeLineFindIntersect3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out);
 // C3DLAS_INTERSECT
 int planeLineFindIntersectFast3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out);
 
-// C3DLAS_INTERSECT, or _DISJOINT
-int IntersectPlaneRay3p(Plane* p, Ray3* r, Vector3* out);
+// C3DLAS_INTERSECT, _PARALLEL or _DISJOINT
+// negative values of idist are "behind" ray->o
+int intersectPlaneRay3p(Plane* pl, Ray3* ray, Vector3* ipoint, float* idist);
 
 // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 // returns _INTERSECT or _DISJOINT
@@ -1042,7 +1043,7 @@ Quaternion qSub(Quaternion l, Quaternion r);
 Quaternion qScale(Quaternion q, float s);
 Quaternion qMul(Quaternion l, Quaternion r);
 Quaternion qDiv(Quaternion n, Quaternion d);
-Quaternion qRot(Quaternion a, Quaternion r);
+Quaternion qRot(Quaternion l, Quaternion r);
 Vector3 qRot3(Vector3 a, Quaternion r);
 Quaternion qConj(Quaternion q);
 Quaternion qInv(Quaternion q);

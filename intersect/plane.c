@@ -93,4 +93,16 @@ int planeLineFindIntersectFast3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* o
 
 
 
-
+// negative values of idist are "behind" ray->o
+int intersectPlaneRay3p(Plane* p, Ray3* r, Vector3* ipoint, float* idist) {
+	float d = vDot3p(&p->n, &r->d);
+	
+	if(fabs(d) < FLT_CMP_EPSILON) return C3DLAS_PARALLEL; // TODO: check for coplanarity?
+	
+	float t = 1.0 - (vDot3(p->n, r->o) + d) / vDot3(p->n, r->d); 
+		
+	*ipoint = vAdd3(r->o, vScale3(r->d, t));
+	*idist = t;
+	
+	return t >= 0 ? C3DLAS_INTERSECT : C3DLAS_DISJOINT;
+}

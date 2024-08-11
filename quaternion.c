@@ -16,12 +16,13 @@ Quaternion qScale(Quaternion q, float s) {
 
 Quaternion qMul(Quaternion l, Quaternion r) {
 	return (Quaternion){
-		.i    = l.real*r.i    + l.i*r.real + l.j*r.k    - l.k*r.j,
+		.i    = r.real*l.i    + r.i*l.real + l.j*r.k    - l.k*r.j,
 		.j    = l.real*r.j    - l.i*r.k    + l.j*r.real + l.k*r.i,
 		.k    = l.real*r.k    + l.i*r.j    - l.j*r.i    + l.k*r.real,
 		.real = l.real*r.real - l.i*r.i    - l.j*r.j    - l.k*r.k
 	};
 }
+
 
 Quaternion qDiv(Quaternion n, Quaternion d) {
 	float m = vDot4(d, d);
@@ -37,8 +38,8 @@ Quaternion qDiv(Quaternion n, Quaternion d) {
 
 // rotate one quaternion by another
 // aka "conjugation"
-Quaternion qRot(Quaternion a, Quaternion r) {
-	return qMul(qMul(r, a), qConj(r));
+Quaternion qRot(Quaternion l, Quaternion r) {
+	return qMul(qConj(l), qMul(r, l));
 }
 
 Vector3 qRot3(Vector3 a, Quaternion r) {
@@ -47,25 +48,12 @@ Vector3 qRot3(Vector3 a, Quaternion r) {
 	return (Vector3){a4.x, a4.y, a4.z};
 }
 
+
 /*
-vec3 quaternion_apply_to_vec3(const Quaternion* q, vec3 v) {
-	r64 ix = q->w * v.x + q->y * v.z - q->z * v.y;
-	r64 iy = q->w * v.y + q->z * v.x - q->x * v.z;
-	r64 iz = q->w * v.z + q->x * v.y - q->y * v.x;
-	r64 iw = - q->x * v.x - q->y * v.y - q->z * v.z;
-
-	return (vec3) {
-		(ix * q->w) + (iw * -q->x) + (iy * -q->z) - (iz * -q->y),
-		(iy * q->w) + (iw * -q->y) + (iz * -q->x) - (ix * -q->z),
-		(iz * q->w) + (iw * -q->z) + (ix * -q->y) - (iy * -q->x)
-	};
-}
-*/
-
-
 Quaternion qConjugation(Quaternion a, Quaternion r) {
 	return qMul(qMul(r, a), qInv(r));
 }
+*/
 
 // create a quaternion representing a rotation of theta around vector r
 Quaternion qFromRTheta(Vector3 r, float theta) {
@@ -160,12 +148,21 @@ Quaternion qNorm(Quaternion q) {
 	return vNorm4(q);
 }
 
+
 Quaternion qSlerp(Quaternion a, Quaternion b, float t) {
 	float d = vDot4(a, b);
 	if(d >= 1.0) return a;
 	
-	float th = acos(d);
-	float inv_s_th = 1.0 / sin(th);
+	if (d < 0.0f) { // reverse direction for the shorter way
+		d = -d;
+		b.x = -b.x;
+		b.y = -b.y;
+		b.z = -b.z;
+		b.w = -b.w;
+	}
+
+	float th = acosf(d);
+	float inv_s_th = 1.0 / sinf(th);
 	
 	float ca = sin((1.0 - t) * th) * inv_s_th;
 	float cb = sin(t * th) * inv_s_th;
@@ -177,6 +174,7 @@ Quaternion qSlerp(Quaternion a, Quaternion b, float t) {
 		.w = a.w * ca + b.w * cb,
 	};
 }
+
 
 Quaternion qNlerp(Quaternion a, Quaternion b, float t) {
 	return qNorm(vLerp4(a, b, t));
