@@ -2319,16 +2319,16 @@ int boxContainsPoint3p(const AABB3* b, const Vector3* p) {
 
 
 void boxCenter3p(const AABB3* b, Vector3* out) {
-	out->x = (b->max.x + b->min.x) / 2.0;
-	out->y = (b->max.y + b->min.y) / 2.0;
-	out->z = (b->max.z + b->min.z) / 2.0;
+	out->x = (b->max.x + b->min.x) * .5f;
+	out->y = (b->max.y + b->min.y) * .5f;
+	out->z = (b->max.z + b->min.z) * .5f;
 }
 
 Vector3 boxCenter3(const AABB3 b) {
 	return (Vector3) {
-		(b.max.x + b.min.x) / 2.0,
-		(b.max.y + b.min.y) / 2.0,
-		(b.max.z + b.min.z) / 2.0
+		(b.max.x + b.min.x) * .5f,
+		(b.max.y + b.min.y) * .5f,
+		(b.max.z + b.min.z) * .5f
 	};
 }
 

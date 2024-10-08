@@ -239,6 +239,7 @@ int mInverse(Matrix* restrict in, Matrix* restrict out) {
 	invdet = (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
 	if(invdet == 0.0) {
 		fprintf(stderr, "ERROR: Matrix has no inverse!!!\n");
+		//*(int*)0 = 1;
 		return 1;
 	}
 	invdet = 1.0 / invdet;
@@ -614,15 +615,12 @@ void mLookDir(Vector3 eye, Vector3 dir, Vector3 up, Matrix* out) {
 
 void mRecompose(Vector3* trans, Quaternion* rot, Vector3* scale, Matrix* out) {
 	
-	*out = IDENT_MATRIX;
-	
-	mTransv(trans, out);
-	
 	Matrix qm;
 	qUnitToMatrix(*rot, &qm);
 	
+	*out = IDENT_MATRIX;
+	mTransv(trans, out);
 	mMul(&qm, out);
-	
 	mScalev(scale, out);
 }
 

@@ -978,6 +978,7 @@ int boxDisjoint3p(const AABB3* a, const AABB3* b);
 int boxOverlaps3p(const AABB3* a, const AABB3* b);
 int boxContainsPoint3p(const AABB3* b, const Vector3* p);
 
+AABB3 boxUnion(AABB3 a, AABB3 b);
 Vector3 boxCenter3(const AABB3 b); // calculates the center of the box
 void boxCenter3p(const AABB3* b, Vector3* out); // calculates the center of the box
 Vector2 boxSize2(const AABB2 b); // calculates the size of the box

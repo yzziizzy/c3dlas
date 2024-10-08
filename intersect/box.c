@@ -1,4 +1,11 @@
 
+AABB3 boxUnion(AABB3 a, AABB3 b) {
+	return (AABB3) {
+		{fmin(a.min.x, b.min.x), fmin(a.min.y, b.min.y), fmin(a.min.z, b.min.z)},
+		{fmax(a.max.x, b.max.x), fmax(a.max.y, b.max.y), fmax(a.max.z, b.max.z)}
+	};
+}
+
 // this version has no branching, but only answers yes or no.
 // algorithm explanation here. hopefully my extrapolation into 3 dimensions is correct.
 // http://tavianator.com/fast-branchless-raybounding-box-intersections/
