@@ -387,6 +387,12 @@ void mPerspSetNFVK_ZUp(Matrix* m, float near, float far) { // Z-up
 	m->m[14] = -(far * near) / (far - near);
 }
 
+// set the near and far planes for an existing prespective matrix
+void mPerspSetNFVK_ZUp_RDepth(Matrix* m, float near, float far) { // Z-up
+	m->m[10] = near / (near - far);
+	m->m[14] = -(near * far) / (near - far);
+}
+
 
 void mPerspSetNF(Matrix* m, float near, float far) { // Y-up	
 	m->m[10] = (far + near) / (far - near);
@@ -396,6 +402,11 @@ void mPerspSetNF(Matrix* m, float near, float far) { // Y-up
 void mPerspSetNFVK(Matrix* m, float near, float far) { // Y-up	
 	m->m[10] = far / (near - far);
 	m->m[14] = (far * near) / (near - far);
+}
+
+void mPerspSetNFVK_RDepth(Matrix* m, float near, float far) { // Y-up	
+	m->m[10] = near / (far - near);
+	m->m[14] = (near * far) / (far - near);
 }
 
 

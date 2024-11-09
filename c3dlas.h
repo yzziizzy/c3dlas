@@ -789,6 +789,8 @@ void quadCenterp3p(Vector3* a, Vector3* b, Vector3* c, Vector3* d, Vector3* out)
 void frustumFromMatrix(Matrix* m, Frustum* out);
 void frustumFromMatrixVK(Matrix* m, Frustum* out);
 void frustumFromMatrixVK_ZUP(Matrix* m, Frustum* out);
+void frustumFromMatrixVK_RDepth(Matrix* m, Frustum* out);
+void frustumFromMatrixVK_ZUP_RDepth(Matrix* m, Frustum* out);
 void frustumInnerBoundingSphere(Frustum* f, Sphere* out);
 void frustumOuterBoundingSphere(Frustum* f, Sphere* out);
 
@@ -887,7 +889,9 @@ void mPerspExtractNF(Matrix* m, double* near, double* far);
 void mPerspSetNF(Matrix* m, float near, float far);
 void mPerspSetNFVK(Matrix* m, float near, float far);
 void mPerspSetNF_ZUp(Matrix* m, float near, float far);
+void mPerspSetNF_ZUp_RDepth(Matrix* m, float near, float far);
 void mPerspSetNFVK_ZUp(Matrix* m, float near, float far);
+void mPerspSetNFVK_ZUp_RDepth(Matrix* m, float near, float far);
 
 // orthographic projection. use this for a "2D" look.
 // same div/0 warnings.
@@ -977,6 +981,7 @@ void evalQBezier3p(Vector3* e1, Vector3* e2, Vector3* c1, float t, Vector3* out)
 int boxDisjoint3p(const AABB3* a, const AABB3* b);
 int boxOverlaps3p(const AABB3* a, const AABB3* b);
 int boxContainsPoint3p(const AABB3* b, const Vector3* p);
+bool boxContainsPoint3(AABB3 b, Vector3 p);
 
 AABB3 boxUnion(AABB3 a, AABB3 b);
 Vector3 boxCenter3(const AABB3 b); // calculates the center of the box

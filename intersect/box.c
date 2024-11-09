@@ -140,4 +140,9 @@ int intersectBoxLine3(AABB3 b, Line3 l, Vector3* ipoint, float* idist) {
 }
 
 
+bool boxContainsPoint3(AABB3 b, Vector3 p) {
+	return b.min.x <= p.x && b.max.x >= p.x
+		&& b.min.y <= p.y && b.max.y >= p.y
+		&& b.min.z <= p.z && b.max.z >= p.z;
+}
 
