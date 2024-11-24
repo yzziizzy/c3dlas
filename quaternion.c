@@ -188,17 +188,24 @@ float qAngleBetween(Quaternion a, Quaternion b) {
 }
 
 
+
 Quaternion qFromBasis(Vector3 bx, Vector3 by, Vector3 bz) {
 	
-	float w = sqrtf(1 + bx.x + by.y + bz.z) * .5f;
-	float invw4 = 1.f / (4.0 * w);
+	// this is the equation from qUnitToMatrix() solved in reverse
+	// EVERY. SINGLE. BIT. of code from the internet for this didn't work on even trivial cases.
 	
-	Quaternion q = (Quaternion){
-		.real = w,
-		.i = (by.z - bz.y) * invw4,
-		.j = (bz.x - bx.z) * invw4,
-		.k = (bx.y - by.x) * invw4,
+	float m0 = bx.x;
+	float m4 = by.y;
+	float m8 = bz.z;
+
+	Quaternion q = {
+		.i = sqrtf((1.f - m8 + m0 - m4) * .25f),
+		.j = sqrtf((1.f - m0 + m4 - m8) * .25f),
+		.k = sqrtf((1.f - m4 + m8 - m0) * .25f),
+		0
 	};
+	
+	q.real = sqrtf(1.f - q.i * q.i - q.j * q.j - q.k * q.k);
 	
 	return q;
 }

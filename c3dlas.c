@@ -102,6 +102,19 @@ float pcg_f(uint64_t* state, uint64_t stream) {
 }
 
 
+// returns a random number in [0, UINT32_MAX] inclusive
+uint32_t pcg_u32(uint64_t* state, uint64_t stream) {
+	
+	uint64_t last = *state;
+	*state = (last * 6364136223846793005ULL) + (stream | 1);
+	uint32_t xs = ((last >> 18) ^ last) >> 27;
+	uint32_t rot = last >> 59;
+	uint32_t fin = (xs >> rot) | (xs << ((-rot) & 31));
+	
+	return fin;
+}
+
+
 // BUG: totally untested
 // SIMD and C versions do not return the same values. 
 void pcg_f8(uint64_t* state, uint64_t stream, float* out) {
@@ -151,7 +164,9 @@ float frandPCG(float low, float high, PCG* pcg) {
 }
 
 
-
+uint32_t urandPCG(uint32_t low, uint32_t high, PCG* pcg) {
+	return pcg_u32(&pcg->state, pcg->stream) % (high - low) + low;
+}
 
 
 
@@ -229,6 +244,17 @@ Vector##suf vMul##suf(const Vector##suf a, const Vector##suf b) { \
 void vMul##suf##p(const Vector##suf const * a, const Vector##suf const * b, Vector##suf* out) { \
 	for(int i = 0; i < sz; i++) { \
 		((ty*)out)[i] = ((ty*)a)[i] * ((ty*)b)[i]; \
+	} \
+} \
+\
+Vector##suf vDiv##suf(const Vector##suf top, const Vector##suf bot) { \
+	Vector##suf out; \
+	vDiv##suf##p(&top, &bot, &out); \
+	return out; \
+} \
+void vDiv##suf##p(const Vector##suf const * top, const Vector##suf const * bot, Vector##suf* out) { \
+	for(int i = 0; i < sz; i++) { \
+		((ty*)out)[i] = ((ty*)top)[i] / ((ty*)bot)[i]; \
 	} \
 } \
 \
