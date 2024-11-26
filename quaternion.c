@@ -188,24 +188,50 @@ float qAngleBetween(Quaternion a, Quaternion b) {
 }
 
 
-
+// WARNING: these vectors cannot represent a reflection about any axis.
+// det(M4(bx,by,bz)) cannot equal -1, even if the vectors are all orthogonal.
+// Very few places on the internet talk about this, and never with sufficient
+//   emphasis, espectially not SO. The matrix formed by the vectors must be 
+//   "special orthogonal", not simply orthogonal to each other.
+//
+// If your quaternions are coming out invalid, especially after some cross 
+//   products or 90-degree rotations through swapping, try inverting one axis.
+//
 Quaternion qFromBasis(Vector3 bx, Vector3 by, Vector3 bz) {
-	
-	// this is the equation from qUnitToMatrix() solved in reverse
-	// EVERY. SINGLE. BIT. of code from the internet for this didn't work on even trivial cases.
-	
-	float m0 = bx.x;
-	float m4 = by.y;
-	float m8 = bz.z;
 
-	Quaternion q = {
-		.i = sqrtf((1.f - m8 + m0 - m4) * .25f),
-		.j = sqrtf((1.f - m0 + m4 - m8) * .25f),
-		.k = sqrtf((1.f - m4 + m8 - m0) * .25f),
-		0
-	};
+	Quaternion q;
 	
-	q.real = sqrtf(1.f - q.i * q.i - q.j * q.j - q.k * q.k);
+	float trace = bx.x + by.y + bz.z;
+	
+	if(trace > 0) { 
+		float s = sqrtf(trace + 1.f) * 2.f;
+		float invs = 1.f / s;
+		q.w = 0.25f * s;
+		q.x = (by.z - bz.y) * invs;
+		q.y = (bz.x - bx.z) * invs; 
+		q.z = (bx.y - by.x) * invs; 
+	} else if((bx.x > by.y) && (bx.x > bz.z)) { 
+		float s = sqrtf(1.0f + bx.x - by.y - bz.z) * 2.f;
+		float invs = 1.f / s;
+		q.w = (by.z - bz.y) * invs;
+		q.x = 0.25f * s;
+		q.y = (by.x + bx.y) * invs; 
+		q.z = (bz.x + bx.z) * invs; 
+	} else if(by.y > bz.z) { 
+		float s = sqrtf(1.0f + by.y - bx.x - bz.z) * 2.f;
+		float invs = 1.f / s;
+		q.w = (bz.x - bx.z) * invs;
+		q.x = (by.x + bx.y) * invs; 
+		q.y = 0.25f * s;
+		q.z = (bz.y + by.z) * invs; 
+	} else { 
+		float s = sqrtf(1.0f + bz.z - bx.x - by.y) * 2.f;
+		float invs = 1.f / s;
+		q.w = (bx.y - by.x) * invs;
+		q.x = (bz.x + bx.z) * invs;
+		q.y = (bz.y + by.z) * invs;
+		q.z = 0.25f * s;
+	}
 	
 	return q;
 }
