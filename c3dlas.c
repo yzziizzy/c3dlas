@@ -812,6 +812,35 @@ float vDistTPointLine3(Vector3 p, Line3 ls, float* T) {
 // ----
 
 
+int intersectLine2Line2(Line2 a, Line2 b) {
+	
+	float s1x = a.end.x - a.start.x;
+	float s1y = a.end.y - a.start.y;
+	float s2x = b.end.y - b.start.y;
+	float s2y = b.end.y - b.start.y;
+	
+	float det = s1x * s2y - s2x * s1y;
+	if(fabsf(det) < 1e-5f) {
+		return C3DLAS_PARALLEL;
+	}
+	
+	float invdet = 1.f / det;
+    
+	float x02 = a.start.x - b.start.x;
+	float y02 = a.start.y - b.start.y;
+	
+	float s = (s1x * y02 - s1y * x02) * invdet;
+	if(s >= 0.f && s <= 1.f) {
+		float t = (s2x * y02 - s2y * x02) * invdet;
+		if(t >= 0.f && t <= 1.f) {
+			return C3DLAS_INTERSECT;
+		}
+	}
+	
+	return C3DLAS_DISJOINT;
+}
+
+
 float projPointLine2(Vector2 p, Line2 ls) {
 	Vector2 pa = vSub2(p, ls.start);
 	Vector2 ba = vSub2(ls.end, ls.start);
