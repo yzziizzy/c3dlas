@@ -238,8 +238,10 @@ int mInverse(Matrix* restrict in, Matrix* restrict out) {
 
 	invdet = (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
 	if(invdet == 0.0) {
-		fprintf(stderr, "ERROR: Matrix has no inverse!!!\n");
-		*(int*)0 = 1;
+		#ifdef C3DLAS_SEGFAULT_ON_NO_MATRIX_INVERSE
+			C3DLAS_errprintf("ERROR: Matrix has no inverse!!!\n");
+			*(int*)0 = 1;
+		#endif
 		return 1;
 	}
 	invdet = 1.0 / invdet;
@@ -699,19 +701,15 @@ void mDecompose(Matrix* mat, Vector3* trans, Quaternion* rot, Vector3* scale) {
 
 
 
-
-void mPrint(Matrix* m, FILE* f) {
+void mPrint(Matrix* m, void* arg) {
 	int r;
 	
-	if(!f) f = stdout;
-	
 	for(r = 0; r < 4; r++) {
-		fprintf(f, "% .3e % .3e % .3e % .3e\n", m->m[r], m->m[r+4], m->m[r+8], m->m[r+12]);
+		C3DLAS_fprintf(arg, "% .3e % .3e % .3e % .3e\n", m->m[r], m->m[r+4], m->m[r+8], m->m[r+12]);
 	}
 	
-	fprintf(f, "\n");
+	C3DLAS_fprintf(arg, "\n");
 }
-
 
 
 
@@ -732,7 +730,7 @@ void msFree(MatrixStack* ms) {
 // push a new matrix on the stack. if m is null, push an identity matrix
 int msPush(MatrixStack* ms) {
 	if(ms->top == ms->size - 1) {
-		fprintf(stderr, "Matrix Stack overflowed.\n");
+		C3DLAS_errprintf("Matrix Stack overflowed.\n");
 		return 1;
 	}
 	
@@ -753,17 +751,15 @@ Matrix* msGetTop(MatrixStack* ms) {
 	return &ms->stack[ms->top];
 }
 
-void msPrintAll(MatrixStack* ms, FILE* f) {
+void msPrintAll(MatrixStack* ms, void* f) {
 	int i;
 	
-	if(!f) f = stdout;
-	
 	for(i = 0; i <= ms->top; i++) {
-		fprintf(f, "--%3d--------------------------\n", i);
+		C3DLAS_fprintf(f, "--%3d--------------------------\n", i);
 		mPrint(&ms->stack[i], f);
 	}
 	
-	fprintf(f, "-------------------------------\n");
+	C3DLAS_fprintf(f, "-------------------------------\n");
 }
 
 

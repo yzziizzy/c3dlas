@@ -2567,8 +2567,9 @@ void boxSize2ip(const AABB2i* b, Vector2* out) {
 void boxQuadrant2ip(const AABB2i* in, char ix, char iy, AABB2i* out) {
 	Vector2 sz, c;
 	
-	printf("fix me: %s:%d", __FILE__, __LINE__);
-	exit(666);
+	C3DLAS_errprintf("fix me: %s:%d: %s", __FILE__, __LINE__, __func__);
+	return;
+//	assert(0);
 	
 	boxCenter2ip(in, &c);
 	boxSize2ip(in, &sz);

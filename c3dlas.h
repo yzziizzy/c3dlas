@@ -62,6 +62,17 @@
 #define C3DLAS_DISJOINT  (4)
 #define C3DLAS_PARALLEL  (5)
 
+#ifndef C3DLAS_fprintf
+	#define C3DLAS_fprintf fprintf
+#endif
+
+#ifndef C3DLAS_errprintf
+	#define C3DLAS_errprintf(...) fprintf(stderr, __VA_ARGS__)
+#endif
+
+// set externally if desired
+// #define C3DLAS_SEGFAULT_ON_NO_MATRIX_INVERSE 0
+
 static const char* c3dlas_EnumString(int e) {
 	switch(e) {
 		case 0: return "C3DLAS_COPLANAR";
@@ -911,7 +922,7 @@ void mLookAt(Vector3 eye, Vector3 center, Vector3 up, Matrix* out);
 void mLookDir(Vector3 eye, Vector3 dir, Vector3 up, Matrix* out);
 
 
-void mPrint(Matrix* m, FILE* f);
+void mPrint(Matrix* m, void* arg);
 
 
 
@@ -925,7 +936,7 @@ int msPush(MatrixStack* ms);
 void msPop(MatrixStack* ms);
 Matrix* msGetTop(MatrixStack* ms);
 
-void msPrintAll(MatrixStack* ms, FILE* f);
+void msPrintAll(MatrixStack* ms, void* f);
 
 // these are all wrappers around the functions listed above
 void msIdent(MatrixStack* ms); // set to the identity matrix
