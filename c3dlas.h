@@ -367,6 +367,7 @@ uint32_t pcg_u32(uint64_t* state, uint64_t stream);
 
 float frandPCG(float low, float high, PCG* pcg);
 
+#ifndef C3DLAS_NO_LIBC_RAND
 static inline float frand(float low, float high) {
 	return low + ((high - low) * ((float)rand() / (float)RAND_MAX));
 }
@@ -386,6 +387,7 @@ static inline double drand(double low, double high) {
 static inline double drandNorm(void) {
 	return ((double)rand() / (double)RAND_MAX);
 }
+#endif
 
 static inline float fclamp(float val, float min, float max) {
 	return fminf(max, fmaxf(min, val));
