@@ -238,7 +238,7 @@ int mInverse(Matrix* restrict in, Matrix* restrict out) {
 
 	invdet = (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
 	if(invdet == 0.0) {
-		#ifdef C3DLAS_SEGFAULT_ON_NO_MATRIX_INVERSE
+		#if C3DLAS_SEGFAULT_ON_NO_MATRIX_INVERSE
 			C3DLAS_errprintf("ERROR: Matrix has no inverse!!!\n");
 			*(int*)0 = 1;
 		#endif
