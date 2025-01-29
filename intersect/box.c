@@ -146,3 +146,51 @@ bool boxContainsPoint3(AABB3 b, Vector3 p) {
 		&& b.min.z <= p.z && b.max.z >= p.z;
 }
 
+
+int boxClipRay(AABB3* b, Ray3 r, Line3* out) {
+	
+	// intercept distances
+	f32 tx_1 = (b->min.x - r.o.x) / r.d.x;
+	f32 ty_1 = (b->min.y - r.o.y) / r.d.y;
+	f32 tz_1 = (b->min.z - r.o.z) / r.d.z;
+	f32 tx_2 = (b->max.x - r.o.x) / r.d.x;
+	f32 ty_2 = (b->max.y - r.o.y) / r.d.y;
+	f32 tz_2 = (b->max.z - r.o.z) / r.d.z;
+	
+	f32 tx_min = MIN(tx_1, tx_2); 
+	f32 ty_min = MIN(ty_1, ty_2); 
+	f32 tz_min = MIN(tz_1, tz_2); 
+	f32 tx_max = MIN(tx_1, tx_2); 
+	f32 ty_max = MIN(ty_1, ty_2); 
+	f32 tz_max = MIN(tz_1, tz_2); 
+	
+	// ALL HORRIBLY WRONG
+	
+	f32 min_t = -FLT_MAX;
+	
+	// check if the ray intersects on various axes
+	if(tx_min < ty_max && tx_min < tz_max) {
+		min_t = tx_min;
+	}
+	
+	if(ty_min < tx_max && ty_min < tz_max) {
+//		if(
+	}
+//		&& (tz_min < tx_max && tz_min < ty_max)
+//	) {
+//		return C3DLAS_DISJOINT;
+//	}
+	
+//	f32 entry = MAX(tx_min, ty_min, tz_min);
+//	f32 exit = MIN(tx_max, ty_max, tz_max);
+	
+//	if(out) {
+//		out->start = vAdd(r.o, vScale(r.d, entry));
+//		out->end = vAdd(r.o, vScale(r.d, exit));
+//	}
+	
+	return C3DLAS_INTERSECT;
+}
+
+
+

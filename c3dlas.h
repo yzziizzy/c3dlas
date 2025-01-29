@@ -255,16 +255,22 @@ typedef struct {
 } Frustum;
 
 typedef struct {
-	Vector2i v[4];
+	Vector2i v[4]; // in a loop
 } Quad2i;
 
 typedef struct {
-	Vector2 v[4];
+	Vector2 v[4]; // in a loop
 } Quad2;
 
 typedef struct { // does not have to be coplanar
-	Vector3 v[4];
+	Vector3 v[4]; // in a loop
 } Quad3;
+
+
+typedef struct {
+	Vector2 c1, c2; // opposite corners
+} Rect2;
+
 
 
 /* Column-major, for OpenGL compatibility:
@@ -986,7 +992,7 @@ void boxSize2p(const AABB2* b, Vector2* out); // calculates the size of the box
 void boxSize3p(const AABB3* b, Vector3* out); // calculates the size of the box
 void boxExpandTo3p(AABB3* b, Vector3* p);
 void boxExpandTo3(AABB3* b, Vector3 p);
-
+int boxClipRay(AABB3* b, Ray3 r, Line3* out); // returns _INTERSECT or _DISJOINT
 
 void makeRay3p(Vector3* origin, Vector3* direction, Ray3* out);
 int boxRayIntersectFast3p(const AABB3* b, const Ray3* r);
@@ -1068,6 +1074,19 @@ void qNonUnitToMatrix(Quaternion q, Matrix* out);
 // faster
 void qUnitToMatrix3(Quaternion q, Matrix3* out);
 void qUnitToMatrix(Quaternion q, Matrix* out);
+
+
+//
+// Algorithms
+//
+
+// calls the output fn once for every cell that the line crosses, in no particular order.
+// return a non-zero value from the output fn to stop iteration
+// returns 0 if all cells were scanned, 1 if the user stopped iteration early.
+int rasterizeLine2d(Vector2 pa, Vector2 pb, float cellSize, int (*found)(void* userData, int64_t x, int64_t y), void* userData);
+// conservative overestimation; the ends are square, not conformed to the radius
+int rasterizeFatLine2d(Vector2 pa, Vector2 pb, float width, float cellSize, int (*found)(void* userData, int64_t x, int64_t y), void* userData);
+
 
 #endif // __c3dlas_h__
 
