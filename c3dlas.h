@@ -591,12 +591,12 @@ void vSwap4p(Vector4* a, Vector4* b);
 // Component-wise vector muliplication
 
 
-// Dot product (inner product)
 
 // Cross product: out = a x b
 Vector3 vCross3(Vector3 a, Vector3 b);
-Vector3 vCross3(Vector3 a, Vector3 b);
 void  vCross3p(Vector3* a, Vector3* b, Vector3* out); 
+float vCross2(Vector2 a, Vector2 b);
+float  vCross2p(Vector2* a, Vector2* b); 
 
 // Scalar triple product: a . (b x c)
 float vScalarTriple3(Vector3 a, Vector3 b, Vector3 c);
@@ -661,6 +661,9 @@ float projPointLine2(Vector2 p, Line2 ls);
 
 float distLineLine3(Line3* a, Line3* b);
 Line3 shortestLineFromLineToLine(Line3* a, Line3* b); // same algorithm as the above, but returns the points instead of their distance
+
+// Quad *must* be a rectangle, and the vertices must be ordered in a loop
+float distLine2Rect2(Line2 a, Quad2 q);
 
 float distTPointRay3(Vector3 p, Ray3 r, float* T);
 float dist2TPointRay3(Vector3 p, Ray3 r, float* T);
@@ -1051,6 +1054,7 @@ Quaternion qMul(Quaternion l, Quaternion r);
 Quaternion qDiv(Quaternion n, Quaternion d);
 Quaternion qRot(Quaternion l, Quaternion r);
 Vector3 qRot3(Vector3 a, Quaternion r);
+Vector2 qRot2(Vector2 a, Quaternion r);
 Quaternion qConj(Quaternion q);
 Quaternion qInv(Quaternion q);
 Quaternion qNorm(Quaternion q);

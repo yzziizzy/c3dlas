@@ -427,16 +427,9 @@ void vSwap4p(Vector4* a, Vector4* b) {
 
 
 
-// scalar muliplication
-
-
-
-// Dot product (inner product)
-
-
 
 // Cross product: out = a x b
-// Cross products only exist in 3 and 7 dimensions
+// Cross products *proper* only exist in 3 and 7 dimensions
 Vector3 vCross3(Vector3 a, Vector3 b) {
 	Vector3 out;
 	vCross3p(&a, &b, &out);
@@ -447,6 +440,20 @@ void vCross3p(Vector3* a, Vector3* b, Vector3* out) {
 	out->x = (a->y * b->z) - (a->z * b->y);
 	out->y = (a->z * b->x) - (a->x * b->z);
 	out->z = (a->x * b->y) - (a->y * b->x);
+}
+
+
+// ... however, if you apply it to two dimensions it yields
+//  the sine of the angle between the two vectors, and the sign
+//  of the value determines which side of a that b is on. If
+//  the value is zero, the vectors are parallel.
+
+float vCross2(Vector2 a, Vector2 b) {
+	return (a.x * b.y) - (a.y * b.x);
+}
+
+float vCross2p(Vector2* a, Vector2* b) {
+	return (a->x * b->y) - (a->y * b->x);
 }
 
 

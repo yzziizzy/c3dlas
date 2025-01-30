@@ -48,6 +48,12 @@ Vector3 qRot3(Vector3 a, Quaternion r) {
 	return (Vector3){a4.x, a4.y, a4.z};
 }
 
+Vector2 qRot2(Vector2 a, Quaternion r) {
+	Vector4 a4 = {a.x, a.y, 0.f, 0.f};
+	a4 = qMul(qMul(r, a4), qConj(r));
+	return (Vector2){a4.x, a4.y};
+}
+
 
 /*
 Quaternion qConjugation(Quaternion a, Quaternion r) {
