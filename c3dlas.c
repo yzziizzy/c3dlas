@@ -2701,6 +2701,7 @@ Vector3 evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 
 #include "intersect/plane.c"
 #include "intersect/box.c"
 #include "intersect/line.c"
+#include "intersect/triangle.c"
 
 
 

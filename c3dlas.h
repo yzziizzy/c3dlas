@@ -651,6 +651,8 @@ Vector3 vS2C3(Vector3 s);
 float vDistPointLine2(Vector2 p, Line2 ls);
 float vDistPointLine3(Vector3 p, Line3 ls);
 
+float distPoint2Triangle2(Vector2 a, Vector2 tri[3]);
+
 // Also returns the normalized distance along the line to the closest point
 float vDistTPointLine2(Vector2 p, Line2 ls, float* T);
 float vDistTPointLine3(Vector3 p, Line3 ls, float* T);
@@ -664,6 +666,8 @@ Line3 shortestLineFromLineToLine(Line3* a, Line3* b); // same algorithm as the a
 
 // Quad *must* be a rectangle, and the vertices must be ordered in a loop
 float distLine2Rect2(Line2 a, Quad2 q);
+
+float distLine2Triangle2(Line2 a, Vector2 tri[3]);
 
 float distTPointRay3(Vector3 p, Ray3 r, float* T);
 float dist2TPointRay3(Vector3 p, Ray3 r, float* T);
