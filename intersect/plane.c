@@ -99,7 +99,7 @@ int intersectPlaneRay3p(Plane* p, Ray3* r, Vector3* ipoint, float* idist) {
 	
 	if(fabs(d) < FLT_CMP_EPSILON) return C3DLAS_PARALLEL; // TODO: check for coplanarity?
 	
-	float t = 1.0 - (vDot3(p->n, r->o) + d) / vDot3(p->n, r->d); 
+	float t = -(vDot3(p->n, r->o) + p->d) / d; 
 		
 	*ipoint = vAdd3(r->o, vScale3(r->d, t));
 	*idist = t;
