@@ -162,13 +162,13 @@ int boxClipRay(AABB3* b, Ray3 r, Line3* out) {
 		b->max.x,
 		b->max.y,
 		b->max.z,
-		b->min.x,
-		b->min.y,
-		b->min.z,
+		-b->min.x,
+		-b->min.y,
+		-b->min.z,
 	}; 
 	
-	f32 mint = -FLT_MAX;
-	f32 maxt = -FLT_MAX;
+	f32 mint = FLT_MAX;
+	f32 maxt = 0;
 	
 	for(int i = 0; i < 6; i++) {
 	
@@ -179,8 +179,7 @@ int boxClipRay(AABB3* b, Ray3 r, Line3* out) {
 		float t = (vDot3(norms[i], r.o) + ds[i]) / -d; 
 		
 		vec3 pt = vAdd3(r.o, vScale3(r.d, t));
-		
-		switch(i) { // clamp to the 
+		switch(i) { // clamp to the other planes
 			case 0:
 			case 3:
 				if(pt.y > b->max.y || pt.y < b->min.y) continue;
@@ -206,7 +205,8 @@ int boxClipRay(AABB3* b, Ray3 r, Line3* out) {
 	
 	mint = fmaxf(0, mint); // clamp to ray origin
 	
-	if(maxt != FLT_MAX) {
+	
+	if(maxt != 0) {
 		out->a = vAdd3(r.o, vScale3(r.d, mint));
 		out->b = vAdd3(r.o, vScale3(r.d, maxt));
 	
