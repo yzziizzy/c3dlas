@@ -5,7 +5,7 @@ float vDistPointLine2(Vector2 p, Line2 ls) {
 	Vector2 pa = vSub2(p, ls.start); // vector from the starting point to p
 	Vector2 ba = vSub2(ls.end, ls.start); // vector from the starting point to the ending point
 	
-	float t = vDot2(pa, ba) / vDot2(ba, ba); // project the pa onto ba, then divide that distance by the length of ba to normalize it
+	float t = vDot2(pa, ba) / sqrtf(vDot2(ba, ba)); // project the pa onto ba, then divide that distance by the length of ba to normalize it
 	fclamp(t, 0.0, 1.0); // clamp t to between the endpoints of the line segment
 	
 	// Consider the starting point to be at the origin, for ease of visualization.

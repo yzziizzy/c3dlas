@@ -658,6 +658,7 @@ float vDistTPointLine2(Vector2 p, Line2 ls, float* T);
 float vDistTPointLine3(Vector3 p, Line3 ls, float* T);
 
 int intersectLine2Line2(Line2 a, Line2 b);
+int intersectRect2Rect2(Quad2 a, Quad2 b);
 
 float projPointLine2(Vector2 p, Line2 ls);
 
@@ -666,6 +667,7 @@ Line3 shortestLineFromLineToLine(Line3* a, Line3* b); // same algorithm as the a
 
 // Quad *must* be a rectangle, and the vertices must be ordered in a loop
 float distLine2Rect2(Line2 a, Quad2 q);
+float distPoint2Rect2(Vector2 a, Quad2 q);
 
 float distLine2Triangle2(Line2 a, Vector2 tri[3]);
 

@@ -218,4 +218,96 @@ int boxClipRay(AABB3* b, Ray3 r, Line3* out) {
 }
 
 
+float distPoint2Rect2(Vector2 a, Quad2 q) {
+	
+	// check the lines around the outside
+	float d[4];
+	
+	for(int i = 0; i < 4; i++) {
+		d[i] = vDistPointLine2(a, (Line2){q.v[i], q.v[(i + 1) % 4]});
+		if(d[i] == 0) return 0;
+	}
+	
+	// check if the line is entirely inside the rectangle,
+	//   if one point (and therefore both points) is inside the quad 
+	vec2 ab = vSub(q.v[1], q.v[0]);
+	vec2 am = vSub(a, q.v[0]);
+	
+	vec2 bc = vSub(q.v[2], q.v[1]);
+	vec2 bm = vSub(a, q.v[1]);
+	float dabam = vDot(ab, am);
+	if(dabam <= 0) {
+		float dabab = vDot(ab, ab);
+		if(dabam <= dabab) {
+			float dbcbm = vDot(bc, bm);
+			if(0 <= dbcbm) {
+				float dbcbc = vDot(bc, bc);
+				if(dbcbm <= dbcbc) return 0;
+			}
+		}
+	}
+	
+	// the line is outside; one of the corners is closest, find which one
+	return MIN(MIN(d[0], d[1]), MIN(d[2], d[3]));
+}
+
+
+int intersectPoint2Rect2(vec2 a, Quad2 q) {
+	
+	vec2 ab = vSub(q.v[1], q.v[0]);
+	vec2 am = vSub(a, q.v[0]);
+	
+	vec2 bc = vSub(q.v[2], q.v[1]);
+	vec2 bm = vSub(a, q.v[1]);
+	float dabam = vDot(ab, am);
+	if(dabam <= 0) {
+		float dabab = vDot(ab, ab);
+		if(dabam <= dabab) {
+			float dbcbm = vDot(bc, bm);
+			if(0 <= dbcbm) {
+				float dbcbc = vDot(bc, bc);
+				if(dbcbm <= dbcbc) return C3DLAS_INTERSECT;
+			}
+		}
+	}
+
+	return C3DLAS_DISJOINT;
+}
+
+
+int intersectRect2Rect2(Quad2 a, Quad2 b) {
+	
+	// early rejection test based on distance between centers
+	vec2 ca = {0, 0};
+	vec2 cb = {0, 0};
+	
+	for(int i = 0; i < 4; i++) {
+		ca = vAdd(ca, a.v[i]);
+		cb = vAdd(cb, b.v[i]);
+	}
+	ca = vScale(ca, .25f);
+	cb = vScale(cb, .25f);
+	
+	float radSq = vDistSq(ca, a.v[0]) + vDistSq(cb, b.v[0]);
+	if(radSq > vDistSq(ca, cb)) return C3DLAS_DISJOINT;
+	
+	
+	// Check if any of the points are inside the other rectangle
+	// This handles situations where one rect is fully contained in the other
+	for(int i = 0; i < 4; i++) {
+		if(C3DLAS_INTERSECT == intersectPoint2Rect2(a.v[i], b)) return C3DLAS_INTERSECT;
+		if(C3DLAS_INTERSECT == intersectPoint2Rect2(b.v[i], a)) return C3DLAS_INTERSECT;
+	}
+	
+	
+	// check all the lines against all the other lines
+	for(int i = 0; i < 4; i++)
+	for(int j = 0; j < 4; j++) {
+		if(intersectLine2Line2((Line2){a.v[i], a.v[(i + 1) % 4]}, (Line2){b.v[j], b.v[(j + 1) % 4]}) == C3DLAS_INTERSECT) return C3DLAS_INTERSECT;
+	}
+	
+	return C3DLAS_DISJOINT;
+}
+
+
 

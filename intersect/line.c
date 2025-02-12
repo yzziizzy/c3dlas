@@ -103,6 +103,8 @@ float distLine2Rect2(Line2 a, Quad2 q) {
 }
 
 
+
+
 // Quad *must* be a rectangle
 int intersectLine2Rect2(Line2 a, Quad2 q) {
 	
