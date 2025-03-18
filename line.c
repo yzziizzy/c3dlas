@@ -123,6 +123,43 @@ float distLineLine3Slow(Line3* a, Line3* b) {
 
 
 //
+Line2 shortestLineFromLineToLine2(Line2* a, Line2* b) {
+	
+	Vector2 ea = vSub(a->end, a->start);
+	Vector2 eb = vSub(b->end, b->start);
+	Vector2 q = vSub(b->start, a->start);
+	
+	float vaa = vLenSq2(ea);
+	float vbb = vLenSq2(eb);
+	
+	float vba = vDot(ea, eb);
+	float vba_a = vDot(q, ea);
+	
+	float den = vba * vba - vbb * vaa;
+	
+	float ta, tb;
+	if(fabs(den) < 1e-6) {
+		ta = 0;
+		tb = -vba_a / vba; // vba can never be zero here
+	}
+	else {
+		float vba_b = vDot2(q, eb);
+		
+		ta = (vba_b * vba - vbb * vba_a) / den;
+		tb = (-vba_a * vba + vaa * vba_b) / den;
+	}
+	
+	ta = fclamp(ta, 0, 1);
+	tb = fclamp(tb, 0, 1);
+	
+	Vector2 pa = vAdd(a->start, vScale(ea, ta));
+	Vector2 pb = vAdd(b->start, vScale(eb, tb));
+
+	return (Line2){pa, pb};
+}
+
+
+////
 Line3 shortestLineFromLineToLine(Line3* a, Line3* b) {
 	
 	Vector3 ea = vSub3(a->end, a->start);

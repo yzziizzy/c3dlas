@@ -663,6 +663,7 @@ int intersectRect2Rect2(Quad2 a, Quad2 b);
 float projPointLine2(Vector2 p, Line2 ls);
 
 float distLineLine3(Line3* a, Line3* b);
+Line2 shortestLineFromLineToLine2(Line2* a, Line2* b); // same algorithm as the above, but returns the points instead of their distance
 Line3 shortestLineFromLineToLine(Line3* a, Line3* b); // same algorithm as the above, but returns the points instead of their distance
 
 // Quad *must* be a rectangle, and the vertices must be ordered in a loop
