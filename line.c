@@ -122,44 +122,67 @@ float distLineLine3Slow(Line3* a, Line3* b) {
 */
 
 
+
 //
 Line2 shortestLineFromLineToLine2(Line2* a, Line2* b) {
 	
-	Vector2 ea = vSub(a->end, a->start);
-	Vector2 eb = vSub(b->end, b->start);
-	Vector2 q = vSub(b->start, a->start);
+	float s, t;
+	vec2 da = vSub(a->end, a->start);
+	vec2 db = vSub(b->end, b->start);
 	
-	float vaa = vLenSq2(ea);
-	float vbb = vLenSq2(eb);
+	// first check if they intersect
+	float det = vCross2(da, db);
+	if(fabsf(det) > 1e-5f) {
 	
-	float vba = vDot(ea, eb);
-	float vba_a = vDot(q, ea);
+		float invdet = 1.f / det;
+	    
+		float x02 = a->start.x - b->start.x;
+		float y02 = a->start.y - b->start.y;
+		
+		s = (da.x * y02 - da.y * x02) * invdet;
+		if(s >= 0.f && s <= 1.f) {
+			t = (db.x * y02 - db.y * x02) * invdet;
+			if(t >= 0.f && t <= 1.f) {
+				vec2 pa = vAdd(a->start, vScale(da, t));
+				
+				return (Line2){pa, pa};
+			}
+		}
+	}	
 	
-	float den = vba * vba - vbb * vaa;
 	
-	float ta, tb;
-	if(fabs(den) < 1e-6) {
-		ta = 0;
-		tb = -vba_a / vba; // vba can never be zero here
+	// otherwise get the closest point
+	vec2 ab = vSub(b->start, a->start);
+	
+	float d_abda = vDot(ab, da);
+	float d_abdb = vDot(ab, db);
+	float d_dadb = vDot(da, db);
+	float l2_da = vLenSq(da);
+	float l2_db = vLenSq(db);
+	float invl2_da = 1.f / l2_da;
+	
+	float den = l2_da * l2_db - d_dadb * d_dadb;
+	
+	if(den < 1e-6f * l2_db * l2_da) {
+		s = fclamp(d_abda * invl2_da, 0, 1);
+		t = 0;
 	}
 	else {
-		float vba_b = vDot2(q, eb);
-		
-		ta = (vba_b * vba - vbb * vba_a) / den;
-		tb = (-vba_a * vba + vaa * vba_b) / den;
+		float invden = 1.f / den;
+		s = fclamp((d_abda * l2_db - d_abdb * d_dadb) * invden, 0, 1);
+		t = fclamp((d_abda * d_dadb - d_abdb * l2_da) * invden, 0, 1);
 	}
 	
-	ta = fclamp(ta, 0, 1);
-	tb = fclamp(tb, 0, 1);
-	
-	Vector2 pa = vAdd(a->start, vScale(ea, ta));
-	Vector2 pb = vAdd(b->start, vScale(eb, tb));
-
-	return (Line2){pa, pb};
+	return (Line2){
+		vAdd(a->start, vScale(da, fclamp((t * d_dadb + d_abda) * invl2_da, 0, 1))),
+		vAdd(b->start, vScale(db, fclamp((s * d_dadb - d_abdb) / l2_db, 0, 1)))
+	};
 }
 
 
+
 ////
+// BUG, maybe: The 2d port of this gave wrong results 
 Line3 shortestLineFromLineToLine(Line3* a, Line3* b) {
 	
 	Vector3 ea = vSub3(a->end, a->start);
