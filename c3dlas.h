@@ -666,6 +666,8 @@ float distLineLine3(Line3* a, Line3* b);
 Line2 shortestLineFromLineToLine2(Line2* a, Line2* b); // same algorithm as the above, but returns the points instead of their distance
 Line3 shortestLineFromLineToLine(Line3* a, Line3* b); // same algorithm as the above, but returns the points instead of their distance
 
+float distLine2Line2(Line2 a, Line2 b);
+
 // Quad *must* be a rectangle, and the vertices must be ordered in a loop
 float distLine2Rect2(Line2 a, Quad2 q);
 float distPoint2Rect2(Vector2 a, Quad2 q);
