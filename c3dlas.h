@@ -766,7 +766,7 @@ Vector3 triangleClosestPoint_Reference(
 	float* out_u, float* out_v // barycentric out coords of closest point 
 );
 
-
+Vector3 baryCoords2(Vector2 p, Vector2 a, Vector2 b, Vector2 c);
 
 // C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
 int triPlaneTestIntersect3p(Vector3* pTri, Plane* pl);
@@ -792,6 +792,20 @@ int linePlaneClip3p(
 	int* aboveCnt,
 	int* belowCnt
 );
+
+
+// _INTERSECT, or _DISJOINT
+int intersectQuadPoint2(vec2 p, vec2 q[4]);
+
+struct intersectQuadPoint2_precalc {
+	vec2 ab, ac, db, dc;
+	vec2 a, d;
+	float invden_a, invden_d;
+};
+void intersectQuadPoint2_precalc(vec2 q[4], struct intersectQuadPoint2_precalc* pc);
+int intersectQuadPoint2_withprecalc(vec2 p, struct intersectQuadPoint2_precalc* pc);
+
+
 
 void frustumCenter(Frustum* f, Vector3* out);
 void frustumBoundingSphere(Frustum* f, Sphere* out);

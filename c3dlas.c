@@ -1958,25 +1958,6 @@ void vRoundToward2p(const Vector2* in, const Vector2* center, Vector2i* out) {
 }
 
 
-// returns the *signed* area of a triangle. useful for determining winding
-// positive values mean a clockwise triangle
-float triArea2p(Vector2* a, Vector2* b, Vector2* c) {
-	return 0.5 * (
-		((b->x - a->x) * (b->y + a->y)) +
-		((c->x - b->x) * (c->y + b->y)) +
-		((a->x - c->x) * (a->y + c->y)));
-}
-
-
-// determines if a point is inside a triangle
-int triPointInside2p(Vector2* p, Vector2* a, Vector2* b, Vector2* c) {
-	int d = signbit((p->x - b->x) * (a->y - b->y) - (a->x - b->x) * (p->y - b->y));
-	int e = signbit((p->x - c->x) * (b->y - c->y) - (b->x - c->x) * (p->y - c->y));
-	if(d != e) return 0;
-	int f = signbit((p->x - a->x) * (c->y - a->y) - (c->x - a->x) * (p->y - a->y));
-	return e == f;
-}
-
 
 
 
@@ -2697,6 +2678,7 @@ Vector3 evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 
 #include "matrix3.c"
 #include "matrix4.c"
 #include "quaternion.c"
+#include "quad.c"
 #include "line.c"
 #include "intersect/plane.c"
 #include "intersect/box.c"
