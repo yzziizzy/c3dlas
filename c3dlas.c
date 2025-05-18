@@ -79,6 +79,14 @@ uint32_t reverseBits(uint32_t n, int len) {
 
 // random numbers
 
+
+// prepare the pcg for use
+void pcg_init(PCG* pcg) {
+	if(pcg->state == 0) pcg_u32(&pcg->state, pcg->stream);
+	pcg_u32(&pcg->state, pcg->stream);
+}
+
+
 // returns a random number in (-1, 1) uninclusive
 // Thanks to Kaslai (https://github.com/Aslai) for fixing a nasty bug in the previous version
 float pcg_f(uint64_t* state, uint64_t stream) {
