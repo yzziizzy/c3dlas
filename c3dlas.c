@@ -79,11 +79,10 @@ uint32_t reverseBits(uint32_t n, int len) {
 
 // random numbers
 
-
 // prepare the pcg for use
-void pcg_init(PCG* pcg) {
-	if(pcg->state == 0) pcg_u32(&pcg->state, pcg->stream);
-	pcg_u32(&pcg->state, pcg->stream);
+void pcg_init(PCG* pcg, uint64_t seed) {
+	pcg->stream = seed;
+	pcg->state = (seed * 6364136223846793005ULL) + (seed | 1);
 }
 
 

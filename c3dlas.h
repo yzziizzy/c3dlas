@@ -365,7 +365,7 @@ uint32_t bitReverse32(uint32_t x);
 uint32_t reverseBits(uint32_t n, int len);
 
 // prepare the pcg for use
-void pcg_init(PCG* pcg);
+void pcg_init(PCG* pcg, uint64_t seed);
 
 // returns a random number in (-1, 1) uninclusive
 float pcg_f(uint64_t* state, uint64_t stream);

@@ -20,7 +20,11 @@ ERR_CFLAGS="\
 	-Wno-unused-result \
 	-Wno-unused-function \
 	-Werror-implicit-function-declaration \
-	-Wno-discarded-qualifiers
+	-Wno-discarded-qualifiers \
+	\
+	-Wno-unused-parameter \
+	-Wno-unused-variable \
+	-Wno-missing-braces \
 "
 
 gcc -o test_c3dlas test.c c3dlas.c -O0 -ggdb -lm  $ERR_CFLAGS $CPU_CFLAGS $MATH_CFLAGS

@@ -151,8 +151,41 @@ void checkTriPlaneClip() {
 
 
 
+void checkPCG(uint64_t seed) {
+	PCG pcg;
+	
+	#define NS 4
+	printf("-----\n");
+	uint32_t seq;
+	pcg_init(&pcg, seed);
+	printf("initial [%lu, %lu]\n", pcg.state, pcg.stream);
+	for(int i=0; i<NS; i++) {
+		seq = pcg_u32(&pcg.state, pcg.stream);
+		printf("seq %d: %u [%lu, %lu]\n", i, seq, pcg.state, pcg.stream);
+	}
+	
+	printf("-----\n");
+	float seqf;
+	pcg_init(&pcg, seed);
+	printf("initial [%lu, %lu]\n", pcg.state, pcg.stream);
+	for(int i=0; i<NS; i++) {
+		seqf = pcg_f(&pcg.state, pcg.stream);
+		printf("seq %d: %f [%lu, %lu]\n", i, seqf, pcg.state, pcg.stream);
+	}
+	
+	printf("-----\n");
+	pcg_init(&pcg, seed);
+	printf("initial [%lu, %lu]\n", pcg.state, pcg.stream);
+	for(int i=0; i<NS; i++) {
+		seqf = frandPCG(0, 1, &pcg);
+		printf("seq %d: %f [%lu, %lu]\n", i, seqf, pcg.state, pcg.stream);
+	}
+}
 
-int main(int argc, char* argv) {
+
+
+
+int main(int argc, char* argv[]) {
 	
 	Matrix m = IDENT_MATRIX;
 	
@@ -164,6 +197,8 @@ int main(int argc, char* argv) {
 	
 	printf("%f,%f,%f,%f,%f,%f\n", a, b,c,d,e,f);
 	
+	checkPCG(0xC3D1457E575EED);
+	checkPCG(47);
 	
 	return 0;
 }
