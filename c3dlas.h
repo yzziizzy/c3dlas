@@ -1095,6 +1095,8 @@ float qMod(Quaternion q);
 float qMag(Quaternion q);
 float qLen(Quaternion q);
 
+// returns a quaternion that will rotate a to b
+Quaternion qRotBetween(Vector3 a, Vector3 b);
 
 Quaternion qFromBasis(Vector3 bx, Vector3 by, Vector3 bz);
 

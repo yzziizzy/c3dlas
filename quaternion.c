@@ -155,6 +155,17 @@ Quaternion qNorm(Quaternion q) {
 }
 
 
+Quaternion qRotBetween(Vector3 a, Vector3 b) {
+	Vector3 c = vCross3(a, b);
+	Quaternion q = {
+		c.x, c.y, c.z,
+		sqrtf(vLenSq(a) * vLenSq(b)) + vDot(a, b) 
+	};
+	
+	return qNorm(q); 
+}	
+
+
 Quaternion qSlerp(Quaternion a, Quaternion b, float t) {
 	float d = vDot4(a, b);
 	if(d >= 1.0) return a;
