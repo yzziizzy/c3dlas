@@ -660,6 +660,10 @@ float distPoint2Triangle2(Vector2 a, Vector2 tri[3]);
 float vDistTPointLine2(Vector2 p, Line2 ls, float* T);
 float vDistTPointLine3(Vector3 p, Line3 ls, float* T);
 
+// returns the number of intersecting points, [0-2], in both directions of the ray 
+int intersectRay2Circle(Ray2 a, Vector2 center, float radius, Vector2 out[2]);
+int intersectVec2Circle(Vector2 lorigin, Vector2 ldir, Vector2 center, float radius, Vector2 out[2]);
+
 int intersectLine2Line2(Line2 a, Line2 b);
 int intersectRect2Rect2(Quad2 a, Quad2 b);
 

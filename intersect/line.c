@@ -1,6 +1,7 @@
 
 
 
+
 int intersectLine2Line2(Line2 a, Line2 b) {
 	
 	vec2 s1 = vSub(a.end, a.start);
@@ -103,6 +104,45 @@ float distLine2Rect2(Line2 a, Quad2 q) {
 }
 
 
+// returns the number of intersecting points, [0-2]
+int intersectRay2Circle(Ray2 a, Vector2 center, float radius, Vector2 out[2]) {
+	return intersectVec2Circle(a.o, a.d, center, radius, out);
+}
+
+// returns the number of intersecting points, [0-2]
+int intersectVec2Circle(Vector2 lorigin, Vector2 ldir, Vector2 center, float radius, Vector2 out[2]) {
+	
+	// transform the circle to the origin
+	lorigin = vSub(lorigin, center);
+		
+	// convert the line to general form
+	f32 A = ldir.y / ldir.x;
+	f32 C = lorigin.y - A * lorigin.x;
+	
+	float r2 = radius * radius;
+	float C2 = C * C;
+	float A2B2 = A * A + 1.f;
+	
+	if(C2 > r2 * A2B2 + 1e-5f) {
+		return 0;
+	}
+	else {
+		float invab = 1.f / A2B2;
+		Vector2 closest = {-A * C * invab + center.x, C * invab + center.y};
+		
+		if(fabsf(C2 - r2 * A2B2) < 1e-5f) {
+			out[0] = closest;
+			return 1;	
+		}
+		else {
+			float m = sqrtf((r2 - C2 * invab) * invab);
+			out[0] = (Vector2){closest.x - m, closest.y - A * m};
+			out[1] = (Vector2){closest.x + m, closest.y + A * m};
+			
+			return 2;
+		}
+	}
+} 
 
 
 // Quad *must* be a rectangle
