@@ -28,6 +28,61 @@ int intersectLine2Line2(Line2 a, Line2 b) {
 	return C3DLAS_DISJOINT;
 }
 
+int findIntersectLine2Line2(Line2 a, Line2 b, vec2* out) {
+	
+	vec2 s1 = vSub(a.end, a.start);
+	vec2 s2 = vSub(b.end, b.start);
+	
+	float det = vCross2(s1, s2);
+	if(fabsf(det) < 1e-5f) {
+		return C3DLAS_PARALLEL;
+	}
+	
+	float invdet = 1.f / det;
+    
+	float x02 = a.start.x - b.start.x;
+	float y02 = a.start.y - b.start.y;
+	
+	float s = (s1.x * y02 - s1.y * x02) * invdet;
+	if(s >= 0.f && s <= 1.f) {
+		float t = (s2.x * y02 - s2.y * x02) * invdet;
+		if(t >= 0.f && t <= 1.f) {
+			*out = vLerp(a.start, a.end, s); 
+			return C3DLAS_INTERSECT;
+		}
+	}
+	
+	return C3DLAS_DISJOINT;
+}
+
+
+int findIntersectLine2Ray2(Line2 a, Ray2 b, vec2* out) {
+	
+	vec2 s1 = vSub(a.end, a.start);
+	vec2 s2 = b.d;// vSub(b.end, b.start);
+	
+	float det = vCross2(s1, s2);
+	if(fabsf(det) < 1e-5f) {
+		return C3DLAS_PARALLEL;
+	}
+	
+	float invdet = 1.f / det;
+    
+	float x02 = a.start.x - b.o.x;
+	float y02 = a.start.y - b.o.y;
+	
+	float s = (s1.x * y02 - s1.y * x02) * invdet;
+	if(s >= 0.f && s <= 1.f) {
+//		float t = (s2.x * y02 - s2.y * x02) * invdet;
+//		if(t >= 0.f && t <= 1.f) {
+			*out = vLerp(a.start, a.end, s); 
+			return C3DLAS_INTERSECT;
+//		}
+	}
+	
+	return C3DLAS_DISJOINT;
+}
+
 
 float distLine2Line2(Line2 a, Line2 b) {
 	

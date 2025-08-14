@@ -666,6 +666,8 @@ int intersectVec2Circle(Vector2 lorigin, Vector2 ldir, Vector2 center, float rad
 
 int intersectLine2Line2(Line2 a, Line2 b);
 int intersectRect2Rect2(Quad2 a, Quad2 b);
+int findIntersectLine2Line2(Line2 a, Line2 b, vec2* out);
+int findIntersectLine2Ray2(Line2 a, Ray2 b, vec2* out);
 
 float projPointLine2(Vector2 p, Line2 ls);
 
