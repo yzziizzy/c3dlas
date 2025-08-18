@@ -755,6 +755,8 @@ int planeLineFindIntersectFast3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* o
 // negative values of idist are "behind" ray->o
 int intersectPlaneRay3p(Plane* pl, Ray3* ray, Vector3* ipoint, float* idist);
 
+int findCircleTangents(Vector2 c, float r, Vector2 p, Vector2 out[2]);
+
 // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 // returns _INTERSECT or _DISJOINT
 int rayTriangleIntersect(
