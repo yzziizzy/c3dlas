@@ -489,6 +489,9 @@ Vector3 vPerp3(Vector3 n);
 	Vector##sufft vScale##suf(const Vector##suf v, ft scalar); \
 	void vScale##suf##p(const Vector##suf* v, ft scalar, Vector##sufft* out); \
 	\
+	Vector##sufft vFMA##suf(const Vector##suf a, const Vector##suf m, ft scalar); \
+	void vFMA##suf##p(const Vector##suf* a, const Vector##suf* m, ft scalar, Vector##sufft* out); \
+	\
 	Vector##suf vMin##suf(const Vector##suf a, const Vector##suf b); \
 	void vMin##suf##p(const Vector##suf* a, const Vector##suf* b, Vector##suf* out); \
 	\
@@ -597,9 +600,13 @@ void vSwap4p(Vector4* a, Vector4* b);
 
 // Cross product: out = a x b
 Vector3 vCross3(Vector3 a, Vector3 b);
+Vector3d vCross3d(Vector3d a, Vector3d b);
 void  vCross3p(Vector3* a, Vector3* b, Vector3* out); 
+void  vCross3dp(Vector3d* a, Vector3d* b, Vector3d* out); 
 float vCross2(Vector2 a, Vector2 b);
+double vCross2d(Vector2d a, Vector2d b);
 float  vCross2p(Vector2* a, Vector2* b); 
+double  vCross2dp(Vector2d* a, Vector2d* b); 
 
 // Scalar triple product: a . (b x c)
 float vScalarTriple3(Vector3 a, Vector3 b, Vector3 c);

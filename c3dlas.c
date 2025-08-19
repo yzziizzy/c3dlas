@@ -287,6 +287,17 @@ void vScale##suf##p(const Vector##suf* v, ft scalar, Vector##sufft* out) { \
 } \
 \
 \
+Vector##sufft vFMA##suf(const Vector##suf a, const Vector##suf m, ft scalar) { \
+	Vector##sufft out; \
+	vFMA##suf##p(&a, &m, scalar, &out); \
+	return out; \
+} \
+void vFMA##suf##p(const Vector##suf* a, const Vector##suf* m, ft scalar, Vector##sufft* out) { \
+	for(int i = 0; i < sz; i++) \
+		((ft*)out)[i] = (ft)((ty*)a)[i] + (ft)((ty*)m)[i] * scalar; \
+} \
+\
+\
 Vector##sufft vAvg##suf(const Vector##suf a, const Vector##suf b) { \
 	Vector##sufft out; \
 	vAvg##suf##p(&a, &b, &out); \
@@ -449,6 +460,18 @@ void vCross3p(Vector3* a, Vector3* b, Vector3* out) {
 	out->z = (a->x * b->y) - (a->y * b->x);
 }
 
+Vector3d vCross3d(Vector3d a, Vector3d b) {
+	Vector3d out;
+	vCross3dp(&a, &b, &out);
+	return out;
+}
+
+void vCross3dp(Vector3d* a, Vector3d* b, Vector3d* out) {
+	out->x = (a->y * b->z) - (a->z * b->y);
+	out->y = (a->z * b->x) - (a->x * b->z);
+	out->z = (a->x * b->y) - (a->y * b->x);
+}
+
 
 // ... however, if you apply it to two dimensions it yields
 //  the sine of the angle between the two vectors, and the sign
@@ -460,6 +483,14 @@ float vCross2(Vector2 a, Vector2 b) {
 }
 
 float vCross2p(Vector2* a, Vector2* b) {
+	return (a->x * b->y) - (a->y * b->x);
+}
+
+double vCross2d(Vector2d a, Vector2d b) {
+	return (a.x * b.y) - (a.y * b.x);
+}
+
+double vCross2dp(Vector2d* a, Vector2d* b) {
 	return (a->x * b->y) - (a->y * b->x);
 }
 
@@ -990,7 +1021,6 @@ void vRandomNorm3p(Vector3* out) {
 	out->y = u * sth;
 	out->z = u;
 }
-
 
 Vector4i vFloor4(const Vector4 v) {
 	return (Vector4i){.x = floorf(v.x), .y = floorf(v.y), .z = floorf(v.z), .w = floorf(v.w)};

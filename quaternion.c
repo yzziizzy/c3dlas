@@ -48,10 +48,24 @@ Vector3 qRot3(Vector3 a, Quaternion r) {
 	return (Vector3){a4.x, a4.y, a4.z};
 }
 
+
+
 Vector2 qRot2(Vector2 a, Quaternion r) {
-	Vector4 a4 = {a.x, a.y, 0.f, 0.f};
-	a4 = qMul(qMul(r, a4), qConj(r));
-	return (Vector2){a4.x, a4.y};
+//	Vector4 a4 = {a.x, a.y, 0.f, 0.f};
+//	a4 = qMul(qMul(r, a4), qConj(r));
+//	return (Vector2){a4.x, a4.y};
+	
+	Quaternion inner = {
+		.i    =  a.x*r.real - r.k*a.y,
+		.j    =  r.real*a.y + r.k*a.x,
+		.k    =  r.i*a.y    - r.j*a.x,
+		.real = -r.i*a.x    - r.j*a.y
+	};
+	
+	return (Vector2) {
+		.x    =  r.real*inner.i - r.i*inner.real - inner.j*r.k    + inner.k*r.j,
+		.y    = -inner.real*r.j + inner.i*r.k    + inner.j*r.real - inner.k*r.i,
+	};	
 }
 
 

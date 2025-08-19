@@ -9,6 +9,7 @@
 #define vMul(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vMul) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vDiv(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vDiv) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vScale(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vScale) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+#define vFMA(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vFMA) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vLerp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vLerp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vRecip(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vRecip) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vInv(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vInv) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
@@ -33,6 +34,27 @@
 #define vEq(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vEq) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vEqEp(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vEqEp) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
 #define vEqExact(a, ...) _Generic((a), C3DLAS_VECTOR_LIST(C3DLAS_GEN_HELPER, vEqExact) default: ((void)0))(a __VA_OPT__(,) __VA_ARGS__)
+
+#define vCross(a, ...) _Generic((a), \
+	Vector2:  vCross2, \
+	Vector2*: vCross2p, \
+	Vector2d: vCross2d, \
+	Vector2d*: vCross2dp, \
+	Vector3:  vCross3, \
+	Vector3*: vCross3p, \
+	Vector3d: vCross3d, \
+	Vector3d*: vCross3dp, \
+	default: ((void)0)) \
+(a __VA_OPT__(,) __VA_ARGS__) \
+
+
+
+#define vPerp(a, ...) _Generic((a), \
+	Vector2:  vPerp2, \
+	Vector3:  vPerp3, \
+	default: ((void)0)) \
+(a __VA_OPT__(,) __VA_ARGS__) \
+
 
 
 
