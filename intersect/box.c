@@ -236,7 +236,7 @@ float distPoint2Rect2(Vector2 a, Quad2 q) {
 	vec2 bc = vSub(q.v[2], q.v[1]);
 	vec2 bm = vSub(a, q.v[1]);
 	float dabam = vDot(ab, am);
-	if(dabam <= 0) {
+	if(dabam >= 0) {
 		float dabab = vDot(ab, ab);
 		if(dabam <= dabab) {
 			float dbcbm = vDot(bc, bm);
@@ -260,7 +260,7 @@ int intersectPoint2Rect2(vec2 a, Quad2 q) {
 	vec2 bc = vSub(q.v[2], q.v[1]);
 	vec2 bm = vSub(a, q.v[1]);
 	float dabam = vDot(ab, am);
-	if(dabam <= 0) {
+	if(dabam >= 0) {
 		float dabab = vDot(ab, ab);
 		if(dabam <= dabab) {
 			float dbcbm = vDot(bc, bm);
@@ -288,9 +288,10 @@ int intersectRect2Rect2(Quad2 a, Quad2 b) {
 	ca = vScale(ca, .25f);
 	cb = vScale(cb, .25f);
 	
-	float radSq = vDistSq(ca, a.v[0]) + vDistSq(cb, b.v[0]);
-	if(radSq > vDistSq(ca, cb)) return C3DLAS_DISJOINT;
-	
+	float rad = vDist(ca, a.v[0]) + vDist(cb, b.v[0]);
+	if(rad < vDist(ca, cb)) {
+		return C3DLAS_DISJOINT;
+	}
 	
 	// Check if any of the points are inside the other rectangle
 	// This handles situations where one rect is fully contained in the other

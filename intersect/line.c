@@ -143,7 +143,7 @@ float distLine2Rect2(Line2 a, Quad2 q) {
 	vec2 bc = vSub(q.v[2], q.v[1]);
 	vec2 bm = vSub(a.start, q.v[1]);
 	float dabam = vDot(ab, am);
-	if(dabam <= 0) {
+	if(dabam >= 0) {
 		float dabab = vDot(ab, ab);
 		if(dabam <= dabab) {
 			float dbcbm = vDot(bc, bm);

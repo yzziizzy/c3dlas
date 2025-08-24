@@ -671,6 +671,7 @@ float vDistTPointLine3(Vector3 p, Line3 ls, float* T);
 int intersectRay2Circle(Ray2 a, Vector2 center, float radius, Vector2 out[2]);
 int intersectVec2Circle(Vector2 lorigin, Vector2 ldir, Vector2 center, float radius, Vector2 out[2]);
 
+int intersectPoint2Rect2(vec2 a, Quad2 q);
 int intersectLine2Line2(Line2 a, Line2 b);
 int intersectRect2Rect2(Quad2 a, Quad2 b);
 int findIntersectLine2Line2(Line2 a, Line2 b, vec2* out);

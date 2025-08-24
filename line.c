@@ -6,10 +6,10 @@ float vDistPointLine2(Vector2 p, Line2 ls) {
 	Vector2 ba = vSub2(ls.end, ls.start); // vector from the starting point to the ending point
 	
 	float t = vDot2(pa, ba) / vDot2(ba, ba); // project the pa onto ba, then divide that distance by the length of ba to normalize it
-	fclamp(t, 0.0, 1.0); // clamp t to between the endpoints of the line segment
+	t = fclamp(t, 0.0, 1.0); // clamp t to between the endpoints of the line segment
 	
 	// Consider the starting point to be at the origin, for ease of visualization.
-	// ba is the vector from the origin to the endpoint og the line that now passes through the origin.
+	// ba is the vector from the origin to the endpoint of the line that now passes through the origin.
 	// Scaling ba by t gives the intercept point of the line through p that is perpendicular to the test line segment.
 	// pa is p if a was the origin. Therefore, pi is the vector from p to the intercept point on the test line segment. 
 	Vector2 pi = vSub2(pa, vScale2(ba, t));
