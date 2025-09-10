@@ -1011,14 +1011,23 @@ void msLookAt(Vector3* eye, Vector3* center, Vector3* up, MatrixStack* ms);
 void evalBezier3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out);
 void evalBezierTangent3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out); // tangent vector; not normalized
 void evalBezierNorm3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out); // normal vector; not normalized
+Vector2 evalBezier2D(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t);
+Vector2 evalBezier2D_dt(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t);
 float evalBezier1D(float e1, float e2, float c1, float c2, float t);
 float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t); // first derivative with respect to t
 float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t); // second derivative with respect to t
 
 // quadratic Bezier curves
 float evalQBezier1D(float e1, float e2, float c1, float t);
-void evalQBezier2D3p(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out);
-void evalQBezier3p(Vector3* e1, Vector3* e2, Vector3* c1, float t, Vector3* out);
+Vector2 evalQBezier2D(Vector2 e1, Vector2 e2, Vector2 c1, float t);
+void evalQBezier2Dp(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out);
+Vector3 evalQBezier3D(Vector3 e1, Vector3 e2, Vector3 c1, float t);
+void evalQBezier3Dp(Vector3* e1, Vector3* e2, Vector3* c1, float t, Vector3* out);
+
+
+float evalQBezier1D_dt(float e1, float e2, float c1, float t);
+Vector2 evalQBezier2D_dt(Vector2 e1, Vector2 e2, Vector2 c1, float t);
+Vector3 evalQBezier3D_dt(Vector3 e1, Vector3 e2, Vector3 c1, float t);
 
 ///// bounding box functions
 
