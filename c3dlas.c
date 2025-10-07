@@ -175,6 +175,10 @@ uint32_t urandPCG(uint32_t low, uint32_t high, PCG* pcg) {
 	return pcg_u32(&pcg->state, pcg->stream) % (high - low) + low;
 }
 
+int32_t irandPCG(int32_t low, int32_t high, PCG* pcg) {
+	return pcg_u32(&pcg->state, pcg->stream) % (high - low) + low;
+}
+
 
 
 #define FN(sz, suf, ty, ft, sufft, pref, ...) \

@@ -375,6 +375,7 @@ uint32_t pcg_u32(uint64_t* state, uint64_t stream);
 
 
 float frandPCG(float low, float high, PCG* pcg);
+int32_t irandPCG(int32_t low, int32_t high, PCG* pcg);
 
 #ifndef C3DLAS_NO_LIBC_RAND
 static inline float frand(float low, float high) {
@@ -440,6 +441,25 @@ static inline double dlerp2D(double xx, double xy, double yx, double yy, double 
 	double b = yx + ((yy - yx) * yt);
 	return a + ((b - a) * xt);
 }
+
+
+static inline float fsmoothstep(float a, float b, float t) {
+	float x = (t - a) / (b - a);
+	x = fminf(fmaxf(0.f, x), 1.f);
+    return x * x * (3.f - 2.f * x);
+}
+
+static inline double dsmoothstep(double a, double b, double t) {
+	double x = (t - a) / (b - a);
+	x = fminf(fmaxf(0., x), 1.);
+    return x * x * (3. - 2. * x);
+}
+
+#define smoothstep(a, b, t) _Generic(t, \
+	float: fsmoothstep, \
+	double: dsmoothstep \
+)(a, b, t)
+	
 
 static inline float fsmootherstep(float a, float b, float t) {
 	if(t < 0.f) return a;
