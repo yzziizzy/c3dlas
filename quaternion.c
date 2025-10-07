@@ -171,6 +171,12 @@ Quaternion qNorm(Quaternion q) {
 
 Quaternion qRotBetween(Vector3 a, Vector3 b) {
 	Vector3 c = vCross3(a, b);
+	
+	if(vLen3(c) < 1e-4f) {
+		// 180 degree rotation, probably; gigo
+		return qNorm((Quaternion){a.x, b.x, c.x, 0});
+	}
+	
 	Quaternion q = {
 		c.x, c.y, c.z,
 		sqrtf(vLenSq(a) * vLenSq(b)) + vDot(a, b) 
