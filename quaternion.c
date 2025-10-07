@@ -174,7 +174,29 @@ Quaternion qRotBetween(Vector3 a, Vector3 b) {
 	
 	if(vLen3(c) < 1e-4f) {
 		// 180 degree rotation, probably; gigo
-		return qNorm((Quaternion){a.x, b.x, c.x, 0});
+		float fx = fabs(a.x);
+		float fy = fabs(a.y);
+		float fz = fabs(a.z);
+		if(fx < fy) {
+			if(fx < fz) {
+				b = (Vector3){1,0,0};
+			}
+			else {
+				b = (Vector3){0,0,1};
+			}
+		}
+		else {
+			if(fy < fz) {
+				b = (Vector3){0,1,0};
+			}
+			else {
+				b = (Vector3){0,0,1};
+			}
+		}
+		
+		c = vCross3(a, b);
+		
+		return qNorm((Quaternion){c.x, c.y, c.z, 0});
 	}
 	
 	Quaternion q = {
