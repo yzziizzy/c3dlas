@@ -28,6 +28,9 @@ typedef Vector4 quat;
 typedef Matrix Matrix4;
 typedef Matrix4 mat4;
 typedef Matrix3 mat3;
+typedef Matrix3x4 mat3x4;
+typedef Matrix4x3 mat4x3;
+typedef Matrix2 mat2;
 
 typedef Vector2 vec2;
 typedef Vector3 vec3;
