@@ -786,12 +786,19 @@ Vector3 vS2C3(Vector3 s) {
 
 // a and b must be normalized
 float vAngleBetween2(Vector2 a, Vector2 b) {
-	return acosf(vDot2(a, b));
+	return atan2f(vCross2(a, b), vDot2(a, b));
 }
 
 // a and b must be normalized
 float vAngleBetween3(Vector3 a, Vector3 b) {
-	return acosf(vDot3(a, b));
+	float theta = acosf(vDot3(a, b));
+	Vector3 cross = vCross3(a, b);
+	
+	Quaternion q = qFromRTheta(cross, theta);
+	
+	Vector3 check = qRot3(a, q);
+	
+	return vEq3(check, b) ? theta : -theta;
 }
 
 
