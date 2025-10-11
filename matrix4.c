@@ -16,6 +16,49 @@ void mCopy(Matrix* in, Matrix* out) {
 }
 
 
+void Matrix4x3_to_Matrix4(Matrix4x3* m43, Matrix4* m4) {
+	m4->m[0] = m43->m[0];
+	m4->m[1] = m43->m[1];
+	m4->m[2] = m43->m[2];
+	m4->m[3] = 0;
+	
+	m4->m[4] = m43->m[3];
+	m4->m[5] = m43->m[4];
+	m4->m[6] = m43->m[5];
+	m4->m[7] = 0;
+	
+	m4->m[8] = m43->m[6];
+	m4->m[9] = m43->m[7];
+	m4->m[10] = m43->m[8];
+	m4->m[11] = 0;
+	
+	m4->m[12] = m43->m[9];
+	m4->m[13] = m43->m[10];
+	m4->m[14] = m43->m[11];
+	m4->m[15] = 1;
+}
+
+
+
+void Matrix4_to_Matrix4x3(Matrix4* m4, Matrix4x3* m43) {
+	m43->m[0] = m4->m[0];
+	m43->m[1] = m4->m[1];
+	m43->m[2] = m4->m[2];
+	
+	m43->m[3] = m4->m[4];
+	m43->m[4] = m4->m[5];
+	m43->m[5] = m4->m[6];
+	
+	m43->m[6] = m4->m[8];
+	m43->m[7] = m4->m[9];
+	m43->m[8] = m4->m[10];
+	
+	m43->m[9] = m4->m[12];
+	m43->m[10] = m4->m[13];
+	m43->m[11] = m4->m[14];
+}
+
+
 // out cannot overlap with a or b
 // with restrict and -O2, this vectorizes nicely.
 void mFastMul(Matrix* restrict a, Matrix* restrict b, Matrix* restrict out) {

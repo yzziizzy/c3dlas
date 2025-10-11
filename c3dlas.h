@@ -282,9 +282,12 @@ typedef struct {
 
 */
 
-typedef struct {
+typedef union {
 	float m[16];
-} Matrix;
+	struct { Vector4 cols[4]; };
+} Matrix4;
+
+typedef Matrix4 Matrix;
 
 typedef struct MatrixStack {
 	short size;
@@ -323,9 +326,41 @@ typedef struct {
 |_ 2  5  8 _|
 
 */
-typedef struct {
+typedef union {
 	float m[9];
+	struct { Vector3 cols[3]; };
 } Matrix3;
+
+// 4x3 matrix
+/* Column-major, for OpenGL compatibility:
+ _            _
+|  0  3  6  9  |
+|  1  4  7 10  |
+|_ 2  5  8 11 _|
+
+*/
+typedef union {
+	float m[12];
+	struct { Vector3 cols[4]; };
+} Matrix4x3;
+
+// both assume that the final row is 0,0,0,1
+void Matrix4_to_Matrix4x3(Matrix4* m4, Matrix4x3* m43);
+void Matrix4x3_to_Matrix4(Matrix4x3* m43, Matrix4* m4); 
+
+// 3x4 matrix
+/* Column-major, for OpenGL compatibility (this exists as the transpose of the above, for loading into shaders due to layout limitations):
+ _         _
+|  0  4  8  |
+|  1  5  9  |
+|  2  6 10  |
+|_ 3  7 11 _| 
+
+*/
+typedef union {
+	float m[12];
+	struct { Vector4 cols[3]; };
+} Matrix3x4;
 
 // 2x2 matrix
 /* Column-major, for OpenGL compatibility:
@@ -334,8 +369,9 @@ typedef struct {
 |_ 1  3 _|
 
 */
-typedef struct {
+typedef union {
 	float m[4];
+	struct { Vector2 cols[2]; };
 } Matrix2;
 
 
