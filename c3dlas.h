@@ -677,6 +677,11 @@ Vector3 vC2S3(Vector3 cart);
 Vector3 vS2C3(Vector3 s);
 
 
+// a and b must be normalized
+float vAngleBetween2(Vector2 a, Vector2 b);
+float vAngleBetween3(Vector3 a, Vector3 b);
+
+
 // Distance from a point to a line segment 
 float vDistPointLine2(Vector2 p, Line2 ls);
 float vDistPointLine3(Vector3 p, Line3 ls);

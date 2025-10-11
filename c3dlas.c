@@ -782,6 +782,20 @@ Vector3 vS2C3(Vector3 s) {
 	};
 }
 
+
+
+// a and b must be normalized
+float vAngleBetween2(Vector2 a, Vector2 b) {
+	return acosf(vDot2(a, b));
+}
+
+// a and b must be normalized
+float vAngleBetween3(Vector3 a, Vector3 b) {
+	return acosf(vDot3(a, b));
+}
+
+
+
 Vector3 closestPointToRay3(Vector3 p, Ray3 r) {
 	Vector3 po = vSub3(p, r.o); // vector from the starting point to p
 	
