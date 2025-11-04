@@ -2215,6 +2215,18 @@ int boxOverlaps3p(const AABB3* a, const AABB3* b) {
 }
 
 
+int boxContainsBox3p(const AABB3* outside, const AABB3* inside) {
+	return (
+		(outside->min.x <= inside->min.x) &&
+		(outside->max.x >= inside->max.x) &&
+		(outside->min.y <= inside->min.y) &&
+		(outside->max.y >= inside->max.y) &&
+		(outside->min.z <= inside->min.z) &&
+		(outside->max.z >= inside->max.z)
+	);
+}
+
+
 
 int boxContainsPoint3p(const AABB3* b, const Vector3* p) {
 	return b->min.x <= p->x && b->max.x >= p->x
@@ -2278,6 +2290,15 @@ int boxOverlaps2p(const AABB2* a, const AABB2* b) {
 	return !boxDisjoint2p(a, b);
 }
 
+
+int boxContainsBox2p(const AABB2* outside, const AABB2* inside) {
+	return (
+		(outside->min.x <= inside->min.x) &&
+		(outside->max.x >= inside->max.x) &&
+		(outside->min.y <= inside->min.y) &&
+		(outside->max.y >= inside->max.y)
+	);
+}
 
 
 int boxContainsPoint2p(const AABB2* b, const Vector2* p) {

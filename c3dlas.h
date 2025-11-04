@@ -1095,6 +1095,7 @@ Vector3 evalQBezier3D_dt(Vector3 e1, Vector3 e2, Vector3 c1, float t);
 // 3D versions
 int boxDisjoint3p(const AABB3* a, const AABB3* b);
 int boxOverlaps3p(const AABB3* a, const AABB3* b);
+int boxContainsBox3p(const AABB3* outside, const AABB3* inside);
 int boxContainsPoint3p(const AABB3* b, const Vector3* p);
 bool boxContainsPoint3(AABB3 b, Vector3 p);
 
@@ -1118,6 +1119,7 @@ int intersectBoxLine3(AABB3 b, Line3 l, Vector3* ipoint, float* idist);
 // 2D versions
 int boxDisjoint2p(const AABB2* a, const AABB2* b);
 int boxOverlaps2p(const AABB2* a, const AABB2* b);
+int boxContainsBox2p(const AABB2* outside, const AABB2* inside);
 int boxContainsPoint2p(const AABB2* b, const Vector2* p);
 
 void boxCenter2p(const AABB2* b, Vector2* out); // calcuates the center of the box
