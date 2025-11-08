@@ -70,6 +70,33 @@
 	#define C3DLAS_errprintf(...) fprintf(stderr, __VA_ARGS__)
 #endif
 
+// the type used for alloc/size member of arrays (wtf are you doing that you need a polygon with more than 4 billion points?)
+#ifndef C3DLAS_ARRAY_SIZE_
+	#define C3DLAS_ARRAY_SIZE_ unsigned int
+#endif
+
+#ifndef C3DLAS_INITIAL_POLY_POINT_ALLOC
+	#define C3DLAS_INITIAL_POLY_POINT_ALLOC  8
+#endif
+
+#ifndef C3DLAS_malloc
+	#define C3DLAS_malloc(sz) malloc(sz)
+#endif
+
+#ifndef C3DLAS_realloc
+	#define C3DLAS_realloc(p, sz) realloc(p, sz)
+#endif
+
+#ifndef C3DLAS_free
+	#define C3DLAS_free(p) free(p)
+#endif
+
+#ifndef C3DLAS_sort_r
+	// fn(const void* a, const void* b, void* r)
+	#define C3DLAS_sort_r(ptr, cnt, elemsz, fn, r) qsort_r(ptr, cnt, elemsz, fn, r)
+#endif
+
+
 // set externally if desired
 // #define C3DLAS_SEGFAULT_ON_NO_MATRIX_INVERSE 0
 
@@ -200,8 +227,8 @@ typedef struct {
 // Polygons are 2-dimensional by definition
 typedef struct Polygon {
 	Vector2* points;
-	long pointAlloc;
-	long pointCount;
+	C3DLAS_ARRAY_SIZE_ pointAlloc;
+	C3DLAS_ARRAY_SIZE_ pointCount;
 	
 	Vector2 centroid;
 	float maxRadiusSq; // squared distance from the centroid to the furthest point
@@ -755,18 +782,36 @@ float distLine2Triangle2(Line2 a, Vector2 tri[3]);
 float distTPointRay3(Vector3 p, Ray3 r, float* T);
 float dist2TPointRay3(Vector3 p, Ray3 r, float* T);
 
-int vInsidePolygon(Vector2 p, Polygon* poly);
+
+
+
+// adds it to the end of the list
+// stats need to be recalculated afterward
+void polyPushPoint(Polygon* poly, Vector2 p);
+
+void polyFreeInternals(Polygon* poly);
+
+// centroid and radius squared
+void polyCalcStats(Polygon* poly);
+
+void polyCalcRadiusSq(Polygon* poly);
+void polyCalcCentroid(Polygon* poly);
+
+void polySortCCW(Polygon* poly);
+
 
 // Returns the distance from p to the closest point on the polygon.
 // Interior distances are negative
-float vDistPolygon(Vector2 p, Polygon* poly);
-void polyCalcCentroid(Polygon* poly);
-void polyCalcRadiusSq(Polygon* poly) ;
+float polyDistToPoint(Polygon* poly, Vector2 p);
+int polyContainsPoint(Polygon* poly, Vector2 p);
+
+
+
+
 
 void  vProject3p(Vector3* what, Vector3* onto, Vector3* out); // slower; onto may not be normalized
 void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out); // faster; onto must be normalized
 void  vPointAvg3p(Vector3* a, Vector3* b, Vector3* out);
-
 
 
 void vRandomPCG3p(Vector3* end1, Vector3* end2, PCG* pcg, Vector3* out);

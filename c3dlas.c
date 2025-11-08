@@ -856,90 +856,6 @@ float dist2TPointRay3(Vector3 p, Ray3 r, float* T) {
 }
 
 
-int vInsidePolygon(Vector2 p, Polygon* poly) {
-	int inside = 0;
-	int cnt = poly->pointCount;
-	
-	if(poly->maxRadiusSq < vDot2(poly->centroid, p)) return 0;
-	
-	for(int i = 0; i < cnt; i++) {
-		Vector2 a = poly->points[i];
-		Vector2 b = poly->points[(i + 1) % cnt];
-		
-		if(a.y == b.y) continue; // horizontal edges are ignored
-		
-		// we're testing a ray going to the right
-		if(a.x < p.x && b.x < p.x) continue; // segment is entirely left of the point
-		
-		if(a.y >= p.y && b.y >= p.y) continue; // segment entirely above the point
-		if(a.y < p.y && b.y < p.y) continue; // segment entirely below the point
-		// segment is in the same vertical band as the point
-		
-		float sx = a.x + (b.x - a.x) * ((p.y - a.y) / (b.y - a.y));
-		if(p.x > sx) continue;
-		
-		inside = !inside;
-	}
-
-	return inside;
-}
-
-
-// Muchas gracias, Inigo.  
-// https://iquilezles.org/articles/distfunctions2d/
-float vDistPolygon(Vector2 p, Polygon* poly) {
-
-	float d = vDot2(vSub2(p, poly->points[0]), vSub2(p, poly->points[0]));
-	float s = 1.0;
-
-	for(int i = 0, j = poly->pointCount - 1; i < poly->pointCount; j = i, i++) {
-		Vector2 A = poly->points[i];
-		Vector2 B = poly->points[j];
-
-		Vector2 e = vSub2(B, A);
-		Vector2 w = vSub2(p, A);
-		Vector2 b = vSub2(w, vScale2(e, fclamp(vDot2(w, e) / vDot2(e, e), 0.0, 1.0)));
-
-		d = fminf(d, vDot2(b, b));
-        
-		int c1 = p.y >= A.y;
-		int c2 = p.y < B.y;
-		int c3 = e.x * w.y > e.y * w.x;
-		if((c1 && c2 && c3) || (!c1 && !c2 && !c3)) s *= -1.0;  
-	}
-
-	return s * sqrtf(d);
-}
-
-// ----
-
-
-void polyCalcCentroid(Polygon* poly) {
-	int cnt = poly->pointCount;
-	Vector2 centroid = {0,0};
-	
-	for(int i = 0; i < cnt; i++) {
-		Vector2 a = poly->points[i];
-		centroid = vAdd2(centroid, a);
-	}
-	
-	poly->centroid = vScale2(centroid, 1.0 / poly->pointCount);
-
-}
-
-
-void polyCalcRadiusSq(Polygon* poly) {
-	int cnt = poly->pointCount;
-	float d = 0;
-	
-	for(int i = 0; i < cnt; i++) {
-		Vector2 a = poly->points[i];
-		d = fmaxf(d, vDot2(poly->centroid, a));
-	}
-	
-	poly->maxRadiusSq = d;
-}
-
 
 
 // feeding a zero vector into this will cause div/0 and you will deserve it
@@ -2795,6 +2711,7 @@ Vector3 evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 
 #include "quaternion.c"
 #include "quad.c"
 #include "line.c"
+#include "polygon.c"
 #include "intersect/circle.c"
 #include "intersect/plane.c"
 #include "intersect/box.c"

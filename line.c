@@ -129,6 +129,7 @@ Line2 shortestLineFromLineToLine2(Line2* a, Line2* b) {
 	float s, t;
 	vec2 da = vSub(a->end, a->start);
 	vec2 db = vSub(b->end, b->start);
+	// BUG: if a or b has zero length, it returns nans
 	
 	// first check if they intersect
 	float det = vCross2(da, db);
