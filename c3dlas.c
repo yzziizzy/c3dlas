@@ -753,6 +753,13 @@ Vector2 vPerp2(Vector2 n) {
 	return vNorm2((Vector2){.x = -n.y, .y = n.x});
 }
 
+Vector2 vPerpCW2(Vector2 n) {
+	return vNorm2((Vector2){.x = n.y, .y = -n.x});
+}
+Vector2 vPerpCCW2(Vector2 n) {
+	return vNorm2((Vector2){.x = -n.y, .y = n.x});
+}
+
 
 // Coordinate system conversions
 

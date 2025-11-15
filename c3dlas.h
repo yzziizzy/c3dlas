@@ -540,6 +540,10 @@ static inline double dsmootherstep(double a, double b, double t) {
 // The input vector does not need to be normalized
 void vPerp2p(Vector2* n, Vector2* out);
 Vector2 vPerp2(Vector2 n);
+
+Vector2 vPerpCCW2(Vector2 n);
+Vector2 vPerpCW2(Vector2 n);
+
 void vPerp3p(Vector3* n, Vector3* out);
 Vector3 vPerp3(Vector3 n);
 
