@@ -1122,13 +1122,17 @@ void vProjectOntoPlaneNormalized3p(Vector3* v, Plane* p, Vector3* out) {
 
 void planeFromPointNormal(Vector3* p, Vector3* norm, Plane* out) {
 	out->n = *norm;
-	out->d = vDot3p(norm, p);
+	out->d = -vDot3p(p, norm);
+	
+	// negation is suspicious but makes these planes work with intersectPlaneRay3p
 }
 
 // calculates a plane from a triangle
 void planeFromTriangle3p(Vector3* v1, Vector3* v2, Vector3* v3, Plane* out) {
 	vTriFaceNormal3p(v1, v2, v3, &out->n);
-	out->d = vDot3p(&out->n, v1);
+	out->d = -vDot3p(&out->n, v1);
+	
+	// negation is suspicious but makes these planes work with intersectPlaneRay3p
 }
 
 // copy a plane
