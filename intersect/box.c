@@ -312,3 +312,195 @@ int intersectRect2Rect2(Quad2 a, Quad2 b) {
 
 
 
+
+///// bounding box functions
+
+
+// 3D versions
+
+int boxDisjoint3p(const AABB3* a, const AABB3* b) {
+	return a->max.x < b->min.x || b->max.x < a->min.x
+		|| a->max.y < b->min.y || b->max.y < a->min.y
+		|| a->max.z < b->min.z || b->max.z < a->min.z;
+}
+
+int boxOverlaps3p(const AABB3* a, const AABB3* b) {
+	return !boxDisjoint3p(a, b);
+}
+
+
+int boxContainsBox3p(const AABB3* outside, const AABB3* inside) {
+	return (
+		(outside->min.x <= inside->min.x) &&
+		(outside->max.x >= inside->max.x) &&
+		(outside->min.y <= inside->min.y) &&
+		(outside->max.y >= inside->max.y) &&
+		(outside->min.z <= inside->min.z) &&
+		(outside->max.z >= inside->max.z)
+	);
+}
+
+
+
+int boxContainsPoint3p(const AABB3* b, const Vector3* p) {
+	return b->min.x <= p->x && b->max.x >= p->x
+		&& b->min.y <= p->y && b->max.y >= p->y
+		&& b->min.z <= p->z && b->max.z >= p->z;
+}
+
+
+void boxCenter3p(const AABB3* b, Vector3* out) {
+	out->x = (b->max.x + b->min.x) * .5f;
+	out->y = (b->max.y + b->min.y) * .5f;
+	out->z = (b->max.z + b->min.z) * .5f;
+}
+
+Vector3 boxCenter3(const AABB3 b) {
+	return (Vector3) {
+		(b.max.x + b.min.x) * .5f,
+		(b.max.y + b.min.y) * .5f,
+		(b.max.z + b.min.z) * .5f
+	};
+}
+
+
+void boxSize3p(const AABB3* b, Vector3* out) {
+	out->x = b->max.x - b->min.x;
+	out->y = b->max.y - b->min.y;
+	out->z = b->max.z - b->min.z;
+}
+
+Vector3 boxSize3(const AABB3 b) {
+	return (Vector3){
+		b.max.x - b.min.x,
+		b.max.y - b.min.y,
+		b.max.z - b.min.z
+	};
+}
+
+void boxExpandTo3p(AABB3* b, Vector3* p) {
+	b->min.x = fminf(b->min.x, p->x);
+	b->min.y = fminf(b->min.y, p->y);
+	b->min.z = fminf(b->min.z, p->z);
+	b->max.x = fmaxf(b->max.x, p->x);
+	b->max.y = fmaxf(b->max.y, p->y);
+	b->max.z = fmaxf(b->max.z, p->z);
+}
+
+void boxExpandTo3(AABB3* b, Vector3 p) {
+	boxExpandTo3p(b, &p);
+}
+
+
+// 2D versions
+
+int boxDisjoint2p(const AABB2* a, const AABB2* b) {
+
+	return a->max.x < b->min.x || b->max.x < a->min.x
+		|| a->max.y < b->min.y || b->max.y < a->min.y;
+}
+
+int boxOverlaps2p(const AABB2* a, const AABB2* b) {
+	return !boxDisjoint2p(a, b);
+}
+
+
+int boxContainsBox2p(const AABB2* outside, const AABB2* inside) {
+	return (
+		(outside->min.x <= inside->min.x) &&
+		(outside->max.x >= inside->max.x) &&
+		(outside->min.y <= inside->min.y) &&
+		(outside->max.y >= inside->max.y)
+	);
+}
+
+
+int boxContainsPoint2p(const AABB2* b, const Vector2* p) {
+	return b->min.x <= p->x && b->max.x >= p->x
+		&& b->min.y <= p->y && b->max.y >= p->y;
+}
+
+
+void boxCenter2p(const AABB2* b, Vector2* out) {
+	out->x = (b->max.x + b->min.x) / 2.0;
+	out->y = (b->max.y + b->min.y) / 2.0;
+}
+
+Vector2 boxSize2(const AABB2 b) {
+	return (Vector2){
+		b.max.x - b.min.x,
+		b.max.y - b.min.y
+	};
+}
+
+void boxSize2p(const AABB2* b, Vector2* out) {
+	out->x = b->max.x - b->min.x;
+	out->y = b->max.y - b->min.y;
+}
+
+void boxQuadrant2p(const AABB2* in, char ix, char iy, AABB2* out) {
+	Vector2 sz, c;
+	
+	boxCenter2p(in, &c);
+	boxSize2p(in, &sz);
+	sz.x *= .5;
+	sz.y *= .5;
+	
+	out->min.x = c.x - (ix ? 0.0f : sz.x);
+	out->min.y = c.y - (iy ? 0.0f : sz.y);
+	out->max.x = c.x + (ix ? sz.x : 0.0f);
+	out->max.y = c.y + (iy ? sz.y : 0.0f);
+}
+
+
+// 2D integer versions
+
+int boxDisjoint2ip(const AABB2i* a, const AABB2i* b) {
+
+	return a->max.x < b->min.x || b->max.x < a->min.x
+		|| a->max.y < b->min.y || b->max.y < a->min.y;
+}
+
+int boxOverlaps2ip(const AABB2i* a, const AABB2i* b) {
+	return !boxDisjoint2ip(a, b);
+}
+
+
+
+int boxContainsPoint2ip(const AABB2i* b, const Vector2i* p) {
+	return b->min.x <= p->x && b->max.x >= p->x
+		&& b->min.y <= p->y && b->max.y >= p->y;
+}
+
+
+void boxCenter2ip(const AABB2i* b, Vector2* out) {
+	out->x = (b->max.x + b->min.x) / 2.0f;
+	out->y = (b->max.y + b->min.y) / 2.0f;
+}
+
+void boxSize2ip(const AABB2i* b, Vector2* out) {
+	out->x = b->max.x - b->min.x;
+	out->y = b->max.y - b->min.y;
+}
+
+// BUG: needs some fancy math work to keep everything tight. integers don't split nicely
+void boxQuadrant2ip(const AABB2i* in, char ix, char iy, AABB2i* out) {
+	Vector2 sz, c;
+	
+	C3DLAS_errprintf("fix me: %s:%d: %s", __FILE__, __LINE__, __func__);
+	return;
+//	assert(0);
+	
+	boxCenter2ip(in, &c);
+	boxSize2ip(in, &sz);
+	sz.x *= .5;
+	sz.y *= .5;
+	
+	out->min.x = c.x - (ix ? 0.0f : sz.x);
+	out->min.y = c.y - (iy ? 0.0f : sz.y);
+	out->max.x = c.x + (ix ? sz.x : 0.0f);
+	out->max.y = c.y + (iy ? sz.y : 0.0f);
+}
+
+
+

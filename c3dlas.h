@@ -672,21 +672,6 @@ void vSwap2p(Vector2* a, Vector2* b);
 void vSwap3p(Vector3* a, Vector3* b);
 void vSwap4p(Vector4* a, Vector4* b);
 
-// Vector addition
-
-
-// Vector subtraction. diff = from - what
-
-// Scalar muliplication
-//Vector2  vScale2(Vector2 v, float scalar);
-//Vector3  vScale3(Vector3 v, float scalar);
-//void     vScale2ip(Vector2i* v, float scalar, Vector2i* out);
-//void     vScale2p(Vector2* v, float scalar, Vector2* out);
-//void     vScale3p(Vector3* v, float scalar, Vector3* out);
-
-// Component-wise vector muliplication
-
-
 
 // Cross product: out = a x b
 Vector3 vCross3(Vector3 a, Vector3 b);
@@ -701,10 +686,8 @@ double  vCross2dp(Vector2d* a, Vector2d* b);
 // Scalar triple product: a . (b x c)
 float vScalarTriple3(Vector3 a, Vector3 b, Vector3 c);
 float vScalarTriple3p(Vector3* a, Vector3* b, Vector3* c);
-
-// Linear interpolation between two vectors
-
-// Vector Inverse. Returns FLT/DBL_MAX on div/0. Integer functions return double vectors
+double vScalarTriple3d(Vector3d a, Vector3d b, Vector3d c);
+double vScalarTriple3dp(Vector3d* a, Vector3d* b, Vector3d* c);
 
 // Vector magnitude (length)
 double vMag2i(const Vector2i v);
