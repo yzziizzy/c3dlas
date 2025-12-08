@@ -8,6 +8,12 @@
 
 #undef I // because of some bullshit in <complex.h>
 
+#ifdef __GNUC__
+	#define C3DLAS_PACKED  __attribute__((packed))
+#else 
+	#defiune C3DLAS_PACKED  [[packed]]
+#endif
+
 //#define C3DLAS_USE_SIMD 1
 
 #define _0000b 0x00
@@ -161,10 +167,9 @@ static const char* c3dlas_EnumString(int e) {
 
 
 #define X(suf, t, ...) \
-	typedef struct Vector2 ## suf { \
-		/*    cartesian polar */ \
-		union { t x, rho; }; \
-		union { t y, theta; }; \
+	typedef union Vector2 ## suf { \
+		struct { t x, y; }; /* cartesian */ \
+		struct { t rho, theta; }; /* polar */ \
 	} Vector2 ## suf;
 	
 	C3DLAS_VECTOR_TYPE_LIST(X)
@@ -174,23 +179,21 @@ static const char* c3dlas_EnumString(int e) {
 // This is because of the struct layout convenience for overlapping with 2D polar coordinates. 
 
 #define X(suf, t, ...) \
-	typedef struct Vector3 ## suf { \
-		/*    cartesian  spherical  color */ \
-		union { t x, rho,       r; }; /* rho is the radius */ \
-		union { t y, theta,     g; }; /* rotation in the X-Y plane, with positive x axis being 0, and pi/2 being positive y axis */ \
-		union { t z, phi,       b; }; /* rotation in the plane passing through the Z axis, with 0 being the positive z axis */ \
+	typedef union Vector3 ## suf { \
+		struct { t x, y, z; }; /* cartesian */ \
+		struct { t rho, theta, phi; }; /* spherical, rho: radius, theta: rot in X-Y plane, phi: rotation in the plane passing through the Z axis, with 0 being the positive z axis */ \
+		struct { t r, g, b; }; /* color */ \
 	} Vector3 ## suf;
 	
 	C3DLAS_VECTOR_TYPE_LIST(X)
 #undef X
 
 #define X(suf, t, ...) \
-	typedef struct Vector4 ## suf { \
-		/*    cartesian  spherical  color  quaternion basis */ \
-		union { t x, rho,       r,     i; }; /* rho = the radius */ \
-		union { t y, theta,     g,     j; }; /* theta = rotation in the X-Y plane */ \
-		union { t z, phi,       b,     k; }; /* phi = rotation in the plane passing through the Z axis */ \
-		union { t w,            a,     real; }; /* real is last for memory alignment with 4d cartesian vectors */ \
+	typedef union Vector4 ## suf { \
+		struct { t x, y, z, w; }; /* cartesian */ \
+		struct { t rho, theta, phi; }; /* spherical (4th dimension ignored), rho: radius, theta: rot in X-Y plane, phi: rotation in the plane passing through the Z axis, with 0 being the positive z axis */ \
+		struct { t r, g, b, a; }; /* color */ \
+		struct { t i, j, k, real; }; /* quaternion, real is last for memory alignment with 4d cartesian vectors */ \
 	} Vector4 ## suf;
 	
 	C3DLAS_VECTOR_TYPE_LIST(X)
@@ -199,8 +202,8 @@ static const char* c3dlas_EnumString(int e) {
 
 
 // Best quaternion site on the internet so far: http://www.songho.ca/math/quaternion/quaternion.html
-typedef struct Vector4 Quaternion;
-typedef struct Vector4d Quaterniond;
+typedef union Vector4 Quaternion;
+typedef union Vector4d Quaterniond;
 
 // Rays, but also infinite lines (mathematical lines) because there is no practical
 //   difference besides whether you conside the ray to be one-sided or not.
