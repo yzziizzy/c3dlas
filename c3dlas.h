@@ -170,6 +170,7 @@ static const char* c3dlas_EnumString(int e) {
 	typedef union Vector2 ## suf { \
 		struct { t x, y; }; /* cartesian */ \
 		struct { t rho, theta; }; /* polar */ \
+		float f[2]; \
 	} Vector2 ## suf;
 	
 	C3DLAS_VECTOR_TYPE_LIST(X)
@@ -183,6 +184,7 @@ static const char* c3dlas_EnumString(int e) {
 		struct { t x, y, z; }; /* cartesian */ \
 		struct { t rho, theta, phi; }; /* spherical, rho: radius, theta: rot in X-Y plane, phi: rotation in the plane passing through the Z axis, with 0 being the positive z axis */ \
 		struct { t r, g, b; }; /* color */ \
+		float f[3]; \
 	} Vector3 ## suf;
 	
 	C3DLAS_VECTOR_TYPE_LIST(X)
@@ -194,6 +196,7 @@ static const char* c3dlas_EnumString(int e) {
 		struct { t rho, theta, phi; }; /* spherical (4th dimension ignored), rho: radius, theta: rot in X-Y plane, phi: rotation in the plane passing through the Z axis, with 0 being the positive z axis */ \
 		struct { t r, g, b, a; }; /* color */ \
 		struct { t i, j, k, real; }; /* quaternion, real is last for memory alignment with 4d cartesian vectors */ \
+		float f[4]; \
 	} Vector4 ## suf;
 	
 	C3DLAS_VECTOR_TYPE_LIST(X)

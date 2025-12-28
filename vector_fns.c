@@ -378,12 +378,16 @@ void vDiv##suf##p(const Vector##suf const * top, const Vector##suf const * bot, 
 } \
 \
 ft vDot##suf(const Vector##suf a, const Vector##suf b) { \
-	return vDot##suf##p(&a, &b); \
+	ft tmp = 0; \
+	for(int i = 0; i < sz; i++) { \
+		tmp += a.f[i] * b.f[i]; \
+	} \
+	return tmp;\
 } \
 ft vDot##suf##p(const Vector##suf* a, const Vector##suf* b) { \
 	ft tmp = 0; \
 	for(int i = 0; i < sz; i++) { \
-		tmp += ((ty*)a)[i] * ((ty*)b)[i]; \
+		tmp += a->f[i] * b->f[i]; \
 	} \
 	return tmp;\
 } \
