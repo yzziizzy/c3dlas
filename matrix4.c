@@ -59,6 +59,13 @@ void Matrix4_to_Matrix4x3(Matrix4* m4, Matrix4x3* m43) {
 }
 
 
+// multiplies every element of [in] by t then ADDS IN TO [out]
+void mBlend(Matrix4* in, f32 t, Matrix4* out) {
+	for(int i = 0; i < 16; i++) {
+		out->m[i] += in->m[i] * t;
+	}
+}
+
 // out cannot overlap with a or b
 // with restrict and -O2, this vectorizes nicely.
 void mFastMul(Matrix* restrict a, Matrix* restrict b, Matrix* restrict out) {

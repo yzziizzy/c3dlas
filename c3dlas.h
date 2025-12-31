@@ -979,7 +979,13 @@ Vector3 vMatrixMul3(Vector3 in, Matrix* m);
 Vector4 vMatrixMul4(Vector4 in, Matrix* m);
 Vector3 vMatrixMulProjectedMagic3(Vector3 in, Matrix* m);
 
+
 // These are 3d spatial operations
+
+
+// multiplies every element of [in] by t then ADDS IN TO [out]
+void mBlend(Matrix4* in, f32 t, Matrix4* out);
+
 void mIdent(Matrix* m); // set m to the identity matrix
 void mCopy(Matrix* in, Matrix* out);
 void mFastMul(Matrix* a, Matrix* b, Matrix* out); // a and b cannot also be out. mostly internal use.
