@@ -782,6 +782,22 @@ float dist2TPointRay3(Vector3 p, Ray3 r, float* T);
 // stats need to be recalculated afterward
 void polyPushPoint(Polygon* poly, Vector2 p);
 
+// the point is inserted the specified index, pushing all further ones forward
+// index can be negative, but should be in the range [-pointCount+1, pointCount] inclusive
+// stats need to be recalculated afterward
+void polyInsertPoint(Polygon* poly, int index, Vector2 p);
+
+// a full deep copy
+void polyCopy(Polygon* dst, Polygon* src);
+
+
+void polyExtrude(Polygon* poly, f32 dist, Polygon* out);
+
+
+// breaks each segment into 'degree' number of segments
+void polySubdivide(Polygon* poly, int degree);
+
+
 void polyFreeInternals(Polygon* poly);
 
 // centroid and radius squared
@@ -797,6 +813,7 @@ void polySortCCW(Polygon* poly);
 // Interior distances are negative
 float polyDistToPoint(Polygon* poly, Vector2 p);
 int polyContainsPoint(Polygon* poly, Vector2 p);
+
 
 
 

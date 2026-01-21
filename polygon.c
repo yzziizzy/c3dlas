@@ -78,6 +78,111 @@ void polyPushPoint(Polygon* poly, Vector2 p) {
 	poly->maxRadiusSq = NAN;
 }
 
+// the point is inserted the specified index, pushing all further ones forward
+// index can be negative, but should be in the range [-pointCount+1, pointCount] inclusive
+// stats need to be recalculated afterward
+void polyInsertPoint(Polygon* poly, int index, Vector2 p) {
+	if(poly->pointCount >= poly->pointAlloc) {
+		if(poly->pointAlloc == 0) {
+			poly->pointAlloc = C3DLAS_INITIAL_POLY_POINT_ALLOC;
+			poly->points = C3DLAS_malloc(sizeof(*poly->points) * poly->pointAlloc);
+		}
+		else {
+			poly->pointAlloc *= 2;
+			poly->points = C3DLAS_realloc(poly->points, sizeof(*poly->points) * poly->pointAlloc);
+		}
+	}
+	
+	// make it positive
+	index = (index + poly->pointCount) % poly->pointCount;
+	
+	if(index < poly->pointCount) {
+		// TODO: verify this
+		memmove(poly->points + index + 1, poly->points + index, sizeof(poly->points) * poly->pointCount - index);
+	}
+	
+	poly->points[index] = p;
+	poly->pointCount++;
+	poly->centroid = (Vector2){NAN, NAN};
+	poly->maxRadiusSq = NAN;
+}
+
+
+
+void polyExtrude(Polygon* poly, f32 dist, Polygon* out) {
+	
+	long chlen = poly->pointCount;
+	long chlenm1 = chlen - 1;
+	
+	if(out->pointAlloc != poly->pointAlloc) {
+		out->points = realloc(out->points, sizeof(out->points) * poly->pointAlloc);
+		out->pointAlloc = poly->pointAlloc;
+	}
+	out->pointCount = poly->pointCount;
+
+	Vector2 centroid = {0,0};
+	for(long i = 0; i < poly->pointCount; i++) {
+//	VEC_EACH(&z->convexHull, i, pi) {
+//		vec3 p3 = VEC_item(&z->points, pi);
+		vec2 p2 = poly->points[i];//V2(p3);
+		
+		vec2 pa =  poly->points[(i + 1) % chlen];
+		vec2 pb =  poly->points[(i + chlenm1) % chlen];
+		
+		vec2 A = vNorm2(vSub2(p2, pa));
+		vec2 B = vNorm2(vSub2(p2, pb));
+		
+		
+		f32 sinth = vCross2(A, B);
+		f32 q = dist / sinth;
+		
+		vec2 expt2 = vAdd2(p2, vAdd2(vScale2(A, q), vScale2(B, q)) );
+		
+		out->points[i] = expt2;
+		centroid = vAdd2(centroid, expt2);
+	}
+	
+	// update stats
+	out->centroid = vScale2(centroid, 1.0f / out->pointCount); // should be the same(?), but i don't care to prove that mathematically atm
+	
+	float d = 0;
+	for(int i = 0; i < out->pointCount; i++) {
+		d = fmaxf(d, vDot2(out->centroid, out->points[i]));
+	}
+	
+	out->maxRadiusSq = d;
+}
+
+
+
+// breaks each segment into 'degree' number of segments
+void polySubdivide(Polygon* poly, int degree) {
+	if(degree <= 1) return;
+	
+	long newCount = poly->pointCount * (degree + 1);
+	if(newCount > poly->pointAlloc) {
+		poly->pointAlloc = newCount;
+		poly->points = realloc(poly->points, sizeof(poly->points) * poly->pointAlloc);
+	}
+	
+	vec2 prev = poly->points[0];
+	
+	long n = newCount - 1;
+	for(long i = poly->pointCount - 1; i >= 0; i--) {
+		
+		
+		for(int d = 0; d < degree; d++) {
+			float t = (float)d / (float)degree;
+			poly->points[n--] = vLerp2(prev, poly->points[i], t);
+		}
+		
+		poly->points[n--] = poly->points[i];
+		prev = poly->points[i];
+	}
+
+	poly->pointCount = newCount;
+}
+
 
 void polyCalcCentroid(Polygon* poly) {
 	int cnt = poly->pointCount;
@@ -134,11 +239,34 @@ void polySortCCW(Polygon* poly) {
 	C3DLAS_sort_r(poly->points, poly->pointCount, sizeof(*poly->points), (void*)poly_point_sort_ccw_fn, &poly->centroid);
 }
 
+
+
+
+// a full deep copy
+void polyCopy(Polygon* dst, Polygon* src) {
+	if(dst->pointAlloc != src->pointAlloc) {
+		dst->points = realloc(dst->points, sizeof(dst->points) * src->pointAlloc);
+		dst->pointAlloc = src->pointAlloc;
+	}
+	
+	if(dst->pointCount) {
+		memcpy(dst->points, src->points, sizeof(dst->points) * src->pointCount);
+	}
+	
+	dst->pointCount = src->pointCount;
+	dst->centroid = src->centroid;
+	dst->maxRadiusSq = src->maxRadiusSq;
+}
+
+
+
 void polyFreeInternals(Polygon* poly) {
 	if(poly->points) C3DLAS_free(poly->points);
 	poly->points = NULL;
 	poly->pointCount = 0;
 	poly->pointAlloc = 0;
 }
+
+
 
 
