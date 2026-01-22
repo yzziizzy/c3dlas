@@ -323,6 +323,32 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 }
 
 
+// atrocious algorithm, but i don't have time to waste on a fancier one
+// returns 0 or 1
+int polyIsSelfIntersecting(Polygon* poly) {
+	
+	for(long i = 0; i <= poly->pointCount; i++) {
+		for(long j = i + 1; j <= poly->pointCount; j++) {
+			Line2 line1 = {poly->points[i % poly->pointCount], poly->points[(i + 1) % poly->pointCount]};
+			Line2 line2 = {poly->points[j % poly->pointCount], poly->points[(j + 1) % poly->pointCount]};
+			
+			if(C3DLAS_INTERSECT == intersectLine2Line2(line1, line2)) {
+				if(
+					!vEqExact(line1.a, line2.a) && !vEqExact(line1.b, line2.b) && 
+					!vEqExact(line1.a, line2.b) && !vEqExact(line1.b, line2.a)
+				) {
+				
+					printf("%f,%f -> %f,%f | %f,%f -> %f,%f\n", line1.a.x,line1.a.y, line1.b.x,line1.b.y, line2.a.x,line2.a.y, line2.b.x,line2.b.y);
+					return 1;
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+
 void polyCalcCentroid(Polygon* poly) {
 	int cnt = poly->pointCount;
 	Vector2 centroid = {0,0};

@@ -233,7 +233,8 @@ typedef struct {
 
 // Line *segments*
 typedef struct {
-	Vector2 start, end;
+	union { Vector2 start, a; };
+	union { Vector2 end, b; };
 } Line2;
 
 typedef struct {
@@ -830,7 +831,11 @@ void polyCalcStats(Polygon* poly);
 void polyCalcRadiusSq(Polygon* poly);
 void polyCalcCentroid(Polygon* poly);
 
+// very niche use; doesn't do what you think it does
 void polySortCCW(Polygon* poly);
+
+// returns 0 or 1
+int polyIsSelfIntersecting(Polygon* poly);
 
 
 // Returns the distance from p to the closest point on the polygon.
