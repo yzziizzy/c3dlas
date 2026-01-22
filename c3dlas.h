@@ -61,12 +61,23 @@
 #define FLT_CMP_EPSILON_SQ (FLT_CMP_EPSILON * FLT_CMP_EPSILON)
 #define DBL_CMP_EPSILON_SQ (DBL_CMP_EPSILON_SQ * DBL_CMP_EPSILON_SQ)
 
-#define C3DLAS_COPLANAR  (0)
-#define C3DLAS_FRONT     (1)
-#define C3DLAS_BACK      (2)
-#define C3DLAS_INTERSECT (3)
-#define C3DLAS_DISJOINT  (4)
-#define C3DLAS_PARALLEL  (5)
+#define C3DLAS_RETURN_VALUE_LIST(X) \
+	X(FALSE,     0) \
+	X(COPLANAR,  1) \
+	X(FRONT,     2) \
+	X(BACK,      3) \
+	X(INTERSECT, 4) \
+	X(DISJOINT,  5) \
+	X(PARALLEL,  6) \
+	X(UNKNOWN,   7)
+	
+typedef enum {
+#define X(name, val, ...) C3DLAS_##name = val,
+	C3DLAS_RETURN_VALUE_LIST(X)
+#undef X
+} C3DLAS_retval_t;
+
+extern char const * const C3DLAS_retval__names[];
 
 #ifndef C3DLAS_fprintf
 	#define C3DLAS_fprintf fprintf
@@ -756,6 +767,7 @@ int intersectPoint2Rect2(vec2 a, Quad2 q);
 int intersectLine2Line2(Line2 a, Line2 b);
 int intersectRect2Rect2(Quad2 a, Quad2 b);
 int findIntersectLine2Line2(Line2 a, Line2 b, vec2* out);
+int findIntersectLine2Line2T(Line2 a, Line2 b, vec2* out, float* Ta, float* Tb);
 int findIntersectLine2Ray2(Line2 a, Ray2 b, vec2* out);
 
 float projPointLine2(Vector2 p, Line2 ls);
@@ -796,6 +808,17 @@ void polyExtrude(Polygon* poly, f32 dist, Polygon* out);
 
 // breaks each segment into 'degree' number of segments
 void polySubdivide(Polygon* poly, int degree);
+
+// if out_fn returns nonzero, polyIntersect returns that value immediately, otherwise zero
+// seg_a and seg_b are the index of the point starting the segment which intersects
+int polyIntersect(Polygon* a, Polygon* b, int (*out_fn)(Vector2 p, long seg_a, long seg_b, void* data), void* out_data);
+
+
+// eliminates holes between the two
+// both must be CCW sorted
+// returns C3DLAS_INTERSECT if the union was successful and C3DLAS_DISJOINT if they don't intersect
+// if it returns disjoint then out will be a copy of either a or b
+int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out);
 
 
 void polyFreeInternals(Polygon* poly);

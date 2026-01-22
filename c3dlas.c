@@ -49,6 +49,18 @@
 
 
 
+
+char const * const C3DLAS_retval__names[] = {
+#define X(name, ...) [C3DLAS_##name] = "C3DLAS_" #name,
+	C3DLAS_RETURN_VALUE_LIST(X)
+#undef X
+	0
+};
+
+
+
+
+
 #ifndef _GNU_SOURCE
 static inline void sincosf(float x, float* s, float* c) {
 	*s = sinf(x);

@@ -184,6 +184,143 @@ void polySubdivide(Polygon* poly, int degree) {
 }
 
 
+
+// if out_fn returns nonzero, polyIntersect returns that value immediately, otherwise zero
+// seg_a and seg_b are the index of the point starting the segment which intersects
+int polyIntersect(Polygon* a, Polygon* b, int (*out_fn)(Vector2 p, long seg_a, long seg_b, void* data), void* out_data) {
+	int ret;
+	
+	for(long ai = 0; ai < a->pointCount; ai++) {
+		Line2 aline = {a->points[ai], a->points[(ai + 1) % a->pointCount]};
+		
+		for(long bi = 0; bi < b->pointCount; bi++) {
+			
+			Vector2 p;
+			if(C3DLAS_INTERSECT == findIntersectLine2Line2(aline, (Line2){b->points[bi], b->points[(bi + 1) % b->pointCount]}, &p)) {
+				if(ret = out_fn(p, ai, bi, out_data)) {
+					return ret;
+				}
+			}
+		}
+	}
+	
+	return 0;
+}
+
+
+// eliminates holes between the two
+// both must be CCW sorted
+// returns C3DLAS_INTERSECT if the union was successful and C3DLAS_DISJOINT if they don't intersect
+// if it returns disjoint then out will be a copy of either a or b
+int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
+	int ret = C3DLAS_DISJOINT;
+	
+	
+	// find an extreme point, guaranteed to be on the union. it could be on either polygon
+	int is_a = 1;
+	long start_i;
+	vec2 start = {FLT_MAX, FLT_MAX};
+	for(long ai = 0; ai < a->pointCount; ai++) {
+		if(a->points[ai].x <= start.x) {
+			if(a->points[ai].y < start.y) {
+				start = a->points[ai];
+				start_i = ai;
+			}
+		}
+	}
+	for(long bi = 0; bi < b->pointCount; bi++) {
+		if(b->points[bi].x < start.x) {
+			if(b->points[bi].y < start.y) {
+				start = b->points[bi];
+				start_i = bi;
+				is_a = 0;
+			}
+		}
+	}
+	
+	// the algorithm flips back and forth walking on a and b
+	// c is the first polygon being walked, with the extreme point, and d is the other one initially being searched for intersections
+	Polygon* c = is_a ? a : b;
+	Polygon* d = is_a ? b : a;
+	long end_ci = is_a ? (start_i - 1 + a->pointCount) % a->pointCount : (start_i - 1 + b->pointCount) % b->pointCount;
+	
+	
+	for(long ci = start_i; ci != end_ci; ci = (ci + 1) % c->pointCount) {
+//		long ci = (nci + start_i) % c->pointCount;
+		Line2 cline = {c->points[ci], c->points[(ci + 1) % c->pointCount]};
+		
+		// find the first intersection on line c
+		float best_tc = FLT_MAX;
+		long best_di = -1;
+		Vector2 best_p;
+		
+		for(long di = 0; di <= d->pointCount; di++) {
+			Line2 dline = {d->points[di], d->points[(di + 1) % d->pointCount]};
+			
+			float tc, td;
+			Vector2 p;
+			if(C3DLAS_INTERSECT == findIntersectLine2Line2T(cline, dline, &p, &tc, &td)) {
+				
+				if(tc < best_tc) {
+					best_tc = tc;
+					best_di = di;
+					best_p = p;
+					ret = C3DLAS_INTERSECT;
+				}
+			}
+		}
+
+		polyPushPoint(out, c->points[ci]);
+		
+		if(best_tc == FLT_MAX) { // no intersection, keep walking c
+			continue;
+		}
+		
+		// push the new point best_p then start walking on d until we get back to c		
+		polyPushPoint(out, best_p);
+		
+		long end_di = best_di;
+		for(long di = (best_di + 1) % d->pointCount; di != end_di; di = (di + 1) % d->pointCount) {
+			Line2 dline = {d->points[di], d->points[(di + 1) % d->pointCount]};
+			
+			// find the first intersection on line d
+			float best_td = FLT_MAX;
+			long best_cci = -1;
+			Vector2 best_p;
+			
+			for(long cci = 0; cci <= c->pointCount; cci++) {
+				Line2 ccline = {c->points[cci % c->pointCount], c->points[(cci + 1) % c->pointCount]};
+
+				float td, tcc;
+				Vector2 p;
+				if(C3DLAS_INTERSECT == findIntersectLine2Line2T(dline, ccline, &p, &td, &tcc)) {
+					if(td < best_td) {
+						best_td = td;
+						best_cci = cci % c->pointCount;
+						best_p = p;
+					}
+				}
+			}
+			
+			polyPushPoint(out, d->points[di]);
+
+			if(best_td == FLT_MAX) { // no intersection, keep walking c
+				continue;
+			}
+			
+			polyPushPoint(out, best_p);
+			
+			// go back to polygon c
+			ci = (best_cci + 1) % c->pointCount;
+			break;
+		}
+		
+	}
+	
+	return ret;
+}
+
+
 void polyCalcCentroid(Polygon* poly) {
 	int cnt = poly->pointCount;
 	Vector2 centroid = {0,0};
