@@ -818,6 +818,7 @@ int polyIntersect(Polygon* a, Polygon* b, int (*out_fn)(Vector2 p, long seg_a, l
 // both must be CCW sorted
 // returns C3DLAS_INTERSECT if the union was successful and C3DLAS_DISJOINT if they don't intersect
 // if it returns disjoint then out will be a copy of either a or b
+// requires both polygons to be wound in the same direction
 int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out);
 
 

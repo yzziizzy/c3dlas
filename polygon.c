@@ -212,6 +212,7 @@ int polyIntersect(Polygon* a, Polygon* b, int (*out_fn)(Vector2 p, long seg_a, l
 // both must be CCW sorted
 // returns C3DLAS_INTERSECT if the union was successful and C3DLAS_DISJOINT if they don't intersect
 // if it returns disjoint then out will be a copy of either a or b
+// requires both polygons to be wound in the same direction
 int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 	int ret = C3DLAS_DISJOINT;
 	
@@ -246,8 +247,8 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 	
 	
 	for(long ci = start_i; ci != end_ci; ci = (ci + 1) % c->pointCount) {
-//		long ci = (nci + start_i) % c->pointCount;
 		Line2 cline = {c->points[ci], c->points[(ci + 1) % c->pointCount]};
+		
 		
 		// find the first intersection on line c
 		float best_tc = FLT_MAX;
@@ -255,7 +256,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 		Vector2 best_p;
 		
 		for(long di = 0; di <= d->pointCount; di++) {
-			Line2 dline = {d->points[di], d->points[(di + 1) % d->pointCount]};
+			Line2 dline = {d->points[di % d->pointCount], d->points[(di + 1) % d->pointCount]};
 			
 			float tc, td;
 			Vector2 p;
@@ -263,14 +264,14 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 				
 				if(tc < best_tc) {
 					best_tc = tc;
-					best_di = di;
+					best_di = di % d->pointCount;
 					best_p = p;
 					ret = C3DLAS_INTERSECT;
 				}
 			}
 		}
 
-		polyPushPoint(out, c->points[ci]);
+		polyPushPoint(out, c->points[ci % c->pointCount]);
 		
 		if(best_tc == FLT_MAX) { // no intersection, keep walking c
 			continue;
@@ -280,8 +281,8 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 		polyPushPoint(out, best_p);
 		
 		long end_di = best_di;
-		for(long di = (best_di + 1) % d->pointCount; di != end_di; di = (di + 1) % d->pointCount) {
-			Line2 dline = {d->points[di], d->points[(di + 1) % d->pointCount]};
+		for(long di = (best_di + 1) % d->pointCount; di != end_di; di++) {
+			Line2 dline = {d->points[di % d->pointCount], d->points[(di + 1) % d->pointCount]};
 			
 			// find the first intersection on line d
 			float best_td = FLT_MAX;
@@ -302,11 +303,12 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 				}
 			}
 			
-			polyPushPoint(out, d->points[di]);
+			polyPushPoint(out, d->points[di % d->pointCount]);
 
 			if(best_td == FLT_MAX) { // no intersection, keep walking c
 				continue;
 			}
+			
 			
 			polyPushPoint(out, best_p);
 			
