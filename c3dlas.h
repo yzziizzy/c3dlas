@@ -100,6 +100,10 @@ extern char const * const C3DLAS_retval__names[];
 	#define C3DLAS_malloc(sz) malloc(sz)
 #endif
 
+#ifndef C3DLAS_calloc
+	#define C3DLAS_calloc(sz, cnt) calloc(sz, cnt)
+#endif
+
 #ifndef C3DLAS_realloc
 	#define C3DLAS_realloc(p, sz) realloc(p, sz)
 #endif
@@ -824,6 +828,9 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out);
 
 
 void polyFreeInternals(Polygon* poly);
+
+// unsigned area
+float polyCalcArea(Polygon* poly);
 
 // centroid and radius squared
 void polyCalcStats(Polygon* poly);

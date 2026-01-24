@@ -1,5 +1,7 @@
 
 
+#include "internal_array.h"
+
 
 int polyContainsPoint(Polygon* poly, Vector2 p) {
 	int inside = 0;
@@ -213,7 +215,7 @@ int polyIntersect(Polygon* a, Polygon* b, int (*out_fn)(Vector2 p, long seg_a, l
 // returns C3DLAS_INTERSECT if the union was successful and C3DLAS_DISJOINT if they don't intersect
 // if it returns disjoint then out will be a copy of either a or b
 // requires both polygons to be wound in the same direction
-int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
+int polyExteriorUnion____(Polygon* a, Polygon* b, Polygon* out) {
 	int ret = C3DLAS_DISJOINT;
 	
 	
@@ -249,11 +251,11 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 	for(long ci = start_i; ci != end_ci; ci = (ci + 1) % c->pointCount) {
 		Line2 cline = {c->points[ci], c->points[(ci + 1) % c->pointCount]};
 		
-		
 		// find the first intersection on line c
 		float best_tc = FLT_MAX;
 		long best_di = -1;
 		Vector2 best_p;
+		int num_crossings = 0;
 		
 		for(long di = 0; di <= d->pointCount; di++) {
 			Line2 dline = {d->points[di % d->pointCount], d->points[(di + 1) % d->pointCount]};
@@ -261,6 +263,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 			float tc, td;
 			Vector2 p;
 			if(C3DLAS_INTERSECT == findIntersectLine2Line2T(cline, dline, &p, &tc, &td)) {
+				num_crossings++;
 				
 				if(tc < best_tc) {
 					best_tc = tc;
@@ -273,7 +276,8 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 
 		polyPushPoint(out, c->points[ci % c->pointCount]);
 		
-		if(best_tc == FLT_MAX) { // no intersection, keep walking c
+		// HACK: num_crossings is a cheap hack to clip off dogears. it's not correct but works for the current needs.
+		if(num_crossings > 1 || best_tc == FLT_MAX) { // no intersection, keep walking c
 			continue;
 		}
 		
@@ -288,6 +292,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 			float best_td = FLT_MAX;
 			long best_cci = -1;
 			Vector2 best_p;
+			int num_crossings = 0;
 			
 			for(long cci = 0; cci <= c->pointCount; cci++) {
 				Line2 ccline = {c->points[cci % c->pointCount], c->points[(cci + 1) % c->pointCount]};
@@ -295,6 +300,8 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 				float td, tcc;
 				Vector2 p;
 				if(C3DLAS_INTERSECT == findIntersectLine2Line2T(dline, ccline, &p, &td, &tcc)) {
+					num_crossings++;
+				
 					if(td < best_td) {
 						best_td = td;
 						best_cci = cci % c->pointCount;
@@ -305,7 +312,8 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 			
 			polyPushPoint(out, d->points[di % d->pointCount]);
 
-			if(best_td == FLT_MAX) { // no intersection, keep walking c
+			// HACK: num_crossings is a cheap hack to clip off dogears. it's not correct but works for the current needs.
+			if(/*num_crossings > 1 ||*/ best_td == FLT_MAX) { // no intersection, keep walking c
 				continue;
 			}
 			
@@ -314,10 +322,15 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 			
 			// go back to polygon c
 			ci = (best_cci + 1) % c->pointCount;
+			polyPushPoint(out, c->points[ci % c->pointCount]);
+			
 			break;
 		}
 		
+		if(ci == end_ci) break; // in case the crossing happened on the last segment
 	}
+	
+	polyPushPoint(out, c->points[end_ci]);
 	
 	return ret;
 }
@@ -346,6 +359,22 @@ int polyIsSelfIntersecting(Polygon* poly) {
 	}
 
 	return 0;
+}
+
+
+// unsigned area
+float polyCalcArea(Polygon* poly) {
+	f32 area = 0;
+	
+	for(long i = 0; i < poly->pointCount; i++) {
+		vec2 p0 = poly->points[i];
+		vec2 p1 = poly->points[(i + 1) % poly->pointCount];
+		
+		area += p0.x * p1.y;
+		area -= p0.y * p1.x;
+	}
+	
+	return 0.5f * fabs(area);
 }
 
 
@@ -434,4 +463,468 @@ void polyFreeInternals(Polygon* poly) {
 
 
 
+
+
+struct poly_CrossingInfo {
+	long i;
+	long crossing_count;
+};
+
+struct poly_CrossingPoint {
+	long ci, di; // every crossing has a unique index set; a straight line can't cross twice
+	long pi; // index of the crossing point
+	float tc, td; // t values for the c and d line respectively
+	vec2 p;
+};
+
+static int poly_point_sort_c_fn(struct poly_CrossingPoint** a, struct poly_CrossingPoint** b, void* meh) {
+	if((**a).tc < (**b).tc) return -1;
+	if((**a).tc > (**b).tc) return 1;
+	return 0;
+}
+static int poly_point_sort_d_fn(struct poly_CrossingPoint** a, struct poly_CrossingPoint** b, void* meh) {
+	if((**a).td < (**b).td) return -1;
+	if((**a).td > (**b).td) return 1;
+	return 0;
+}
+
+
+// eliminates holes between the two
+// both must be CCW sorted
+// returns C3DLAS_INTERSECT if the union was successful and C3DLAS_DISJOINT if they don't intersect
+// if it returns disjoint then out will be a copy of either a or b
+int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
+	
+	if(b->pointCount == 0 || a->pointCount == 0) {
+		return C3DLAS_DISJOINT;
+	}
+	
+	
+	// figure out all the segments that have crossings, and how many they have.
+	long* crossinglist_a = C3DLAS_calloc(1, sizeof(*crossinglist_a) * a->pointCount); // all from c
+	long* crossinglist_b = C3DLAS_calloc(1, sizeof(*crossinglist_b) * b->pointCount); // all from d
+	long total_crossings = 0;
+	long num_multiples = 0;
+	
+	for(long ai = 0; ai < a->pointCount; ai++) {
+		Line2 aline = {a->points[ai], a->points[(ai + 1) % a->pointCount]};
+		
+		for(long bi = 0; bi < b->pointCount; bi++) {
+			Line2 bline = {b->points[bi], b->points[(bi + 1) % b->pointCount]};
+			
+			if(C3DLAS_INTERSECT == intersectLine2Line2(aline, bline)) {
+				crossinglist_a[ai]++;
+				crossinglist_b[bi]++;
+				
+				if(crossinglist_b[bi] == 2 || crossinglist_a[ai] == 2) {
+					num_multiples++;
+				} 
+				
+				total_crossings++;
+			}
+		}
+	}
+	
+	
+	// some trivial cases
+	if(total_crossings == 0) {
+		// check if one is inside the other
+		
+		C3DLAS_free(crossinglist_a);
+		C3DLAS_free(crossinglist_b);
+		
+		if(polyContainsPoint(a, b->points[0])) { // b is inside a, return a
+			polyCopy(out, a);
+			return C3DLAS_INTERSECT;
+		}
+		
+		if(polyContainsPoint(b, a->points[0])) { // a is inside b, return b
+			polyCopy(out, b);
+			return C3DLAS_INTERSECT;
+		}
+		
+		return C3DLAS_DISJOINT;
+	}
+	
+	
+	// TODO: combine this part into the complicated one's setup?
+	// find an extreme point, guaranteed to be on the union. it could be on either polygon
+	int is_a = 1;
+	long start_i;
+	vec2 start = {FLT_MAX, FLT_MAX};
+	for(long ai = 0; ai < a->pointCount; ai++) {
+		if(a->points[ai].x <= start.x) {
+			if(a->points[ai].y < start.y) {
+				start = a->points[ai];
+				start_i = ai;
+			}
+		}
+	}
+	for(long bi = 0; bi < b->pointCount; bi++) {
+		if(b->points[bi].x < start.x) {
+			if(b->points[bi].y < start.y) {
+				start = b->points[bi];
+				start_i = bi;
+				is_a = 0;
+			}
+		}
+	}
+	
+	
+	
+	// the algorithm flips back and forth walking on a and b
+	// c is the first polygon being walked, with the extreme point, and d is the other one initially being searched for intersections
+	Polygon* c = is_a ? a : b;
+	Polygon* d = is_a ? b : a;
+	long* crossinglist_c = is_a ? crossinglist_a : crossinglist_b;
+	long* crossinglist_d = is_a ? crossinglist_b : crossinglist_a;
+	long end_ci = is_a ? (start_i - 1 + a->pointCount) % a->pointCount : (start_i - 1 + b->pointCount) % b->pointCount;
+	
+	
+	
+	if(num_multiples == 0) { // somewhat simple algorithm
+		
+		// walk from the start point, adding the obvious segment if there's only one but going into
+		//  a more complicated algorithm if there's crossings
+		
+		for(long ci = start_i; ci != end_ci; ci = (ci + 1) % c->pointCount) {
+			
+//			if(debug1++ >= 12) return C3DLAS_INTERSECT;
+			
+			long nc = crossinglist_c[ci];
+			if(nc == 0) { // easy case: one edge, push it and carry on
+				polyPushPoint(out, c->points[ci % c->pointCount]);
+				continue;
+			}
+		
+			
+			Line2 cline = {c->points[ci], c->points[(ci + 1) % c->pointCount]};
+			
+			long best_di;
+			for(long di = 0; di < d->pointCount; di++) { // maybe could be cached
+				Line2 dline = {d->points[di % d->pointCount], d->points[(di + 1) % d->pointCount]};
+			
+				Vector2 p;
+				if(C3DLAS_INTERSECT == findIntersectLine2Line2(cline, dline, &p)) {
+					polyPushPoint(out, c->points[ci % c->pointCount]);
+					polyPushPoint(out, p);
+					best_di = di;
+					break;
+				}
+			}
+			
+			// the entire d-search
+			long end_di = best_di;
+			for(long di = (best_di + 1) % d->pointCount; di != end_di; di = (di + 1) % d->pointCount) {
+		
+		
+//				if(debug2++ >= 12) return C3DLAS_INTERSECT;
+		
+				long nc = crossinglist_d[di];
+				if(nc == 0) { // easy case: one edge, push it and carry on
+					polyPushPoint(out, d->points[di % d->pointCount]);
+					continue;
+				}
+			
+				Line2 dline = {d->points[di], d->points[(di + 1) % d->pointCount]};
+				
+				long cci = 0;
+				for(; cci <= c->pointCount; cci++) { // maybe could be cached
+					Line2 ccline = {c->points[cci % c->pointCount], c->points[(cci + 1) % c->pointCount]};
+				
+					Vector2 p;
+					if(C3DLAS_INTERSECT == findIntersectLine2Line2(ccline, dline, &p)) {
+						polyPushPoint(out, d->points[di % d->pointCount]);
+						polyPushPoint(out, p);
+						break;
+					}
+				}
+				
+				// back to the c-search
+				ci = (cci) % c->pointCount;
+				
+				break;
+			}
+				
+			if(ci == end_ci) break;
+		}
+		
+		// returns below
+	}
+	else { // there are multiple crossings of the same edge
+		
+		// complicated fucked up graph-based algorithm
+		
+		ARR(struct poly_CrossingInfo) cr_infos_c = {};
+		ARR(struct poly_CrossingInfo) cr_infos_d = {};
+		ARR(struct poly_CrossingPoint) cr_points = {};
+		
+		long max_crossing_count = 0; 
+		
+		// make a list of all the crossing points and a list of metadata fro both c and d
+		for(long ci = 0; ci < c->pointCount; ci++) {
+			if(0 == crossinglist_c[ci]) continue;
+			
+			
+			struct poly_CrossingInfo* cri_c = NULL;
+			
+			Line2 cline = {c->points[ci], c->points[(ci + 1) % c->pointCount]};
+			
+			for(long di = 0; di < d->pointCount; di++) {
+				if(0 == crossinglist_d[di]) continue;
+				
+				Line2 dline = {d->points[di], d->points[(di + 1) % d->pointCount]};
+			
+				float tc, td;
+				Vector2 p;
+				if(C3DLAS_INTERSECT == findIntersectLine2Line2T(cline, dline, &p, &tc, &td)) {
+					
+					struct poly_CrossingPoint* crp;
+					ARR_inc(&cr_points, crp);
+					crp->ci = ci;
+					crp->di = di;
+					crp->pi = cr_points.count - 1;
+					crp->tc = tc;
+					crp->td = td;
+					crp->p = p;
+					
+					// Just checking for uniqueness; linear search should be fine considering how few crossings there should be in most
+					//   use cases. If you put ridiculously bad polygons in you get ridiculously bad performance out.
+					struct poly_CrossingInfo* cri_d = NULL;
+					ARR_EACH(&cr_infos_d, i) {
+						if(cr_infos_d.data[i].i != di) continue;
+						cri_d = &cr_infos_d.data[i];
+						break;
+					}
+					if(!cri_d) {
+						ARR_inc(&cr_infos_d, cri_d);
+						cri_d->i = di;
+						cri_d->crossing_count = 0;
+					}
+					
+					if(!cri_c) {
+						ARR_EACH(&cr_infos_c, i) {
+							if(cr_infos_c.data[i].i != ci) continue;
+							cri_c = &cr_infos_c.data[i];
+							break;
+						}
+						if(!cri_c) {
+							ARR_inc(&cr_infos_c, cri_c);
+							cri_c->i = ci;
+							cri_c->crossing_count = 0;
+						}	
+					}
+					
+					cri_c->crossing_count++;
+					cri_d->crossing_count++;
+					
+					max_crossing_count = MAX(max_crossing_count, MAX(cri_c->crossing_count, cri_d->crossing_count));
+				}
+			}
+		}
+		
+		struct poly_CrossingPoint** point_list = C3DLAS_malloc(sizeof(*point_list) * max_crossing_count);
+		
+		struct Edge {
+			long a, b; // [c->points | d->points | cr_points]
+		};
+		
+		ARR(struct Edge) edges = {}; 
+		
+		#define add_edge(x, y) \
+			ARR_push(&edges, (struct Edge){.a = x, .b = y})
+			
+		
+		// add all the edges
+		
+		long coff = c->pointCount;
+		long cdoff = c->pointCount + d->pointCount;
+		ARR_EACH(&cr_infos_c, i) {
+			struct poly_CrossingInfo* cri = &cr_infos_c.data[i];
+			long pt_cnt = 0;
+			
+			// collect c crossings
+			ARR_EACH(&cr_points, j) {
+				if(cri->i != cr_points.data[j].ci) continue;
+				point_list[pt_cnt++] = &cr_points.data[j];
+			}
+			
+			//sort by tc
+			C3DLAS_sort_r(point_list, pt_cnt, sizeof(*point_list), (void*)poly_point_sort_c_fn, NULL);
+			
+			// add edges
+			add_edge(cri->i, point_list[0]->pi + cdoff);
+			for(int j = 1; j < pt_cnt; j++) {
+				add_edge(point_list[j - 1]->pi + cdoff, point_list[j]->pi + cdoff);
+			}
+			add_edge(point_list[pt_cnt - 1]->pi + cdoff, (cri->i + 1) % c->pointCount);
+		}
+		
+		ARR_EACH(&cr_infos_d, i) {
+			struct poly_CrossingInfo* cri = &cr_infos_d.data[i];
+			long pt_cnt = 0;
+			
+			// collect d crossings
+			ARR_EACH(&cr_points, j) {
+				if(cri->i != cr_points.data[j].di) continue;
+				point_list[pt_cnt++] = &cr_points.data[j];
+			}
+			
+			//sort by td
+			C3DLAS_sort_r(point_list, pt_cnt, sizeof(*point_list), (void*)poly_point_sort_d_fn, NULL);
+			
+			// add edges
+			add_edge(cri->i + coff, point_list[0]->pi + cdoff);
+			for(int j = 1; j < pt_cnt; j++) {
+				add_edge(point_list[j - 1]->pi + cdoff, point_list[j]->pi + cdoff);
+			}
+			add_edge(point_list[pt_cnt - 1]->pi + cdoff, ((cri->i + 1) % d->pointCount) + coff);
+		}
+		
+	
+		// now for the actual edge-following algorithm
+		
+		long prevprev = (start_i - 1 + c->pointCount) % c->pointCount;
+		long prev = start_i;
+		while(1) {
+			
+			// TODO: some sort of absolute limit, like croff+vec_len(cr_points)+1
+//			if(debug1++ > 61) break;
+			
+			if(prev < coff) {
+				polyPushPoint(out, c->points[prev]);
+
+				if(crossinglist_c[prev] == 0) {
+					prevprev = prev;
+					prev = (prev + 1) % c->pointCount;
+				}
+				else {
+					
+					// search the edges
+					float best_angle = FLT_MAX;
+					struct Edge* best_edge = NULL;
+					
+					vec2 p3 = (prevprev < coff) ? c->points[prevprev] : ((prevprev < cdoff) ? d->points[prevprev - coff] : VEC_item(&cr_points, prevprev - cdoff).p);
+					vec2 p1 = c->points[prev];
+					vec2 best_p = {};
+					
+					ARR_EACH(&edges, j) {
+						struct Edge* e = &edges.data[j];
+						if(e->a != prev) continue;
+						
+						// should only be two outgoing edges; one on a c line and one on a d line
+						// p1 is the pivot // positive = CCW, negative = CW
+						
+						vec2 p2 = (e->b < coff) ? c->points[e->b] : ((e->b < cdoff) ? d->points[e->b - coff] : VEC_item(&cr_points, e->b - cdoff).p);
+						float angle = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x); 
+						
+						if(angle < best_angle) {
+							best_angle = angle;
+							best_edge = e;
+							best_p = p2;
+						}
+					}
+					
+					prevprev = prev;
+					prev = best_edge->b;
+				}
+			
+			}
+			else if(prev < cdoff) {
+				int di = prev - coff;
+				polyPushPoint(out, d->points[prev - coff]);
+
+				if(crossinglist_d[di] == 0) {
+					prevprev = prev;
+					prev = coff + ((di + 1) % d->pointCount);
+				}
+				else {
+					// search the edges
+					
+					float best_angle = FLT_MAX;
+					struct Edge* best_edge = NULL;
+					
+					vec2 p3 = (prevprev < coff) ? c->points[prevprev] : ((prevprev < cdoff) ? d->points[prevprev - coff] : VEC_item(&cr_points, prevprev - cdoff).p);
+					vec2 p1 = d->points[prev - coff];
+					vec2 best_p = {};
+					
+					ARR_EACH(&edges, j) {
+						struct Edge* e = &edges.data[j];
+						if(e->a != prev) continue;
+						
+						// should only be two outgoing edges; one on a c line and one on a d line
+						// p1 is the pivot // positive = CCW, negative = CW
+						
+						vec2 p2 = (e->b < coff) ? c->points[e->b] : ((e->b < cdoff) ? d->points[e->b - coff] : VEC_item(&cr_points, e->b - cdoff).p);
+						float angle = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x); 
+						
+						if(angle < best_angle) {
+							best_angle = angle;
+							best_edge = e;
+							best_p = p2;
+						}
+					}
+					
+					prevprev = prev;
+					prev = best_edge->b;
+				}
+			
+			}
+			else { // crossing point
+
+				// search the edges				
+				
+				float best_angle = FLT_MAX;
+				struct Edge* best_edge = NULL;
+				
+				vec2 p3;
+				if(prevprev < coff) p3 = c->points[prevprev];
+				else if(prevprev < cdoff) p3 = d->points[prevprev - coff];
+				else p3 = VEC_item(&cr_points, prevprev - cdoff).p;
+				
+				
+				vec2 p1 = VEC_item(&cr_points, prev - cdoff).p;
+				vec2 best_p = {};
+
+				polyPushPoint(out, p1);
+
+				ARR_EACH(&edges, j) {
+					struct Edge* e = &edges.data[j];
+					if(e->a != prev) continue;
+					
+					// should only be two outgoing edges; one on a c line and one on a d line
+					// p1 is the pivot // positive = CCW, negative = CW
+					
+					vec2 p2 = (e->b < coff) ? c->points[e->b] : ((e->b < cdoff) ? d->points[e->b - coff] : VEC_item(&cr_points, e->b - cdoff).p);
+					float angle = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x); 
+					
+					if(angle < best_angle) {
+						best_angle = angle;
+						best_edge = e;
+						best_p = p2;
+					}
+				}
+				
+				prevprev = prev;
+				prev = best_edge->b;
+			}
+			
+			if(prev == end_ci) break; 
+		}
+		
+		
+		ARR_free(&cr_infos_c);
+		ARR_free(&cr_infos_d);
+		ARR_free(&cr_points);
+		ARR_free(&edges);
+		C3DLAS_free(point_list);
+	}
+	
+	
+	C3DLAS_free(crossinglist_a);
+	C3DLAS_free(crossinglist_b);
+	
+	return C3DLAS_INTERSECT;
+
+}
 
