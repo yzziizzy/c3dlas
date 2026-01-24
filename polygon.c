@@ -340,8 +340,8 @@ int polyExteriorUnion____(Polygon* a, Polygon* b, Polygon* out) {
 // returns 0 or 1
 int polyIsSelfIntersecting(Polygon* poly) {
 	
-	for(long i = 0; i <= poly->pointCount; i++) {
-		for(long j = i + 1; j <= poly->pointCount; j++) {
+	for(long i = 0; i < poly->pointCount; i++) {
+		for(long j = 0; j < poly->pointCount; j++) {
 			Line2 line1 = {poly->points[i % poly->pointCount], poly->points[(i + 1) % poly->pointCount]};
 			Line2 line2 = {poly->points[j % poly->pointCount], poly->points[(j + 1) % poly->pointCount]};
 			
@@ -425,6 +425,7 @@ static int poly_point_sort_ccw_fn(Vector2* a, Vector2* b, Vector2* center) {
 	return ret == 0 ? 0 : (ret > 0 ? -1 : 1);
 }
 
+// very niche use; doesn't do what you think it does
 void polySortCCW(Polygon* poly) {
 	if(!isfinite(poly->centroid.x)) {
 		polyCalcCentroid(poly);
@@ -443,7 +444,7 @@ void polyCopy(Polygon* dst, Polygon* src) {
 		dst->pointAlloc = src->pointAlloc;
 	}
 	
-	if(dst->pointCount) {
+	if(src->pointCount) {
 		memcpy(dst->points, src->points, sizeof(dst->points) * src->pointCount);
 	}
 	
@@ -464,6 +465,8 @@ void polyFreeInternals(Polygon* poly) {
 
 
 
+
+// Polygon Union
 
 struct poly_CrossingInfo {
 	long i;
@@ -786,10 +789,9 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 		
 		long prevprev = (start_i - 1 + c->pointCount) % c->pointCount;
 		long prev = start_i;
-		while(1) {
+		do {
 			
 			// TODO: some sort of absolute limit, like croff+vec_len(cr_points)+1
-//			if(debug1++ > 61) break;
 			
 			if(prev < coff) {
 				polyPushPoint(out, c->points[prev]);
@@ -909,8 +911,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 				prev = best_edge->b;
 			}
 			
-			if(prev == end_ci) break; 
-		}
+		} while(prev != start_i);
 		
 		
 		ARR_free(&cr_infos_c);
