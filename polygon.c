@@ -210,131 +210,6 @@ int polyIntersect(Polygon* a, Polygon* b, int (*out_fn)(Vector2 p, long seg_a, l
 }
 
 
-// eliminates holes between the two
-// both must be CCW sorted
-// returns C3DLAS_INTERSECT if the union was successful and C3DLAS_DISJOINT if they don't intersect
-// if it returns disjoint then out will be a copy of either a or b
-// requires both polygons to be wound in the same direction
-int polyExteriorUnion____(Polygon* a, Polygon* b, Polygon* out) {
-	int ret = C3DLAS_DISJOINT;
-	
-	
-	// find an extreme point, guaranteed to be on the union. it could be on either polygon
-	int is_a = 1;
-	long start_i;
-	vec2 start = {FLT_MAX, FLT_MAX};
-	for(long ai = 0; ai < a->pointCount; ai++) {
-		if(a->points[ai].x <= start.x) {
-			if(a->points[ai].y < start.y) {
-				start = a->points[ai];
-				start_i = ai;
-			}
-		}
-	}
-	for(long bi = 0; bi < b->pointCount; bi++) {
-		if(b->points[bi].x < start.x) {
-			if(b->points[bi].y < start.y) {
-				start = b->points[bi];
-				start_i = bi;
-				is_a = 0;
-			}
-		}
-	}
-	
-	// the algorithm flips back and forth walking on a and b
-	// c is the first polygon being walked, with the extreme point, and d is the other one initially being searched for intersections
-	Polygon* c = is_a ? a : b;
-	Polygon* d = is_a ? b : a;
-	long end_ci = is_a ? (start_i - 1 + a->pointCount) % a->pointCount : (start_i - 1 + b->pointCount) % b->pointCount;
-	
-	
-	for(long ci = start_i; ci != end_ci; ci = (ci + 1) % c->pointCount) {
-		Line2 cline = {c->points[ci], c->points[(ci + 1) % c->pointCount]};
-		
-		// find the first intersection on line c
-		float best_tc = FLT_MAX;
-		long best_di = -1;
-		Vector2 best_p;
-		int num_crossings = 0;
-		
-		for(long di = 0; di <= d->pointCount; di++) {
-			Line2 dline = {d->points[di % d->pointCount], d->points[(di + 1) % d->pointCount]};
-			
-			float tc, td;
-			Vector2 p;
-			if(C3DLAS_INTERSECT == findIntersectLine2Line2T(cline, dline, &p, &tc, &td)) {
-				num_crossings++;
-				
-				if(tc < best_tc) {
-					best_tc = tc;
-					best_di = di % d->pointCount;
-					best_p = p;
-					ret = C3DLAS_INTERSECT;
-				}
-			}
-		}
-
-		polyPushPoint(out, c->points[ci % c->pointCount]);
-		
-		// HACK: num_crossings is a cheap hack to clip off dogears. it's not correct but works for the current needs.
-		if(num_crossings > 1 || best_tc == FLT_MAX) { // no intersection, keep walking c
-			continue;
-		}
-		
-		// push the new point best_p then start walking on d until we get back to c		
-		polyPushPoint(out, best_p);
-		
-		long end_di = best_di;
-		for(long di = (best_di + 1) % d->pointCount; di != end_di; di++) {
-			Line2 dline = {d->points[di % d->pointCount], d->points[(di + 1) % d->pointCount]};
-			
-			// find the first intersection on line d
-			float best_td = FLT_MAX;
-			long best_cci = -1;
-			Vector2 best_p;
-			int num_crossings = 0;
-			
-			for(long cci = 0; cci <= c->pointCount; cci++) {
-				Line2 ccline = {c->points[cci % c->pointCount], c->points[(cci + 1) % c->pointCount]};
-
-				float td, tcc;
-				Vector2 p;
-				if(C3DLAS_INTERSECT == findIntersectLine2Line2T(dline, ccline, &p, &td, &tcc)) {
-					num_crossings++;
-				
-					if(td < best_td) {
-						best_td = td;
-						best_cci = cci % c->pointCount;
-						best_p = p;
-					}
-				}
-			}
-			
-			polyPushPoint(out, d->points[di % d->pointCount]);
-
-			// HACK: num_crossings is a cheap hack to clip off dogears. it's not correct but works for the current needs.
-			if(/*num_crossings > 1 ||*/ best_td == FLT_MAX) { // no intersection, keep walking c
-				continue;
-			}
-			
-			
-			polyPushPoint(out, best_p);
-			
-			// go back to polygon c
-			ci = (best_cci + 1) % c->pointCount;
-			polyPushPoint(out, c->points[ci % c->pointCount]);
-			
-			break;
-		}
-		
-		if(ci == end_ci) break; // in case the crossing happened on the last segment
-	}
-	
-	polyPushPoint(out, c->points[end_ci]);
-	
-	return ret;
-}
-
 
 // atrocious algorithm, but i don't have time to waste on a fancier one
 // returns 0 or 1
@@ -351,7 +226,7 @@ int polyIsSelfIntersecting(Polygon* poly) {
 					!vEqExact(line1.a, line2.b) && !vEqExact(line1.b, line2.a)
 				) {
 				
-					printf("%f,%f -> %f,%f | %f,%f -> %f,%f\n", line1.a.x,line1.a.y, line1.b.x,line1.b.y, line2.a.x,line2.a.y, line2.b.x,line2.b.y);
+//					printf("%f,%f -> %f,%f | %f,%f -> %f,%f\n", line1.a.x,line1.a.y, line1.b.x,line1.b.y, line2.a.x,line2.a.y, line2.b.x,line2.b.y);
 					return 1;
 				}
 			}
@@ -590,13 +465,15 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 		// walk from the start point, adding the obvious segment if there's only one but going into
 		//  a more complicated algorithm if there's crossings
 		
-		for(long ci = start_i; ci != end_ci; ci = (ci + 1) % c->pointCount) {
+		long ci = start_i;
+		do {
 			
 //			if(debug1++ >= 12) return C3DLAS_INTERSECT;
 			
 			long nc = crossinglist_c[ci];
 			if(nc == 0) { // easy case: one edge, push it and carry on
 				polyPushPoint(out, c->points[ci % c->pointCount]);
+				ci = (ci + 1) % c->pointCount;
 				continue;
 			}
 		
@@ -644,13 +521,13 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 				}
 				
 				// back to the c-search
-				ci = (cci) % c->pointCount;
+				ci = (cci + 1) % c->pointCount;
 				
 				break;
 			}
 				
-			if(ci == end_ci) break;
-		}
+		} while(ci != start_i);
+		
 		
 		// returns below
 	}

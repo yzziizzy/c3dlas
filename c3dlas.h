@@ -14,7 +14,17 @@
 	#defiune C3DLAS_PACKED  [[packed]]
 #endif
 
-//#define C3DLAS_USE_SIMD 1
+// SIMD macros
+#ifdef C3DLAS_USE_AVX2
+	#define C3DLAS_USE_AVX
+#endif
+
+#ifdef C3DLAS_USE_AVX
+	#define C3DLAS_USE_SSE
+#endif
+
+// default off
+//#define C3DLAS_USE_MMX 
 
 #define _0000b 0x00
 #define _0001b 0x01
