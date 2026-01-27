@@ -7,7 +7,7 @@ int polyContainsPoint(Polygon* poly, Vector2 p) {
 	int inside = 0;
 	int cnt = poly->pointCount;
 	
-	if(isfinite(poly->maxRadiusSq) && poly->maxRadiusSq < vDot2(poly->centroid, p)) return 0;
+	if(isfinite(poly->maxRadiusSq) && poly->maxRadiusSq < vDistSq(poly->centroid, p)) return 0;
 	
 	for(int i = 0; i < cnt; i++) {
 		Vector2 a = poly->points[i];
@@ -273,7 +273,7 @@ void polyCalcRadiusSq(Polygon* poly) {
 	
 	for(int i = 0; i < cnt; i++) {
 		Vector2 a = poly->points[i];
-		d = fmaxf(d, vDot2(poly->centroid, a));
+		d = fmaxf(d, vDistSq(poly->centroid, a));
 	}
 	
 	poly->maxRadiusSq = d;
