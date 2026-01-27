@@ -72,14 +72,17 @@
 #define DBL_CMP_EPSILON_SQ (DBL_CMP_EPSILON_SQ * DBL_CMP_EPSILON_SQ)
 
 #define C3DLAS_RETURN_VALUE_LIST(X) \
-	X(FALSE,     0) \
-	X(COPLANAR,  1) \
-	X(FRONT,     2) \
-	X(BACK,      3) \
-	X(INTERSECT, 4) \
-	X(DISJOINT,  5) \
-	X(PARALLEL,  6) \
-	X(UNKNOWN,   7)
+	X(FALSE,      0) \
+	X(TRUE,       1) \
+	X(COPLANAR,   2) \
+	X(FRONT,      3) \
+	X(BACK,       4) \
+	X(INTERSECT,  5) \
+	X(DISJOINT,   6) \
+	X(PARALLEL,   7) \
+	X(CW,         8) \
+	X(CCW,        9) \
+	X(UNKNOWN,   10)
 	
 typedef enum {
 #define X(name, val, ...) C3DLAS_##name = val,
@@ -264,6 +267,7 @@ typedef struct Polygon {
 	
 	Vector2 centroid;
 	float maxRadiusSq; // squared distance from the centroid to the furthest point
+	C3DLAS_ARRAY_SIZE_ minExtrema; // most minimum point; will always be convex
 } Polygon;
 
 typedef struct BezierSplineSegment3 {
@@ -818,6 +822,13 @@ void polyInsertPoint(Polygon* poly, int index, Vector2 p);
 void polyCopy(Polygon* dst, Polygon* src);
 
 
+// returns C3DLAS_CCW or C3DLAS_CW;
+int polyGetWinding(Polygon* poly);
+void polyEnsureCCW(Polygon* poly);
+void polyEnsureCW(Polygon* poly);
+void polyReverse(Polygon* poly);
+
+
 void polyExtrude(Polygon* poly, f32 dist, Polygon* out);
 
 
@@ -841,6 +852,7 @@ void polyFreeInternals(Polygon* poly);
 
 // unsigned area
 float polyCalcArea(Polygon* poly);
+float polyCalcSignedArea(Polygon* poly);
 
 // centroid and radius squared
 void polyCalcStats(Polygon* poly);

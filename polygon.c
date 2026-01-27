@@ -75,6 +75,13 @@ void polyPushPoint(Polygon* poly, Vector2 p) {
 		}
 	}
 	
+	if(poly->pointCount == 0 || poly->points[poly->minExtrema].x < p.x) {
+		poly->minExtrema = poly->pointCount;
+	}
+	else if(poly->points[poly->minExtrema].x == p.x && poly->points[poly->minExtrema].y < p.y) {
+		poly->minExtrema = poly->pointCount;
+	}
+	
 	poly->points[poly->pointCount++] = p;
 	poly->centroid = (Vector2){NAN, NAN};
 	poly->maxRadiusSq = NAN;
@@ -107,6 +114,13 @@ void polyInsertPoint(Polygon* poly, int index, Vector2 p) {
 	poly->pointCount++;
 	poly->centroid = (Vector2){NAN, NAN};
 	poly->maxRadiusSq = NAN;
+	
+	if(poly->pointCount == 1 || poly->points[poly->minExtrema].x < p.x) {
+		poly->minExtrema = index;
+	}
+	else if(poly->points[poly->minExtrema].x == p.x && poly->points[poly->minExtrema].y < p.y) {
+		poly->minExtrema = index;
+	}
 }
 
 
@@ -239,6 +253,11 @@ int polyIsSelfIntersecting(Polygon* poly) {
 
 // unsigned area
 float polyCalcArea(Polygon* poly) {
+	return fabs(polyCalcSignedArea(poly));
+}
+
+
+float polyCalcSignedArea(Polygon* poly) {
 	f32 area = 0;
 	
 	for(long i = 0; i < poly->pointCount; i++) {
@@ -249,7 +268,7 @@ float polyCalcArea(Polygon* poly) {
 		area -= p0.y * p1.x;
 	}
 	
-	return 0.5f * fabs(area);
+	return 0.5f * area;
 }
 
 
@@ -307,6 +326,35 @@ void polySortCCW(Polygon* poly) {
 	}
 	
 	C3DLAS_sort_r(poly->points, poly->pointCount, sizeof(*poly->points), (void*)poly_point_sort_ccw_fn, &poly->centroid);
+}
+
+
+// returns C3DLAS_CCW or C3DLAS_CW;
+int polyGetWinding(Polygon* poly) {
+	Vector2 p = poly->points[poly->minExtrema];
+	Vector2 a = vSub2(poly->points[(poly->minExtrema + 1) % poly->pointCount], p);
+	Vector2 b = vSub2(poly->points[(poly->minExtrema - 1 + poly->pointCount) % poly->pointCount], p);
+	
+	return vCross2(a, b) > 0 ? C3DLAS_CCW : C3DLAS_CW;
+}
+
+void polyEnsureCCW(Polygon* poly) {
+	if(polyGetWinding(poly) == C3DLAS_CW) polyReverse(poly);
+}
+
+void polyEnsureCW(Polygon* poly) {
+	if(polyGetWinding(poly) == C3DLAS_CCW) polyReverse(poly);
+}
+
+void polyReverse(Polygon* poly) {
+	size_t i, j;
+	Vector2 tmp;
+	
+	for(i = 0, j = poly->pointCount - 1; i < j; i++, j--) {
+		tmp = poly->points[i];
+		poly->points[i] = poly->points[j];
+		poly->points[j] = tmp;
+	}
 }
 
 
@@ -377,6 +425,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 		return C3DLAS_DISJOINT;
 	}
 	
+	long failsafe_limit;
 	
 	// figure out all the segments that have crossings, and how many they have.
 	long* crossinglist_a = C3DLAS_calloc(1, sizeof(*crossinglist_a) * a->pointCount); // all from c
@@ -403,6 +452,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 		}
 	}
 	
+	failsafe_limit = total_crossings + 5 + a->pointCount + b->pointCount;
 	
 	// some trivial cases
 	if(total_crossings == 0) {
@@ -431,22 +481,28 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 	long start_i;
 	vec2 start = {FLT_MAX, FLT_MAX};
 	for(long ai = 0; ai < a->pointCount; ai++) {
-		if(a->points[ai].x <= start.x) {
-			if(a->points[ai].y < start.y) {
-				start = a->points[ai];
-				start_i = ai;
-			}
+		if(a->points[ai].x < start.x) {
+			start = a->points[ai];
+			start_i = ai;
+		}
+		else if(a->points[ai].x == start.x && a->points[ai].y <= start.y) {
+			start = a->points[ai];
+			start_i = ai;
 		}
 	}
 	for(long bi = 0; bi < b->pointCount; bi++) {
 		if(b->points[bi].x < start.x) {
-			if(b->points[bi].y < start.y) {
-				start = b->points[bi];
-				start_i = bi;
-				is_a = 0;
-			}
+			start = b->points[bi];
+			start_i = bi;
+			is_a = 0;
+		}
+		else if(b->points[bi].x == start.x && b->points[bi].y <= start.y) {
+			start = b->points[bi];
+			start_i = bi;
+			is_a = 0;
 		}
 	}
+	
 	
 	
 	
@@ -467,6 +523,12 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 		
 		long ci = start_i;
 		do {
+			
+			if(out->pointCount > failsafe_limit) {
+//				printf("failsafe simpler \n");
+//				exit(1);
+				return C3DLAS_INTERSECT;
+			}
 			
 //			if(debug1++ >= 12) return C3DLAS_INTERSECT;
 			
@@ -667,6 +729,22 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 		long prevprev = (start_i - 1 + c->pointCount) % c->pointCount;
 		long prev = start_i;
 		do {
+			
+			if(out->pointCount > failsafe_limit) {
+//				printf("\n\n\nvec2 p_points[] = {\n");
+//				FOR(k, a->pointCount) {
+//					printf("\t{%f, %f},\n", a->points[k].x, a->points[k].y);
+//				}
+//				printf("};\n\n\n");
+//				
+//				printf("\n\n\nvec2 p2_points[] = {\n");
+//				FOR(k, b->pointCount) {
+//					printf("\t{%f, %f},\n", b->points[k].x, b->points[k].y);
+//				}
+//				printf("};\n\n\n");
+//				*(int*)0 = 0;
+				return C3DLAS_INTERSECT;
+			}
 			
 			// TODO: some sort of absolute limit, like croff+vec_len(cr_points)+1
 			
