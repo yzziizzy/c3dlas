@@ -839,6 +839,9 @@ void polySubdivide(Polygon* poly, int degree);
 // seg_a and seg_b are the index of the point starting the segment which intersects
 int polyIntersect(Polygon* a, Polygon* b, int (*out_fn)(Vector2 p, long seg_a, long seg_b, void* data), void* out_data);
 
+// returns C3DLAS_INTERSECT or C3DLAS_DISJOINT
+int polyCheckIntersect(Polygon* a, Polygon* b);
+
 
 // eliminates holes between the two
 // both must be CCW sorted

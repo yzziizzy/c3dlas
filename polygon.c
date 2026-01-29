@@ -205,6 +205,12 @@ void polySubdivide(Polygon* poly, int degree) {
 // seg_a and seg_b are the index of the point starting the segment which intersects
 int polyIntersect(Polygon* a, Polygon* b, int (*out_fn)(Vector2 p, long seg_a, long seg_b, void* data), void* out_data) {
 	int ret;
+
+	if(
+		isfinite(a->maxRadiusSq) && isfinite(b->maxRadiusSq) && 
+		vDistSq(a->centroid, b->centroid) > sqrtf(a->maxRadiusSq) + sqrtf(a->maxRadiusSq)
+	) return C3DLAS_DISJOINT;
+	
 	
 	for(long ai = 0; ai < a->pointCount; ai++) {
 		Line2 aline = {a->points[ai], a->points[(ai + 1) % a->pointCount]};
@@ -224,22 +230,53 @@ int polyIntersect(Polygon* a, Polygon* b, int (*out_fn)(Vector2 p, long seg_a, l
 }
 
 
+// returns C3DLAS_INTERSECT or C3DLAS_DISJOINT
+int polyCheckIntersect(Polygon* a, Polygon* b) {
+	int ret;
+	
+	if(
+		isfinite(a->maxRadiusSq) && isfinite(b->maxRadiusSq) && 
+		vDist(a->centroid, b->centroid) > sqrtf(a->maxRadiusSq) + sqrtf(a->maxRadiusSq)
+	) return C3DLAS_DISJOINT;
+	
+	
+	for(long ai = 0; ai < a->pointCount; ai++) {
+		Line2 aline = {a->points[ai], a->points[(ai + 1) % a->pointCount]};
+		
+		for(long bi = 0; bi < b->pointCount; bi++) {
+			
+			Vector2 p;
+			if(C3DLAS_INTERSECT == intersectLine2Line2(aline, (Line2){b->points[bi], b->points[(bi + 1) % b->pointCount]})) {
+				return C3DLAS_INTERSECT;
+			}
+		}
+	}
+	
+	return C3DLAS_DISJOINT;
+}
+
+
 
 // atrocious algorithm, but i don't have time to waste on a fancier one
 // returns 0 or 1
 int polyIsSelfIntersecting(Polygon* poly) {
-	
+
 	for(long i = 0; i < poly->pointCount; i++) {
 		for(long j = 0; j < poly->pointCount; j++) {
 			Line2 line1 = {poly->points[i % poly->pointCount], poly->points[(i + 1) % poly->pointCount]};
 			Line2 line2 = {poly->points[j % poly->pointCount], poly->points[(j + 1) % poly->pointCount]};
 			
+			bool ba = vEqExact(line1.b, line2.a);
+			bool ab = vEqExact(line1.a, line2.b);
+			if(ab && ba) {
+				return 1;
+			}
+			
 			if(C3DLAS_INTERSECT == intersectLine2Line2(line1, line2)) {
-				if(
-					!vEqExact(line1.a, line2.a) && !vEqExact(line1.b, line2.b) && 
-					!vEqExact(line1.a, line2.b) && !vEqExact(line1.b, line2.a)
-				) {
+				bool aa = vEqExact(line1.a, line2.a);
+				bool bb = vEqExact(line1.b, line2.b);
 				
+				if(!aa && !ba && !ab && !bb) {
 //					printf("%f,%f -> %f,%f | %f,%f -> %f,%f\n", line1.a.x,line1.a.y, line1.b.x,line1.b.y, line2.a.x,line2.a.y, line2.b.x,line2.b.y);
 					return 1;
 				}
