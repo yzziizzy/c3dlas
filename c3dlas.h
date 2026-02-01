@@ -875,9 +875,23 @@ int polyIsSelfIntersecting(Polygon* poly);
 float polyDistToPoint(Polygon* poly, Vector2 p);
 int polyContainsPoint(Polygon* poly, Vector2 p);
 
+///
+// there are three scenarios:
+//	intersect; return 0
+//	one fully inside the other; negative distance being closest to edge
+//	both fully disjoint; positive dist being the closest approach
+float polyMinDistToPoly(Polygon* a, Polygon* b);
+void mm8_polyDistToPoint(Polygon* poly, f32 px[8], f32 py[8], f32 out[8]);
+void mm16_polyDistToPoint(Polygon* poly, f32 px[16], f32 py[16], f32 out[16]);
+void mm16_2_polyDistToPoint(Polygon* poly, f32 px[16], f32 py[16], f32 out[16]);
+void mm32_polyDistToPoint(Polygon* poly, f32 px[32], f32 py[32], f32 out[32]);
 
 
 
+// returns 1 if the polygon needs a more precise check, and 0 if the polygon is definitely farther away than the radius
+int polyCheckMaybeWithinRadius(Polygon* poly, vec2 p, float radius);
+// like the scalar one, but logical-OR's all the points' results
+int mm32_polyCheckMaybeWithinRadius_group(Polygon* poly, float px[32], float py[32], float radius);
 
 
 void  vProject3p(Vector3* what, Vector3* onto, Vector3* out); // slower; onto may not be normalized
@@ -1329,6 +1343,9 @@ int rasterizeLine2d(Vector2 pa, Vector2 pb, float cellSize, int (*found)(void* u
 // conservative overestimation; the ends are square, not conformed to the radius
 int rasterizeFatLine2d(Vector2 pa, Vector2 pb, float width, float cellSize, int (*found)(void* userData, int64_t x, int64_t y), void* userData);
 
+
+// has internal guards against non-simd builds
+#include "simd.h"
 
 #endif // __c3dlas_h__
 
