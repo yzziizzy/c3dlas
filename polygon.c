@@ -160,7 +160,6 @@ float polyDistToPoint(Polygon* poly, Vector2 p) {
 }
 
 
-
 #ifdef C3DLAS_USE_AVX2
 
 //                                                  (percent slower)
@@ -468,11 +467,18 @@ void mm32_polyDistToPoint(Polygon* poly, f32 px[32], f32 py[32], f32 out[32]) {
 #else
 
 
-
-
 void mm8_polyDistToPoint(Polygon* poly, f32 px[8], f32 py[8], f32 out[8]) {
-	exit(1);
 	for(int i = 0; i < 8; i++) {
+		out[i] = polyDistToPoint(poly, (Vector2){px[i], py[i]});
+	}
+}
+void mm16_polyDistToPoint(Polygon* poly, f32 px[16], f32 py[16], f32 out[16]) {
+	for(int i = 0; i < 15; i++) {
+		out[i] = polyDistToPoint(poly, (Vector2){px[i], py[i]});
+	}
+}
+void mm32_polyDistToPoint(Polygon* poly, f32 px[32], f32 py[32], f32 out[32]) {
+	for(int i = 0; i < 32; i++) {
 		out[i] = polyDistToPoint(poly, (Vector2){px[i], py[i]});
 	}
 }
@@ -485,18 +491,20 @@ void mm8_polyDistToPoint(Polygon* poly, f32 px[8], f32 py[8], f32 out[8]) {
 //	intersect; return 0
 //	one fully inside the other; negative distance being closest to edge
 //	both fully disjoint; positive dist being the closest approach
-float polyMinDistToPoly(Polygon* a, Polygon* b) {
+float polyMinDistToPoly(Polygon* a, Polygon* b, int* a_is_inside_b) {
 	
 	// supposedly this O(n^2) algorithm is the best there is
 	float d = polyDistToPoint(b, a->points[0]);
 	float d2 = polyDistToPoint(a, b->points[0]);
 	if(d == 0 || d2 == 0) return 0; // intersecting 
 	
+	bool was_swapped = 0;
 	if(d2 < 0) { // swap
 		Polygon* tmp = a;
 		a = b;
 		b = tmp;
 		d = d2;
+		was_swapped = 1;
 	} 	
 	
 	if(d > 0) { // the polygons are either intersecting or fully disjoint; return 0 or a positive distance
@@ -540,6 +548,7 @@ float polyMinDistToPoly(Polygon* a, Polygon* b) {
 		}	
 	}
 
+	if(d < 0 && a_is_inside_b) *a_is_inside_b = !was_swapped; 
 	
 	return d;
 }

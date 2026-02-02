@@ -870,9 +870,7 @@ void polySortCCW(Polygon* poly);
 int polyIsSelfIntersecting(Polygon* poly);
 
 
-// Returns the distance from p to the closest point on the polygon.
-// Interior distances are negative
-float polyDistToPoint(Polygon* poly, Vector2 p);
+
 int polyContainsPoint(Polygon* poly, Vector2 p);
 
 ///
@@ -880,10 +878,15 @@ int polyContainsPoint(Polygon* poly, Vector2 p);
 //	intersect; return 0
 //	one fully inside the other; negative distance being closest to edge
 //	both fully disjoint; positive dist being the closest approach
-float polyMinDistToPoly(Polygon* a, Polygon* b);
+// a_is_inside_b is only meaningful when the return value is negative
+float polyMinDistToPoly(Polygon* a, Polygon* b, int* a_is_inside_b);
+
+// Returns the distance from p to the closest point on the polygon.
+// Interior distances are negative
+float polyDistToPoint(Polygon* poly, Vector2 p);
 void mm8_polyDistToPoint(Polygon* poly, f32 px[8], f32 py[8], f32 out[8]);
 void mm16_polyDistToPoint(Polygon* poly, f32 px[16], f32 py[16], f32 out[16]);
-void mm16_2_polyDistToPoint(Polygon* poly, f32 px[16], f32 py[16], f32 out[16]);
+void mm16_2_polyDistToPoint(Polygon* poly, f32 px[16], f32 py[16], f32 out[16]); // test of the organization of code internally
 void mm32_polyDistToPoint(Polygon* poly, f32 px[32], f32 py[32], f32 out[32]);
 
 
