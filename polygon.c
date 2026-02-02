@@ -40,6 +40,54 @@ int polyCheckMaybeWithinRadius(Polygon* poly, vec2 p, float radius) {
 
 #ifdef C3DLAS_USE_AVX2
 // like the scalar one, but logical-OR's all the points' results
+int mm8_polyCheckMaybeWithinRadius_group(Polygon* poly, float px[8], float py[8], float radius) {
+	mm8_vec2 p_1 = mm8_load_arrays_v2(px, py);
+	
+	mm8_vec2 centroid = mm8_set1_v2(poly->centroid);
+	
+	__m256 dist_1 = mm8_dist_v2(p_1, centroid);
+	
+	__m256 rad = _mm256_set1_ps(sqrtf(poly->maxRadiusSq) + radius);
+	
+	__m256 res = _mm256_cmp_ps(dist_1, rad, _CMP_GT_OQ);
+	
+	unsigned int r = *(unsigned int*)&res;
+	for(int i = 1; i < 8; i++) {
+		r &= ((unsigned int*)&res)[i];
+	}
+	
+	return !!r;
+}
+
+
+// like the scalar one, but logical-OR's all the points' results
+int mm16_polyCheckMaybeWithinRadius_group(Polygon* poly, float px[16], float py[16], float radius) {
+	mm8_vec2 p_1 = mm8_load_arrays_v2(px, py);
+	mm8_vec2 p_2 = mm8_load_arrays_v2(px + 8, py + 8);
+	
+	mm8_vec2 centroid = mm8_set1_v2(poly->centroid);
+	
+	__m256 dist_1 = mm8_dist_v2(p_1, centroid);
+	__m256 dist_2 = mm8_dist_v2(p_2, centroid);
+	
+	__m256 rad = _mm256_set1_ps(sqrtf(poly->maxRadiusSq) + radius);
+	
+	__m256 res_1 = _mm256_cmp_ps(dist_1, rad, _CMP_GT_OQ);
+	__m256 res_2 = _mm256_cmp_ps(dist_2, rad, _CMP_GT_OQ);
+	
+	__m256 res = _mm256_and_ps(res_1, res_2);
+	
+	
+	unsigned int r = *(unsigned int*)&res;
+	for(int i = 1; i < 8; i++) {
+		r &= ((unsigned int*)&res)[i];
+	}
+	
+	return !!r;
+}
+
+
+// like the scalar one, but logical-OR's all the points' results
 int mm32_polyCheckMaybeWithinRadius_group(Polygon* poly, float px[32], float py[32], float radius) {
 	mm8_vec2 p_1 = mm8_load_arrays_v2(px, py);
 	mm8_vec2 p_2 = mm8_load_arrays_v2(px + 8, py + 8);

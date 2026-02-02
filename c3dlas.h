@@ -891,6 +891,8 @@ void mm32_polyDistToPoint(Polygon* poly, f32 px[32], f32 py[32], f32 out[32]);
 // returns 1 if the polygon needs a more precise check, and 0 if the polygon is definitely farther away than the radius
 int polyCheckMaybeWithinRadius(Polygon* poly, vec2 p, float radius);
 // like the scalar one, but logical-OR's all the points' results
+int mm8_polyCheckMaybeWithinRadius_group(Polygon* poly, float px[8], float py[8], float radius);
+int mm16_polyCheckMaybeWithinRadius_group(Polygon* poly, float px[16], float py[16], float radius);
 int mm32_polyCheckMaybeWithinRadius_group(Polygon* poly, float px[32], float py[32], float radius);
 
 
