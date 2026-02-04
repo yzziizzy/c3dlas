@@ -573,7 +573,7 @@ float polyCalcArea(Polygon* poly) {
 }
 
 
-float polyCalcMinExtrema(Polygon* poly) {
+void polyCalcMinExtrema(Polygon* poly) {
 	poly->minExtrema = 0;
 	for(long i = 0; i < poly->pointCount; i++) {
 		if(poly->points[poly->minExtrema].x < poly->points[i].x) {
