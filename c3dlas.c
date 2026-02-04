@@ -1235,6 +1235,7 @@ void makeRay2(Vector2* origin, Vector2* direction, Ray2* out) {
 #include "quad.c"
 #include "line.c"
 #include "polygon.c"
+#include "polygon_simd.c"
 #include "splines.c"
 #include "intersect/circle.c"
 #include "intersect/plane.c"

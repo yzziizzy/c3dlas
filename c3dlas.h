@@ -829,8 +829,17 @@ void polyEnsureCW(Polygon* poly);
 void polyReverse(Polygon* poly);
 
 
+// only works on convex ploygons
 void polyExtrude(Polygon* poly, f32 dist, Polygon* out);
 
+
+// different algorithm, might be weird
+void polyExtrude2(Polygon* poly, f32 dist, Polygon* out);
+
+// works like ExteriorUnion, except only with itself
+void polyUnSelfIntersect(Polygon* poly);
+
+void polyCombineClosePoints(Polygon* poly, float dist);
 
 // breaks each segment into 'degree' number of segments
 void polySubdivide(Polygon* poly, int degree);
@@ -862,6 +871,7 @@ void polyCalcStats(Polygon* poly);
 
 void polyCalcRadiusSq(Polygon* poly);
 void polyCalcCentroid(Polygon* poly);
+float polyCalcMinExtrema(Polygon* poly); // usually tracked internally automatically
 
 // very niche use; doesn't do what you think it does
 void polySortCCW(Polygon* poly);
