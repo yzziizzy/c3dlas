@@ -872,6 +872,7 @@ void polyCalcStats(Polygon* poly);
 void polyCalcRadiusSq(Polygon* poly);
 void polyCalcCentroid(Polygon* poly);
 void polyCalcMinExtrema(Polygon* poly); // usually tracked internally automatically
+AABB2 polyCalcBounds(Polygon* poly);
 
 // very niche use; doesn't do what you think it does
 void polySortCCW(Polygon* poly);

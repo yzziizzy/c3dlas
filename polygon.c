@@ -586,6 +586,22 @@ void polyCalcMinExtrema(Polygon* poly) {
 }
 
 
+AABB2 polyCalcBounds(Polygon* poly) {
+	AABB2 b = {{FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX}};
+	
+	for(long i = 0; i < poly->pointCount; i++) {
+		Vector2 p = poly->points[i];
+	
+		b.min.x = fminf(b.min.x, p.x);
+		b.min.y = fminf(b.min.y, p.y);
+		b.max.x = fmaxf(b.max.x, p.x);
+		b.max.y = fmaxf(b.max.y, p.y);
+	}
+	
+	return b;
+}
+
+
 float polyCalcSignedArea(Polygon* poly) {
 	f32 area = 0;
 	
