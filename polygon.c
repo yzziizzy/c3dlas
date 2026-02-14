@@ -1106,7 +1106,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 					float best_angle = FLT_MAX;
 					struct Edge* best_edge = NULL;
 					
-					vec2 p3 = (prevprev < coff) ? c->points[prevprev] : ((prevprev < cdoff) ? d->points[prevprev - coff] : VEC_item(&cr_points, prevprev - cdoff).p);
+					vec2 p3 = (prevprev < coff) ? c->points[prevprev] : ((prevprev < cdoff) ? d->points[prevprev - coff] : cr_points.data[prevprev - cdoff].p);
 					vec2 p1 = c->points[prev];
 					vec2 best_p = {};
 					
@@ -1117,7 +1117,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 						// should only be two outgoing edges; one on a c line and one on a d line
 						// p1 is the pivot // positive = CCW, negative = CW
 						
-						vec2 p2 = (e->b < coff) ? c->points[e->b] : ((e->b < cdoff) ? d->points[e->b - coff] : VEC_item(&cr_points, e->b - cdoff).p);
+						vec2 p2 = (e->b < coff) ? c->points[e->b] : ((e->b < cdoff) ? d->points[e->b - coff] : cr_points.data[e->b - cdoff].p);
 						float angle = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x); 
 						
 						if(angle < best_angle) {
@@ -1146,7 +1146,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 					float best_angle = FLT_MAX;
 					struct Edge* best_edge = NULL;
 					
-					vec2 p3 = (prevprev < coff) ? c->points[prevprev] : ((prevprev < cdoff) ? d->points[prevprev - coff] : VEC_item(&cr_points, prevprev - cdoff).p);
+					vec2 p3 = (prevprev < coff) ? c->points[prevprev] : ((prevprev < cdoff) ? d->points[prevprev - coff] : cr_points.data[prevprev - cdoff].p);
 					vec2 p1 = d->points[prev - coff];
 					vec2 best_p = {};
 					
@@ -1157,7 +1157,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 						// should only be two outgoing edges; one on a c line and one on a d line
 						// p1 is the pivot // positive = CCW, negative = CW
 						
-						vec2 p2 = (e->b < coff) ? c->points[e->b] : ((e->b < cdoff) ? d->points[e->b - coff] : VEC_item(&cr_points, e->b - cdoff).p);
+						vec2 p2 = (e->b < coff) ? c->points[e->b] : ((e->b < cdoff) ? d->points[e->b - coff] : cr_points.data[e->b - cdoff].p);
 						float angle = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x); 
 						
 						if(angle < best_angle) {
@@ -1182,10 +1182,10 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 				vec2 p3;
 				if(prevprev < coff) p3 = c->points[prevprev];
 				else if(prevprev < cdoff) p3 = d->points[prevprev - coff];
-				else p3 = VEC_item(&cr_points, prevprev - cdoff).p;
+				else p3 = cr_points.data[prevprev - cdoff].p;
 				
 				
-				vec2 p1 = VEC_item(&cr_points, prev - cdoff).p;
+				vec2 p1 = cr_points.data[prev - cdoff].p;
 				vec2 best_p = {};
 
 				polyPushPoint(out, p1);
@@ -1197,7 +1197,7 @@ int polyExteriorUnion(Polygon* a, Polygon* b, Polygon* out) {
 					// should only be two outgoing edges; one on a c line and one on a d line
 					// p1 is the pivot // positive = CCW, negative = CW
 					
-					vec2 p2 = (e->b < coff) ? c->points[e->b] : ((e->b < cdoff) ? d->points[e->b - coff] : VEC_item(&cr_points, e->b - cdoff).p);
+					vec2 p2 = (e->b < coff) ? c->points[e->b] : ((e->b < cdoff) ? d->points[e->b - coff] : cr_points.data[e->b - cdoff].p);
 					float angle = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x); 
 					
 					if(angle < best_angle) {
