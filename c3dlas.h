@@ -1,12 +1,13 @@
 #ifndef __c3dlas_h__
 #define __c3dlas_h__
 
-
 #include <stdlib.h> // rand() et al.
 #include <stdint.h> 
 #include <math.h> // fmin/fmax
 
 #undef I // because of some bullshit in <complex.h>
+
+#define HAS_C3DLAS 1
 
 #ifdef __GNUC__
 	#define C3DLAS_PACKED  __attribute__((packed))
