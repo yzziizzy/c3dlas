@@ -1,7 +1,7 @@
 
 // Muchas gracias, Inigo.  
 // https://iquilezles.org/articles/distfunctions2d/
-float vDistPointLine2(Vector2 p, Line2 ls) {
+float distPoint2Line2(Vector2 p, Line2 ls) {
 	Vector2 pa = vSub2(p, ls.start); // vector from the starting point to p
 	Vector2 ba = vSub2(ls.end, ls.start); // vector from the starting point to the ending point
 	
@@ -16,7 +16,7 @@ float vDistPointLine2(Vector2 p, Line2 ls) {
 	return vLen2(pi); // the answer is the length of pi 
 }
 
-float vDistPointLine3(Vector3 p, Line3 ls) {
+float distPoint3Line3(Vector3 p, Line3 ls) {
 	Vector3 pa = vSub3(p, ls.start);
 	Vector3 ba = vSub3(ls.end, ls.start);
 	
@@ -25,7 +25,7 @@ float vDistPointLine3(Vector3 p, Line3 ls) {
 }
 
 // This version also returns the normalized distance along the line of the closest point
-float vDistTPointLine2(Vector2 p, Line2 ls, float* T) {
+float distTPoint2Line2(Vector2 p, Line2 ls, float* T) {
 	Vector2 pa = vSub2(p, ls.start);
 	Vector2 ba = vSub2(ls.end, ls.start);
 	
@@ -34,7 +34,7 @@ float vDistTPointLine2(Vector2 p, Line2 ls, float* T) {
 	return vMag2(vSub2(pa, vScale2(ba, t)));
 }
 
-float vDistTPointLine3(Vector3 p, Line3 ls, float* T) {
+float distTPoint3Line3(Vector3 p, Line3 ls, float* T) {
 	Vector3 pa = vSub3(p, ls.start);
 	Vector3 ba = vSub3(ls.end, ls.start);
 	

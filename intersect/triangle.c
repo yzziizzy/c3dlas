@@ -81,7 +81,7 @@ float distPoint2Triangle2(Vector2 a, Vector2 tri[3]) {
 	float d[3];
 	
 	for(int i = 0; i < 3; i++) {
-		d[i] = vDistPointLine2(a, (Line2){tri[i], tri[(i + 1) % 3]});
+		d[i] = distPoint2Line2(a, (Line2){tri[i], tri[(i + 1) % 3]});
 		if(d[i] == 0) return 0;
 	}
 	

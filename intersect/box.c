@@ -224,7 +224,7 @@ float distPoint2Rect2(Vector2 a, Quad2 q) {
 	float d[4];
 	
 	for(int i = 0; i < 4; i++) {
-		d[i] = vDistPointLine2(a, (Line2){q.v[i], q.v[(i + 1) % 4]});
+		d[i] = distPoint2Line2(a, (Line2){q.v[i], q.v[(i + 1) % 4]});
 		if(d[i] == 0) return 0;
 	}
 	

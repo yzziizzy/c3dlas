@@ -759,14 +759,21 @@ float vAngleBetween3(Vector3 a, Vector3 b);
 
 
 // Distance from a point to a line segment 
-float vDistPointLine2(Vector2 p, Line2 ls);
-float vDistPointLine3(Vector3 p, Line3 ls);
+float distPoint2Line2(Vector2 p, Line2 ls);
+float distPoint3Line3(Vector3 p, Line3 ls);
+
+// Also returns the normalized distance along the line to the closest point
+float distTPoint2Line2(Vector2 p, Line2 ls, float* T);
+float distTPoint3Line3(Vector3 p, Line3 ls, float* T);
+
+// shims for old code
+#define vDistPointLine2 distPoint2Line2
+#define vDistPointLine3 distPoint3Line3
+#define vDistTPointLine2 distTPoint2Line2
+#define vDistTPointLine3 distTPoint3Line3
 
 float distPoint2Triangle2(Vector2 a, Vector2 tri[3]);
 
-// Also returns the normalized distance along the line to the closest point
-float vDistTPointLine2(Vector2 p, Line2 ls, float* T);
-float vDistTPointLine3(Vector3 p, Line3 ls, float* T);
 
 // returns the number of intersecting points, [0-2], in both directions of the ray 
 int intersectRay2Circle(Ray2 a, Vector2 center, float radius, Vector2 out[2]);
@@ -833,6 +840,9 @@ void polyCombineClosePoints(Polygon* poly, float dist);
 
 // breaks each segment into 'degree' number of segments
 void polySubdivide(Polygon* poly, int degree);
+
+// returns 1 if the polygon needs a more precise check, and 0 if the polygon is definitely farther away than the radius
+int polyCheckMaybeWithinRadius(Polygon* poly, vec2 p, float radius);
 
 // if out_fn returns nonzero, polyIntersect returns that value immediately, otherwise zero
 // seg_a and seg_b are the index of the point starting the segment which intersects
@@ -950,11 +960,16 @@ float planePointDist3p(Plane* pl, Vector3* p);
 float planePointDistSigned3p(Plane* pl, Vector3* p);
 
 // C3DLAS_INTERSECT, _COPLANAR or _DISJOINT
-int planeLineFindIntersect3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out);
+int findIntersectLinePlane(Line3 l, Plane* pl, Vector3* out);
 
 // Assumes full proper intersection.
 // C3DLAS_INTERSECT
-int planeLineFindIntersectFast3p(Plane* pl, Vector3* la, Vector3* lb, Vector3* out);
+int findIntersectFastLinePlane(Line3 l, Plane* pl, Vector3* out);
+
+// shim for old code
+#define planeLineFindIntersect3p(pl, la, lb, out) findIntersectLinePlane((Line3){*(la), *(lb)},  pl, out)
+#define planeLineFindIntersectFast3p(pl, la, lb, out) findIntersectFastLinePlane((Line3){*(la), *(lb)},  pl, out)
+
 
 // C3DLAS_INTERSECT, _PARALLEL or _DISJOINT
 // negative values of idist are "behind" ray->o

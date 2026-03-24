@@ -758,7 +758,8 @@ int triPlaneClip3p(
 		) {
 			// get intersection point
 			Vector3 c;
-			planeLineFindIntersectFast3p(pl, &v1, &v2, &c);
+//			planeLineFindIntersectFast3p(pl, &v1, &v2, &c);
+			findIntersectFastLinePlane((Line3){v1, v2}, pl, &c);
 			
 			if(vp_d1 > 0) { // v1 is above the plane
 				aboveOut[0] = c; // correct winding
@@ -794,7 +795,8 @@ int triPlaneClip3p(
 		) {
 			// get intersection point
 			Vector3 c;
-			planeLineFindIntersectFast3p(pl, &v0, &v2, &c);
+//			planeLineFindIntersectFast3p(pl, &v0, &v2, &c);
+			findIntersectFastLinePlane((Line3){v0, v2}, pl, &c);
 			
 			if(vp_d0 > 0) { // v0 is above the plane
 				aboveOut[0] = c; // correct winding
@@ -830,7 +832,8 @@ int triPlaneClip3p(
 		) {
 			// get intersection point
 			Vector3 c;
-			planeLineFindIntersectFast3p(pl, &v0, &v1, &c);
+//			planeLineFindIntersectFast3p(pl, &v0, &v1, &c);
+			findIntersectFastLinePlane((Line3){v0, v1}, pl, &c);
 			
 			if(vp_d0 > 0) { // v0 is above the plane
 				aboveOut[0] = c; // correct winding
@@ -872,8 +875,10 @@ int triPlaneClip3p(
 		// vertex 2 is isolated; edges 0,2 and 1,2 intersect
 		
 		Vector3 c0, c1;
-		planeLineFindIntersectFast3p(pl, &v0, &v2, &c0);
-		planeLineFindIntersectFast3p(pl, &v1, &v2, &c1);
+//		planeLineFindIntersectFast3p(pl, &v0, &v2, &c0);
+//		planeLineFindIntersectFast3p(pl, &v1, &v2, &c1);
+		findIntersectFastLinePlane((Line3){v0, v2}, pl, &c0);
+		findIntersectFastLinePlane((Line3){v1, v2}, pl, &c1);
 		
 		if(vp_d2 > 0) { // v2 is above the plane
 			aboveOut[0] = v2; // correct winding
@@ -909,8 +914,10 @@ int triPlaneClip3p(
 		// vertex 0 is isolated; edges 1,0 and 2,0 intersect
 		
 		Vector3 c0, c1;
-		planeLineFindIntersectFast3p(pl, &v1, &v0, &c0);
-		planeLineFindIntersectFast3p(pl, &v2, &v0, &c1);
+//		planeLineFindIntersectFast3p(pl, &v1, &v0, &c0);
+//		planeLineFindIntersectFast3p(pl, &v2, &v0, &c1);
+		findIntersectFastLinePlane((Line3){v1, v0}, pl, &c0);
+		findIntersectFastLinePlane((Line3){v2, v0}, pl, &c1);
 		
 		if(vp_d0 > 0) { // v0 is above the plane
 			aboveOut[0] = v0; // correct winding
@@ -946,8 +953,10 @@ int triPlaneClip3p(
 		// vertex 1 is isolated; edges 0,1 and 2,1 intersect
 		
 		Vector3 c0, c1;
-		planeLineFindIntersectFast3p(pl, &v0, &v1, &c0);
-		planeLineFindIntersectFast3p(pl, &v2, &v1, &c1);
+//		planeLineFindIntersectFast3p(pl, &v0, &v1, &c0);
+//		planeLineFindIntersectFast3p(pl, &v2, &v1, &c1);
+		findIntersectFastLinePlane((Line3){v0, v1}, pl, &c0);
+		findIntersectFastLinePlane((Line3){v2, v1}, pl, &c1);
 		
 		if(vp_d1 > 0) { // v1 is above the plane
 			aboveOut[0] = v1; // correct winding
