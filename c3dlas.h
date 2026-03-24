@@ -135,17 +135,6 @@ extern char const * const C3DLAS_retval__names[];
 // set externally if desired
 // #define C3DLAS_SEGFAULT_ON_NO_MATRIX_INVERSE 0
 
-static const char* c3dlas_EnumString(int e) {
-	switch(e) {
-		case 0: return "C3DLAS_COPLANAR";
-		case 1: return "C3DLAS_FRONT";
-		case 2: return "C3DLAS_BACK";
-		case 3: return "C3DLAS_INTERSECT";
-		case 4: return "C3DLAS_DISJOINT";
-		case 5: return "C3DLAS_PARALLEL";
-		default: return "Unknown Code";
-	}
-}
 
 #ifndef MAX
 	#define MAX(a,b) ({ \
@@ -1072,6 +1061,7 @@ float triArea2p(Vector2* a, Vector2* b, Vector2* c);
 
 // determines if a point is inside a triangle
 int triPointInside2p(Vector2* p, Vector2* a, Vector2* b, Vector2* c);
+int triPointInside2(Vector2 p, Vector2 a, Vector2 b, Vector2 c);
 
 
 
@@ -1232,26 +1222,59 @@ void msLookAt(Vector3* eye, Vector3* center, Vector3* up, MatrixStack* ms);
 
 
 // cubic Bezier curves
-void evalBezier3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out);
-void evalBezierTangent3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out); // tangent vector; not normalized
-void evalBezierNorm3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out); // normal vector; not normalized
-Vector2 evalBezier2D(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t);
-Vector2 evalBezier2D_dt(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t);
 float evalBezier1D(float e1, float e2, float c1, float c2, float t);
 float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t); // first derivative with respect to t
 float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t); // second derivative with respect to t
 
+Vector2 evalBezier2D(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t);
+Vector2 evalBezier2D_dt(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t);
+Vector2 evalBezier2D_ddt(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t);
+
+Vector3 evalBezier3D(Vector3 e1, Vector3 e2, Vector3 c1, Vector3 c2, float t);
+Vector3 evalBezier3D_dt(Vector3 e1, Vector3 e2, Vector3 c1, Vector3 c2, float t);
+Vector3 evalBezier3D_ddt(Vector3 e1, Vector3 e2, Vector3 c1, Vector3 c2, float t);
+
 // quadratic Bezier curves
 float evalQBezier1D(float e1, float e2, float c1, float t);
-Vector2 evalQBezier2D(Vector2 e1, Vector2 e2, Vector2 c1, float t);
-void evalQBezier2Dp(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out);
-Vector3 evalQBezier3D(Vector3 e1, Vector3 e2, Vector3 c1, float t);
-void evalQBezier3Dp(Vector3* e1, Vector3* e2, Vector3* c1, float t, Vector3* out);
-
-
 float evalQBezier1D_dt(float e1, float e2, float c1, float t);
+float evalQBezier1D_ddt(float e1, float e2, float c1, float t);
+
+Vector2 evalQBezier2D(Vector2 e1, Vector2 e2, Vector2 c1, float t);
 Vector2 evalQBezier2D_dt(Vector2 e1, Vector2 e2, Vector2 c1, float t);
+Vector2 evalQBezier2D_ddt(Vector2 e1, Vector2 e2, Vector2 c1, float t);
+
+Vector3 evalQBezier3D(Vector3 e1, Vector3 e2, Vector3 c1, float t);
 Vector3 evalQBezier3D_dt(Vector3 e1, Vector3 e2, Vector3 c1, float t);
+Vector3 evalQBezier3D_ddt(Vector3 e1, Vector3 e2, Vector3 c1, float t);
+
+
+// random old trash functions, probably used in some function somewhere
+void evalQBezier2Dp(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out);
+void evalQBezier3Dp(Vector3* e1, Vector3* e2, Vector3* c1, float t, Vector3* out);
+void evalBezier3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out);
+void evalBezierTangent3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out); // tangent vector; not normalized
+
+
+
+// Catmull-Rom splines 
+float evalCatmullRom1D(float t, float a, float b, float c, float d);
+Vector2 evalCatmullRom2D(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d);
+Vector3 evalCatmullRom3D(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d);
+
+float evalCatmullRom1D_dt(float t, float a, float b, float c, float d);
+Vector2 evalCatmullRom2D_dt(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d);
+Vector3 evalCatmullRom3D_dt(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d);
+
+float evalCatmullRom1D_both(float t, float a, float b, float c, float d, float* dt);
+Vector2 evalCatmullRom2D_both(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d, Vector2* dt);
+Vector3 evalCatmullRom3D_both(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3* dt);
+
+// Cubic hermite splines
+float   evalCubicHermite1D(float t, float p0, float p1, float m0, float m1);
+Vector2 evalCubicHermite2D(float t, Vector2 p0, Vector2 p1, Vector2 m0, Vector2 m1); 
+Vector3  evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 m1);
+
+
 
 ///// bounding box functions
 
@@ -1303,22 +1326,6 @@ void quadCenter2p(const Quad2* in, Vector2* out);
 void quadRoundOutward2p(const Quad2* in, Quad2i* out);
 void quadRoundInward2p(const Quad2* in, Quad2i* out);
 
-
-float evalCatmullRom1D(float t, float a, float b, float c, float d);
-Vector2 evalCatmullRom2D(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d);
-Vector3 evalCatmullRom3D(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d);
-
-float evalCatmullRom1D_dt(float t, float a, float b, float c, float d);
-Vector2 evalCatmullRom2D_dt(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d);
-Vector3 evalCatmullRom3D_dt(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d);
-
-float evalCatmullRom1D_both(float t, float a, float b, float c, float d, float* dt);
-Vector2 evalCatmullRom2D_both(float t, Vector2 a, Vector2 b, Vector2 c, Vector2 d, Vector2* dt);
-Vector3 evalCatmullRom3D_both(float t, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3* dt);
-
-float   evalCubicHermite1D(float t, float p0, float p1, float m0, float m1);
-Vector2 evalCubicHermite2D(float t, Vector2 p0, Vector2 p1, Vector2 m0, Vector2 m1); 
-Vector3  evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3 m1);
 
 
 Quaternion qFromRTheta(Vector3 r, float theta);

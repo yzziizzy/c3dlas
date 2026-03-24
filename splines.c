@@ -1,18 +1,43 @@
 
 
-
-void evalBezier3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out) {
-	out->x = evalBezier1D(e1->x, e2->x, c1->x, c2->x, t);
-	out->y = evalBezier1D(e1->y, e2->y, c1->y, c2->y, t);
-	out->z = evalBezier1D(e1->z, e2->z, c1->z, c2->z, t);
+//
+// 1 dimension
+//
+float evalBezier1D(float e1, float e2, float c1, float c2, float t) {
+	float mt, mt2, t2;
+	mt = 1.f - t;
+	mt2 = mt * mt;
+	t2 = t * t;
+	return (mt2 * mt * e1) + (3.f * mt2 * t * c1) + (3.f * t2 * mt * c2) + (t2 * t * e2);
 }
 
+// first derivative with respect to t
+float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t) {
+	float mt, mt2, t2;
+	mt = 1.f - t;
+	mt2 = mt * mt;
+	t2 = t * t;
+	
+	return (3.f * mt2 * (c1 - e1)) + (6.f * mt * t * (c2 - c1)) + (3.f * t2 * (e2 - c2));
+}
+
+// second derivative with respect to t
+float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t) {
+	return (6.f * (1.f - t) * (c2 - c1 - c1 + e1)) + (6.f * t * (e2 - c2 - c2 - c1));
+}
+
+
+//
+// 2 dimensions
+//
 Vector2 evalBezier2D(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t) {
 	return (Vector2){
 		.x = evalBezier1D(e1.x, e2.x, c1.x, c2.x, t),
 		.y = evalBezier1D(e1.y, e2.y, c1.y, c2.y, t)
 	};
 }
+
+// first derivative with respect to t
 Vector2 evalBezier2D_dt(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t) {
 	return (Vector2){
 		.x = evalBezier1D_dt(e1.x, e2.x, c1.x, c2.x, t),
@@ -20,15 +45,51 @@ Vector2 evalBezier2D_dt(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t)
 	};
 }
 
-float evalBezier1D(float e1, float e2, float c1, float c2, float t) {
-	float mt, mt2, t2;
-	mt = 1 - t;
-	mt2 = mt * mt;
-	t2 = t * t;
-	return (mt2 * mt * e1) + (3 * mt2 * t * c1) + (3 * t2 * mt * c2) + (t2 * t * e2);
+// second derivative with respect to t
+Vector2 evalBezier2D_ddt(Vector2 e1, Vector2 e2, Vector2 c1, Vector2 c2, float t) {
+	return (Vector2){
+		.x = evalBezier1D_ddt(e1.x, e2.x, c1.x, c2.x, t),
+		.y = evalBezier1D_ddt(e1.y, e2.y, c1.y, c2.y, t)
+	};
 }
 
 
+//
+// 3 dimensions
+//
+Vector3 evalBezier3D(Vector3 e1, Vector3 e2, Vector3 c1, Vector3 c2, float t) {
+	return (Vector3){
+		.x = evalBezier1D(e1.x, e2.x, c1.x, c2.x, t),
+		.y = evalBezier1D(e1.y, e2.y, c1.y, c2.y, t),
+		.z = evalBezier1D(e1.z, e2.z, c1.z, c2.z, t)
+	};
+}
+
+// first derivative with respect to t
+Vector3 evalBezier3D_dt(Vector3 e1, Vector3 e2, Vector3 c1, Vector3 c2, float t) {
+	return (Vector3){
+		.x = evalBezier1D_dt(e1.x, e2.x, c1.x, c2.x, t),
+		.y = evalBezier1D_dt(e1.y, e2.y, c1.y, c2.y, t),
+		.z = evalBezier1D_dt(e1.z, e2.z, c1.z, c2.z, t)
+	};
+}
+
+// second derivative with respect to t
+Vector3 evalBezier3D_ddt(Vector3 e1, Vector3 e2, Vector3 c1, Vector3 c2, float t) {
+	return (Vector3){
+		.x = evalBezier1D_ddt(e1.x, e2.x, c1.x, c2.x, t),
+		.y = evalBezier1D_ddt(e1.y, e2.y, c1.y, c2.y, t),
+		.z = evalBezier1D_ddt(e1.z, e2.z, c1.z, c2.z, t)
+	};
+}
+
+
+
+void evalBezier3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out) {
+	out->x = evalBezier1D(e1->x, e2->x, c1->x, c2->x, t);
+	out->y = evalBezier1D(e1->y, e2->y, c1->y, c2->y, t);
+	out->z = evalBezier1D(e1->z, e2->z, c1->z, c2->z, t);
+}
 
 void evalBezierTangent3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out) {
 	out->x = evalBezier1D_dt(e1->x, e2->x, c1->x, c2->x, t);
@@ -36,41 +97,27 @@ void evalBezierTangent3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, flo
 	out->z = evalBezier1D_dt(e1->z, e2->z, c1->z, c2->z, t);
 }
 
-float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t) {
-	float mt, mt2, t2;
-	mt = 1 - t;
-	mt2 = mt * mt;
-	t2 = t * t;
-	
-	return (3 * mt2 * (c1 - e1)) + (6 * mt * t * (c2 - c1)) + (3 * t2 * (e2 - c2));
-}
 
-
-	
-float evalBezier1D_ddt(float e1, float e2, float c1, float c2, float t) {
-	return (6 * (1 - t) * (c2 - c1 - c1 + e1)) + (6 * t * (e2 - c2 - c2 - c1));
-}
-
-void evalBezierNorm3p(Vector3* e1, Vector3* e2, Vector3* c1, Vector3* c2, float t, Vector3* out) {
-	out->x = evalBezier1D_ddt(e1->x, e2->x, c1->x, c2->x, t);
-	out->y = evalBezier1D_ddt(e1->y, e2->y, c1->y, c2->y, t);
-	out->z = evalBezier1D_ddt(e1->z, e2->z, c1->z, c2->z, t);
-}
 
 
 // Quadratic bezier functions
 float evalQBezier1D(float e1, float e2, float c1, float t) {
 	float mt, mt2;
-	mt = 1 - t;
+	mt = 1.f - t;
 	mt2 = mt * mt;
 	
-	return (mt2 * e1) + (2 * mt * t * c1) + (t * t * e2);
+	return (mt2 * e1) + (2.f * mt * t * c1) + (t * t * e2);
 }
 
-void evalQBezier2Dp(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out) {
-	out->x = evalQBezier1D(e1->x, e2->x, c1->x, t);
-	out->y = evalQBezier1D(e1->y, e2->y, c1->y, t);
+float evalQBezier1D_dt(float e1, float e2, float c1, float t) {
+	return 2.f * (-e1 + t*e1 + 2.f*t*c1 - 3.f*t*t*c1 + t*e2);	
 }
+
+float evalQBezier1D_ddt(float e1, float e2, float c1, float t) {
+	return 2.f * (e1 + 2.f*c1 - 6.f*t*c1 + e2);	
+}
+
+
 
 Vector2 evalQBezier2D(Vector2 e1, Vector2 e2, Vector2 c1, float t) {
 	return (Vector2){
@@ -79,11 +126,20 @@ Vector2 evalQBezier2D(Vector2 e1, Vector2 e2, Vector2 c1, float t) {
 	};
 }
 
-void evalQBezier3Dp(Vector3* e1, Vector3* e2, Vector3* c1, float t, Vector3* out) {
-	out->x = evalQBezier1D(e1->x, e2->x, c1->x, t);
-	out->y = evalQBezier1D(e1->y, e2->y, c1->y, t);
-	out->z = evalQBezier1D(e1->z, e2->z, c1->z, t);
+Vector2 evalQBezier2D_dt(Vector2 e1, Vector2 e2, Vector2 c1, float t) {
+	return (Vector2){
+		.x = evalQBezier1D_dt(e1.x, e2.x, c1.x, t),
+		.y = evalQBezier1D_dt(e1.y, e2.y, c1.y, t)
+	};
 }
+
+Vector2 evalQBezier2D_ddt(Vector2 e1, Vector2 e2, Vector2 c1, float t) {
+	return (Vector2){
+		.x = evalQBezier1D_ddt(e1.x, e2.x, c1.x, t),
+		.y = evalQBezier1D_ddt(e1.y, e2.y, c1.y, t)
+	};
+}
+
 
 Vector3 evalQBezier3D(Vector3 e1, Vector3 e2, Vector3 c1, float t) {
 	return (Vector3){
@@ -93,17 +149,39 @@ Vector3 evalQBezier3D(Vector3 e1, Vector3 e2, Vector3 c1, float t) {
 	};
 }
 
-
-float evalQBezier1D_dt(float e1, float e2, float c1, float t) {
-	return 2.f * (-e1 + t*e1 + 2.f*t*c1 - 3*t*t*c1 + t*e2);	
-}
-
-Vector2 evalQBezier2D_dt(Vector2 e1, Vector2 e2, Vector2 c1, float t) {
-	return (Vector2){
+Vector3 evalQBezier3D_dt(Vector3 e1, Vector3 e2, Vector3 c1, float t) {
+	return (Vector3){
 		.x = evalQBezier1D_dt(e1.x, e2.x, c1.x, t),
-		.y = evalQBezier1D_dt(e1.y, e2.y, c1.y, t)
+		.y = evalQBezier1D_dt(e1.y, e2.y, c1.y, t),
+		.z = evalQBezier1D_dt(e1.z, e2.z, c1.z, t)
 	};
 }
+
+Vector3 evalQBezier3D_ddt(Vector3 e1, Vector3 e2, Vector3 c1, float t) {
+	return (Vector3){
+		.x = evalQBezier1D_ddt(e1.x, e2.x, c1.x, t),
+		.y = evalQBezier1D_ddt(e1.y, e2.y, c1.y, t),
+		.z = evalQBezier1D_ddt(e1.z, e2.z, c1.z, t)
+	};
+}
+
+
+
+void evalQBezier2Dp(Vector2* e1, Vector2* e2, Vector2* c1, float t, Vector2* out) {
+	out->x = evalQBezier1D(e1->x, e2->x, c1->x, t);
+	out->y = evalQBezier1D(e1->y, e2->y, c1->y, t);
+}
+
+
+void evalQBezier3Dp(Vector3* e1, Vector3* e2, Vector3* c1, float t, Vector3* out) {
+	out->x = evalQBezier1D(e1->x, e2->x, c1->x, t);
+	out->y = evalQBezier1D(e1->y, e2->y, c1->y, t);
+	out->z = evalQBezier1D(e1->z, e2->z, c1->z, t);
+}
+
+
+
+
 
 
 
@@ -137,7 +215,7 @@ static void bsSegmentForT2(BezierSpline2* bs, float normalT, Vector2* out) {
 	while(i--) p = p->next;
 	
 	// a loop wraps around at the end
-	n = (bs->isLoop && (segN == (bs->length - 1))) ? bs->segments : p->next;
+	n = (bs->isLoop && (segN == (bs->length - 1.f))) ? bs->segments : p->next;
 	
 	// end 1
 	out[0].x = p->e.x;

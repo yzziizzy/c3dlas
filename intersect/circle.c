@@ -74,7 +74,7 @@ COLINEAR:
 	float xbmc = b.x - c.x;
 	float ybmc = b.y - c.y;
 	
-	float dab2 = xamb*xamb + yamb*yamb; 
+	float dab2 = xamb*xamb + yamb*yamb;
 	float dbc2 = xbmc*xbmc + ybmc*ybmc;
 	float dac2 = xamc*xamc + yamc*yamc;
 	
@@ -117,7 +117,7 @@ int pointInsideCircleFromPoints(vec2 p1, vec2 p2, vec2 p3, vec2 test) {
 
 	float det = a*e*i + b*f*g + c*d*h - c*e*g - b*d*i - a*f*h;
 	
-	return det < 0 ? C3DLAS_INTERSECT : C3DLAS_DISJOINT;
+	return det > 0 ? C3DLAS_INTERSECT : C3DLAS_DISJOINT;
 }
 	
 	
