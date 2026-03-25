@@ -562,6 +562,27 @@ static inline double dsmootherstep(double a, double b, double t) {
 }
 
 
+static float hexagonArea(float sideLen) {
+	return 1.5f * sqrtf(3.f) * sideLen * sideLen;
+}
+
+static float hexagonLongDiagonal(float sideLen) {
+	return 2.f * sideLen;
+}
+
+static float hexagonShortDiagonal(float sideLen) { // aka height if it has a flat side horizontal
+	return sideLen * sqrtf(3.f);
+}
+
+static float hexagonInnerRadius(float sideLen) { // distance from center to the middle of a side
+	return sideLen * sqrtf(3.f) * .5f;
+}
+
+void hexagonFlatTopPoints(float sideLen, Vector2 points[6]); // starting at the leftmost point, going counter-clockwise (down first)
+void hexagonPointyTopPoints(float sideLen, Vector2 points[6]); // starting at the top point, going counter-clockwise (left first)
+
+
+
 // Returns an arbitrary unit vector perpendicular to the input
 // The input vector does not need to be normalized
 void vPerp2p(Vector2* n, Vector2* out);
@@ -757,6 +778,46 @@ Vector3 vS2C3(Vector3 s);
 float vAngleBetween2(Vector2 a, Vector2 b);
 float vAngleBetween3(Vector3 a, Vector3 b);
 
+void vRandomPCG3p(Vector3* end1, Vector3* end2, PCG* pcg, Vector3* out);
+Vector3 vRandomPCG3(Vector3 end1, Vector3 end2, PCG* pcg);
+void vRandomNormPCG3p(PCG* pcg, Vector3* out);
+Vector3 vRandomNormPCG3(PCG* pcg);
+
+void vRandomPCG2p(Vector2* end1, Vector2* end2, PCG* pcg, Vector2* out);
+Vector2 vRandomPCG2(Vector2 end1, Vector2 end2, PCG* pcg);
+void vRandomNormPCG2p(PCG* pcg, Vector2* out);
+Vector2 vRandomNormPCG2(PCG* pcg);
+
+void vRandom3p(Vector3* end1, Vector3* end2, Vector3* out);
+Vector3 vRandom3(Vector3 end1, Vector3 end2);
+void vRandomNorm3p(Vector3* out);
+
+void  vProject3p(Vector3* what, Vector3* onto, Vector3* out); // slower; onto may not be normalized
+void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out); // faster; onto must be normalized
+void  vPointAvg3p(Vector3* a, Vector3* b, Vector3* out);
+
+// reflects the distance from v to pivot across pivot.
+// out, pivot, and v will form a straight line with pivot exactly in the middle.
+void    vReflectAcross3p(Vector3* v, Vector3* pivot, Vector3* out);
+Vector3 vReflectAcross3(Vector3 v, Vector3 pivot);
+void  vTriFaceNormal3p(Vector3* a, Vector3* b, Vector3* c, Vector3* out); // returns a normalized face normal for the given triangle
+Vector3 vTriFaceNormal3(Vector3 a, Vector3 b, Vector3 c);
+void  vpTriFaceNormal3p(Vector3* tri, Vector3* out); // returns a normalized face normal for the given triangle
+Vector3 vTriFaceNormalArea3(Vector3 a, Vector3 b, Vector3 c, float* area); // also provides that triangle's area as a side product
+
+// reflects the distance from v to pivot across pivot.
+// out, pivot, and v will form a straight line with pivot exactly in the middle.
+void  vReflectAcross2p(Vector2* v, Vector2* pivot, Vector2* out);
+
+// degenerate cases may not give desired results. GIGO.
+void  vRoundAway2p(const Vector2* in, const Vector2* center, Vector2i* out);
+void  vRoundToward2p(const Vector2* in, const Vector2* center, Vector2i* out);
+
+
+
+
+
+// ----------- dist -------------
 
 // Distance from a point to a line segment 
 float distPoint2Line2(Vector2 p, Line2 ls);
@@ -774,37 +835,208 @@ float distTPoint3Line3(Vector3 p, Line3 ls, float* T);
 
 float distPoint2Triangle2(Vector2 a, Vector2 tri[3]);
 
+float distTPointRay3(Vector3 p, Ray3 r, float* T);
+float dist2TPointRay3(Vector3 p, Ray3 r, float* T);
+float distPoint2Rect2(Vector2 a, Quad2 q);
+
+
+// Quad *must* be a rectangle, and the vertices must be ordered in a loop
+float distLine2Rect2(Line2 a, Quad2 q);
+
+float distLine2Line2(Line2 a, Line2 b);
+float distLineLine3(Line3* a, Line3* b);
+float distLine2Triangle2(Line2 a, Vector2 tri[3]);
+
+// closest distance from an arbitrary point to the plane 
+float planePointDist3p(Plane* pl, Vector3* p);
+// signed closest distance from an arbitrary point to the plane 
+float planePointDistSigned3p(Plane* pl, Vector3* p);
+
+
+// ----------- intersect -------------
+
+int intersectPoint2Rect2(vec2 a, Quad2 q);
+
+int intersectVec2Circle(Vector2 lorigin, Vector2 ldir, Vector2 center, float radius, Vector2 out[2]);
+
+// _INTERSECT, or _DISJOINT
+int intersectQuadPoint2(vec2 p, vec2 q[4]);
+
+// Some of the calculations are common to the quad and can be reused on many point tests
+struct intersectQuadPoint2_precalc {
+	vec2 ab, ac, db, dc;
+	vec2 a, d;
+	float invden_a, invden_d;
+};
+void intersectQuadPoint2_precalc(vec2 q[4], struct intersectQuadPoint2_precalc* pc);
+int intersectQuadPoint2_withprecalc(vec2 p, struct intersectQuadPoint2_precalc* pc);
+
+int intersectLine2Line2(Line2 a, Line2 b);
 
 // returns the number of intersecting points, [0-2], in both directions of the ray 
 int intersectRay2Circle(Ray2 a, Vector2 center, float radius, Vector2 out[2]);
-int intersectVec2Circle(Vector2 lorigin, Vector2 ldir, Vector2 center, float radius, Vector2 out[2]);
-
-int intersectPoint2Rect2(vec2 a, Quad2 q);
-int intersectLine2Line2(Line2 a, Line2 b);
 int intersectRect2Rect2(Quad2 a, Quad2 b);
+
+int boxRayIntersectFast3p(const AABB3* b, const Ray3* r);
+
+
+// ----------- findIntersect -------------
+
 int findIntersectLine2Line2(Line2 a, Line2 b, vec2* out);
 int findIntersectLine2Line2T(Line2 a, Line2 b, vec2* out, float* Ta, float* Tb);
 int findIntersectLine2Ray2(Line2 a, Ray2 b, vec2* out);
 
+// C3DLAS_INTERSECT, _COPLANAR or _DISJOINT
+int findIntersectLinePlane(Line3 l, Plane* pl, Vector3* out);
+
+// Assumes full proper intersection.
+// C3DLAS_INTERSECT
+int findIntersectFastLinePlane(Line3 l, Plane* pl, Vector3* out);
+
+// shim for old code
+#define planeLineFindIntersect3p(pl, la, lb, out) findIntersectLinePlane((Line3){*(la), *(lb)},  pl, out)
+#define planeLineFindIntersectFast3p(pl, la, lb, out) findIntersectFastLinePlane((Line3){*(la), *(lb)},  pl, out)
+
+// C3DLAS_INTERSECT, _PARALLEL or _DISJOINT
+// negative values of idist are "behind" ray->o
+int findIntersectTRayPlane(Ray3* ray, Plane* pl, Vector3* ipoint, float* T);
+
+// legacy shim
+#define intersectPlaneRay3p(pl, ray, ipoint, idist) findIntersectTRayPlane(ray, pl, ipoint, idist)
+
+int boxRayIntersect3p(const AABB3* b, const Ray3* r, Vector3* ipoint, float* idist);
+int intersectBoxLine3p(const AABB3* b, const Line3* l, Vector3* ipoint, float* idist);
+int intersectBoxLine3(AABB3 b, Line3 l, Vector3* ipoint, float* idist);
+
+
+
+// ----------- proj -------------
+
 float projPointLine2(Vector2 p, Line2 ls);
 
-float distLineLine3(Line3* a, Line3* b);
+
+
+
+// ----------- shortestLine -------------
+
 Line2 shortestLineFromLineToLine2(Line2* a, Line2* b); // same algorithm as the above, but returns the points instead of their distance
 Line3 shortestLineFromLineToLine(Line3* a, Line3* b); // same algorithm as the above, but returns the points instead of their distance
 
-float distLine2Line2(Line2 a, Line2 b);
-
-// Quad *must* be a rectangle, and the vertices must be ordered in a loop
-float distLine2Rect2(Line2 a, Quad2 q);
-float distPoint2Rect2(Vector2 a, Quad2 q);
-
-float distLine2Triangle2(Line2 a, Vector2 tri[3]);
-
-float distTPointRay3(Vector3 p, Ray3 r, float* T);
-float dist2TPointRay3(Vector3 p, Ray3 r, float* T);
+// http://geomalgorithms.com/a07-_distance.html
+// _PARALLEL with no output on parallel lines
+// _INTERSECT with one point of output on intersection
+// _DISJOINT with two outputs otherwise
+int shortestLineFromRayToRay3p(Ray3* r1, Ray3* r2, Vector3* pOut);
 
 
 
+// ----------- clip -------------
+
+// C3DLAS_COPLANAR, _PARALLEL, _INTERSECT, or _DISJOINT
+// aboveCnt and belowCnt are always set.
+int linePlaneClip3p(
+	Vector3* la, 
+	Vector3* lb, 
+	Plane* pl, 
+	Vector3* aboveOut, 
+	Vector3* belowOut,
+	int* aboveCnt,
+	int* belowCnt
+);
+
+// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
+int triPlaneClip3p(
+	Vector3* pTri, 
+	Plane* pl, 
+	Vector3* aboveOut, 
+	Vector3* belowOut, 
+	int* aboveCnt,
+	int* belowCnt
+);
+
+
+
+
+// ----------- Planes -------------
+
+void  vProjectOntoPlane3p(Vector3* v, Plane* p, Vector3* out);
+void  vProjectOntoPlaneNormalized3p(Vector3* v, Plane* p, Vector3* out);
+
+void  planeFromPointNormal(Vector3* p, Vector3* norm, Plane* out);
+void  planeFromTriangle3p(Vector3* v1, Vector3* v2, Vector3* v3, Plane* out); // calculates a plane form a triangle
+void  planeCopy3p(Plane* in, Plane* out); // copy a plane
+void  planeInverse3p(Plane* in, Plane* out); // flips the plane's direction
+int   planeClassifyPoint3p(Plane* p, Vector3* pt); // classifies a point by which side of the plane it's on, default espilon
+int   planeClassifyPointEps3p(Plane* p, Vector3* pt, float epsilon); // classifies a point by which side of the plane it's on, custom espilon
+
+
+
+// ----------- Circles -------------
+
+int findCircleTangents(Vector2 c, float r, Vector2 p, Vector2 out[2]);
+// returns the radius
+float circleFromPoints(vec2 a, vec2 b, vec2 c, vec2* center);
+
+// returns C3DLAS_INTERSECT or C3DLAS_DISJOINT
+int pointInsideCircleFromPoints(vec2 p1, vec2 p2, vec2 p3, vec2 test);
+
+
+
+
+// ----------- Triangles -------------
+
+// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+// returns _INTERSECT or _DISJOINT
+int intersectRay3Triangle3(
+	Vector3* ray_origin, Vector3* ray_dir, // ray
+	Vector3* a, Vector3* b, Vector3* c, // triangle
+	float* u, float* v, float* t // barycentric out coords, t of intersection point along ray 
+);
+
+// legacy shim
+#define rayTriangleIntersect(a,b,c, ro, rd, u,v,t) intersectRay3Triangle3(ro,rd, a,b,c, u,v,t)
+
+
+Vector3 triangleClosestPoint(
+	Vector3* a, Vector3* b, Vector3* c, // triangle
+	Vector3* p, // test point
+	float* out_u, float* out_v // barycentric out coords of closest point 
+);
+
+Vector3 triangleClosestPoint_Reference(
+	Vector3* a, Vector3* b, Vector3* c, // triangle
+	Vector3* p, // test point
+	float* out_u, float* out_v // barycentric out coords of closest point 
+);
+
+Vector3 baryCoords2(Vector2 p, Vector2 a, Vector2 b, Vector2 c);
+
+// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
+int triPlaneTestIntersect3p(Vector3* pTri, Plane* pl);
+
+
+// returns the *signed* area of a triangle. useful for determining winding
+// positive values mean a clockwise triangle
+float triArea2p(Vector2* a, Vector2* b, Vector2* c);
+
+// determines if a point is inside a triangle
+int triPointInside2p(Vector2* p, Vector2* a, Vector2* b, Vector2* c);
+int triPointInside2(Vector2 p, Vector2 a, Vector2 b, Vector2 c);
+
+
+// ----------- Quads -------------
+
+void quadCenterp3p(Vector3* a, Vector3* b, Vector3* c, Vector3* d, Vector3* out);
+
+// find the center of a quad
+void quadCenter2p(const Quad2* in, Vector2* out);
+void quadRoundOutward2p(const Quad2* in, Quad2i* out);
+void quadRoundInward2p(const Quad2* in, Quad2i* out);
+
+
+
+
+// ----------- Polygons -------------
 
 // adds it to the end of the list
 // stats need to be recalculated afterward
@@ -910,148 +1142,55 @@ int mm16_polyCheckMaybeWithinRadius_group(Polygon* poly, float px[16], float py[
 int mm32_polyCheckMaybeWithinRadius_group(Polygon* poly, float px[32], float py[32], float radius);
 
 
-void  vProject3p(Vector3* what, Vector3* onto, Vector3* out); // slower; onto may not be normalized
-void  vProjectNorm3p(Vector3* what, Vector3* onto, Vector3* out); // faster; onto must be normalized
-void  vPointAvg3p(Vector3* a, Vector3* b, Vector3* out);
 
+// ----------- Axis-Aligned Bounding Boxes -------------
 
-void vRandomPCG3p(Vector3* end1, Vector3* end2, PCG* pcg, Vector3* out);
-Vector3 vRandomPCG3(Vector3 end1, Vector3 end2, PCG* pcg);
-void vRandomNormPCG3p(PCG* pcg, Vector3* out);
-Vector3 vRandomNormPCG3(PCG* pcg);
+// 3D versions
+int boxDisjoint3p(const AABB3* a, const AABB3* b);
+int boxOverlaps3p(const AABB3* a, const AABB3* b);
+int boxContainsBox3p(const AABB3* outside, const AABB3* inside);
+int boxContainsPoint3p(const AABB3* b, const Vector3* p);
+bool boxContainsPoint3(AABB3 b, Vector3 p);
 
-void vRandomPCG2p(Vector2* end1, Vector2* end2, PCG* pcg, Vector2* out);
-Vector2 vRandomPCG2(Vector2 end1, Vector2 end2, PCG* pcg);
-void vRandomNormPCG2p(PCG* pcg, Vector2* out);
-Vector2 vRandomNormPCG2(PCG* pcg);
+AABB3 boxUnion(AABB3 a, AABB3 b);
+Vector3 boxCenter3(const AABB3 b); // calculates the center of the box
+void boxCenter3p(const AABB3* b, Vector3* out); // calculates the center of the box
+Vector2 boxSize2(const AABB2 b); // calculates the size of the box
+Vector3 boxSize3(const AABB3 b); // calculates the size of the box
+void boxSize2p(const AABB2* b, Vector2* out); // calculates the size of the box
+void boxSize3p(const AABB3* b, Vector3* out); // calculates the size of the box
+void boxExpandTo3p(AABB3* b, Vector3* p);
+void boxExpandTo3(AABB3* b, Vector3 p);
+int boxClipRay(AABB3* b, Ray3 r, Line3* out); // returns _INTERSECT or _DISJOINT
 
-void vRandom3p(Vector3* end1, Vector3* end2, Vector3* out);
-Vector3 vRandom3(Vector3 end1, Vector3 end2);
-void vRandomNorm3p(Vector3* out);
+void makeRay3p(Vector3* origin, Vector3* direction, Ray3* out);
 
+// 2D versions
+int boxDisjoint2p(const AABB2* a, const AABB2* b);
+int boxOverlaps2p(const AABB2* a, const AABB2* b);
+int boxContainsBox2p(const AABB2* outside, const AABB2* inside);
+int boxContainsPoint2p(const AABB2* b, const Vector2* p);
 
-// http://geomalgorithms.com/a07-_distance.html
-// _PARALLEL with no output on parallel lines
-// _INTERSECT with one point of output on intersection
-// _DISJOINT with two outputs otherwise
-int shortestLineFromRayToRay3p(Ray3* r1, Ray3* r2, Vector3* pOut);
+void boxCenter2p(const AABB2* b, Vector2* out); // calcuates the center of the box
+void boxSize2p(const AABB2* b, Vector2* out); // calculates the size of the box
+void boxQuadrant2p(const AABB2* in, char ix, char iy, AABB2* out);
 
-// reflects the distance from v to pivot across pivot.
-// out, pivot, and v will form a straight line with pivot exactly in the middle.
-void    vReflectAcross3p(Vector3* v, Vector3* pivot, Vector3* out);
-Vector3 vReflectAcross3(Vector3 v, Vector3 pivot);
-void  vTriFaceNormal3p(Vector3* a, Vector3* b, Vector3* c, Vector3* out); // returns a normalized face normal for the given triangle
-Vector3 vTriFaceNormal3(Vector3 a, Vector3 b, Vector3 c);
-void  vpTriFaceNormal3p(Vector3* tri, Vector3* out); // returns a normalized face normal for the given triangle
-Vector3 vTriFaceNormalArea3(Vector3 a, Vector3 b, Vector3 c, float* area); // also provides that triangle's area as a side product
+// 2D integer versions
+int boxDisjoint2ip(const AABB2i* a, const AABB2i* b);
+int boxOverlaps2ip(const AABB2i* a, const AABB2i* b);
+int boxContainsPoint2ip(const AABB2i* b, const Vector2i* p);
 
-void  vProjectOntoPlane3p(Vector3* v, Plane* p, Vector3* out);
-void  vProjectOntoPlaneNormalized3p(Vector3* v, Plane* p, Vector3* out);
-
-void  planeFromPointNormal(Vector3* p, Vector3* norm, Plane* out);
-void  planeFromTriangle3p(Vector3* v1, Vector3* v2, Vector3* v3, Plane* out); // calculates a plane form a triangle
-void  planeCopy3p(Plane* in, Plane* out); // copy a plane
-void  planeInverse3p(Plane* in, Plane* out); // flips the plane's direction
-int   planeClassifyPoint3p(Plane* p, Vector3* pt); // classifies a point by which side of the plane it's on, default espilon
-int   planeClassifyPointEps3p(Plane* p, Vector3* pt, float epsilon); // classifies a point by which side of the plane it's on, custom espilon
-// closest distance from an arbitrary point to the plane 
-float planePointDist3p(Plane* pl, Vector3* p);
-// signed closest distance from an arbitrary point to the plane 
-float planePointDistSigned3p(Plane* pl, Vector3* p);
-
-// C3DLAS_INTERSECT, _COPLANAR or _DISJOINT
-int findIntersectLinePlane(Line3 l, Plane* pl, Vector3* out);
-
-// Assumes full proper intersection.
-// C3DLAS_INTERSECT
-int findIntersectFastLinePlane(Line3 l, Plane* pl, Vector3* out);
-
-// shim for old code
-#define planeLineFindIntersect3p(pl, la, lb, out) findIntersectLinePlane((Line3){*(la), *(lb)},  pl, out)
-#define planeLineFindIntersectFast3p(pl, la, lb, out) findIntersectFastLinePlane((Line3){*(la), *(lb)},  pl, out)
-
-
-// C3DLAS_INTERSECT, _PARALLEL or _DISJOINT
-// negative values of idist are "behind" ray->o
-int intersectPlaneRay3p(Plane* pl, Ray3* ray, Vector3* ipoint, float* idist);
-
-
-// circle utilities
-
-int findCircleTangents(Vector2 c, float r, Vector2 p, Vector2 out[2]);
-// returns the radius
-float circleFromPoints(vec2 a, vec2 b, vec2 c, vec2* center);
-
-// returns C3DLAS_INTERSECT or C3DLAS_DISJOINT
-int pointInsideCircleFromPoints(vec2 p1, vec2 p2, vec2 p3, vec2 test);
+void boxCenter2ip(const AABB2i* b, Vector2* out); // calcuates the center of the box
+void boxSize2ip(const AABB2i* b, Vector2* out); // calculates the size of the box
+void boxQuadrant2ip(const AABB2i* in, char ix, char iy, AABB2i* out);
 
 
 
-// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-// returns _INTERSECT or _DISJOINT
-int rayTriangleIntersect(
-	Vector3* a, Vector3* b, Vector3* c, // triangle
-	Vector3* ray_origin, Vector3* ray_dir, // ray
-	float* u, float* v, float* t // barycentric out coords, t of intersection point along ray 
-);
-
-Vector3 triangleClosestPoint(
-	Vector3* a, Vector3* b, Vector3* c, // triangle
-	Vector3* p, // test point
-	float* out_u, float* out_v // barycentric out coords of closest point 
-);
-
-Vector3 triangleClosestPoint_Reference(
-	Vector3* a, Vector3* b, Vector3* c, // triangle
-	Vector3* p, // test point
-	float* out_u, float* out_v // barycentric out coords of closest point 
-);
-
-Vector3 baryCoords2(Vector2 p, Vector2 a, Vector2 b, Vector2 c);
-
-// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
-int triPlaneTestIntersect3p(Vector3* pTri, Plane* pl);
-
-// C3DLAS_COPLANAR, _INTERSECT, or _DISJOINT
-int triPlaneClip3p(
-	Vector3* pTri, 
-	Plane* pl, 
-	Vector3* aboveOut, 
-	Vector3* belowOut, 
-	int* aboveCnt,
-	int* belowCnt
-);
-
-// C3DLAS_COPLANAR, _PARALLEL, _INTERSECT, or _DISJOINT
-// aboveCnt and belowCnt are always set.
-int linePlaneClip3p(
-	Vector3* la, 
-	Vector3* lb, 
-	Plane* pl, 
-	Vector3* aboveOut, 
-	Vector3* belowOut,
-	int* aboveCnt,
-	int* belowCnt
-);
-
-
-// _INTERSECT, or _DISJOINT
-int intersectQuadPoint2(vec2 p, vec2 q[4]);
-
-struct intersectQuadPoint2_precalc {
-	vec2 ab, ac, db, dc;
-	vec2 a, d;
-	float invden_a, invden_d;
-};
-void intersectQuadPoint2_precalc(vec2 q[4], struct intersectQuadPoint2_precalc* pc);
-int intersectQuadPoint2_withprecalc(vec2 p, struct intersectQuadPoint2_precalc* pc);
-
-
+// ----------- Frustums -------------
 
 void frustumCenter(Frustum* f, Vector3* out);
 void frustumBoundingSphere(Frustum* f, Sphere* out);
 
-void quadCenterp3p(Vector3* a, Vector3* b, Vector3* c, Vector3* d, Vector3* out);
 
 void frustumFromMatrix(Matrix* m, Frustum* out);
 void frustumFromMatrixVK(Matrix* m, Frustum* out);
@@ -1062,23 +1201,8 @@ void frustumInnerBoundingSphere(Frustum* f, Sphere* out);
 void frustumOuterBoundingSphere(Frustum* f, Sphere* out);
 
 
-// reflects the distance from v to pivot across pivot.
-// out, pivot, and v will form a straight line with pivot exactly in the middle.
-void  vReflectAcross2p(Vector2* v, Vector2* pivot, Vector2* out);
 
-// degenerate cases may not give desired results. GIGO.
-void  vRoundAway2p(const Vector2* in, const Vector2* center, Vector2i* out);
-void  vRoundToward2p(const Vector2* in, const Vector2* center, Vector2i* out);
-
-// returns the *signed* area of a triangle. useful for determining winding
-// positive values mean a clockwise triangle
-float triArea2p(Vector2* a, Vector2* b, Vector2* c);
-
-// determines if a point is inside a triangle
-int triPointInside2p(Vector2* p, Vector2* a, Vector2* b, Vector2* c);
-int triPointInside2(Vector2 p, Vector2 a, Vector2 b, Vector2 c);
-
-
+// ----------- Matrixes -------------
 
 void mIdent3(Matrix3* m);
 
@@ -1236,6 +1360,9 @@ void msOrtho(float left, float right, float top, float bottom, float near, float
 void msLookAt(Vector3* eye, Vector3* center, Vector3* up, MatrixStack* ms);
 
 
+
+// ----------- Curves and Splines -------------
+
 // cubic Bezier curves
 float evalBezier1D(float e1, float e2, float c1, float c2, float t);
 float evalBezier1D_dt(float e1, float e2, float c1, float c2, float t); // first derivative with respect to t
@@ -1291,55 +1418,8 @@ Vector3  evalCubicHermite3D(float t, Vector3 p0, Vector3 p1, Vector3 m0, Vector3
 
 
 
-///// bounding box functions
 
-// 3D versions
-int boxDisjoint3p(const AABB3* a, const AABB3* b);
-int boxOverlaps3p(const AABB3* a, const AABB3* b);
-int boxContainsBox3p(const AABB3* outside, const AABB3* inside);
-int boxContainsPoint3p(const AABB3* b, const Vector3* p);
-bool boxContainsPoint3(AABB3 b, Vector3 p);
-
-AABB3 boxUnion(AABB3 a, AABB3 b);
-Vector3 boxCenter3(const AABB3 b); // calculates the center of the box
-void boxCenter3p(const AABB3* b, Vector3* out); // calculates the center of the box
-Vector2 boxSize2(const AABB2 b); // calculates the size of the box
-Vector3 boxSize3(const AABB3 b); // calculates the size of the box
-void boxSize2p(const AABB2* b, Vector2* out); // calculates the size of the box
-void boxSize3p(const AABB3* b, Vector3* out); // calculates the size of the box
-void boxExpandTo3p(AABB3* b, Vector3* p);
-void boxExpandTo3(AABB3* b, Vector3 p);
-int boxClipRay(AABB3* b, Ray3 r, Line3* out); // returns _INTERSECT or _DISJOINT
-
-void makeRay3p(Vector3* origin, Vector3* direction, Ray3* out);
-int boxRayIntersectFast3p(const AABB3* b, const Ray3* r);
-int boxRayIntersect3p(const AABB3* b, const Ray3* r, Vector3* ipoint, float* idist);
-int intersectBoxLine3p(const AABB3* b, const Line3* l, Vector3* ipoint, float* idist);
-int intersectBoxLine3(AABB3 b, Line3 l, Vector3* ipoint, float* idist);
-
-// 2D versions
-int boxDisjoint2p(const AABB2* a, const AABB2* b);
-int boxOverlaps2p(const AABB2* a, const AABB2* b);
-int boxContainsBox2p(const AABB2* outside, const AABB2* inside);
-int boxContainsPoint2p(const AABB2* b, const Vector2* p);
-
-void boxCenter2p(const AABB2* b, Vector2* out); // calcuates the center of the box
-void boxSize2p(const AABB2* b, Vector2* out); // calculates the size of the box
-void boxQuadrant2p(const AABB2* in, char ix, char iy, AABB2* out);
-
-// 2D integer versions
-int boxDisjoint2ip(const AABB2i* a, const AABB2i* b);
-int boxOverlaps2ip(const AABB2i* a, const AABB2i* b);
-int boxContainsPoint2ip(const AABB2i* b, const Vector2i* p);
-
-void boxCenter2ip(const AABB2i* b, Vector2* out); // calcuates the center of the box
-void boxSize2ip(const AABB2i* b, Vector2* out); // calculates the size of the box
-void boxQuadrant2ip(const AABB2i* in, char ix, char iy, AABB2i* out);
-
-// find the center of a quad
-void quadCenter2p(const Quad2* in, Vector2* out);
-void quadRoundOutward2p(const Quad2* in, Quad2i* out);
-void quadRoundInward2p(const Quad2* in, Quad2i* out);
+// ----------- Quaternions -------------
 
 
 
@@ -1381,9 +1461,10 @@ void qUnitToMatrix3(Quaternion q, Matrix3* out);
 void qUnitToMatrix(Quaternion q, Matrix* out);
 
 
-//
-// Algorithms
-//
+
+
+
+// ----------- Miscellaneous Algorithms -------------
 
 // calls the output fn once for every cell that the line crosses, in no particular order.
 // return a non-zero value from the output fn to stop iteration

@@ -194,6 +194,25 @@ int32_t irandPCG(int32_t low, int32_t high, PCG* pcg) {
 
 
 
+void hexagonFlatTopPoints(float sideLen, Vector2 points[6]) { // starting at the leftmost point, going counter-clockwise (down first)
+	float h = sideLen * sqrtf(3.f) * .5f;
+	points[0] = (Vector2){-sideLen, 0};
+	points[1] = (Vector2){sideLen * -.5, -h};
+	points[2] = (Vector2){sideLen * .5, -h};
+	points[3] = (Vector2){sideLen, 0};
+	points[4] = (Vector2){sideLen * .5, h};
+	points[5] = (Vector2){sideLen * -.5, h};
+}
+
+void hexagonPointyTopPoints(float sideLen, Vector2 points[6]) { // starting at the top point, going counter-clockwise (left first)
+	float h = sideLen * sqrtf(3.f) * .5f;
+	points[0] = (Vector2){0, sideLen};
+	points[1] = (Vector2){-h, sideLen * .5};
+	points[2] = (Vector2){-h, sideLen * -.5};
+	points[3] = (Vector2){0, -sideLen};
+	points[4] = (Vector2){h, sideLen * -.5};
+	points[5] = (Vector2){h, sideLen * .5};
+}
 
 
 
@@ -514,9 +533,9 @@ int planeClassifyPointEps3p(Plane* p, Vector3* pt, float epsilon) {
 
 // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 // returns _INTERSECT or _DISJOINT
-int rayTriangleIntersect(
-	Vector3* a, Vector3* b, Vector3* c, // triangle
+int intersectRay3Triangle3(
 	Vector3* ray_origin, Vector3* ray_dir, // ray
+	Vector3* a, Vector3* b, Vector3* c, // triangle
 	float* u, float* v, float* t // barycentric out coords, t of intersection point along ray 
 ) {
 
