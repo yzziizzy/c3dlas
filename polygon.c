@@ -305,6 +305,25 @@ void polyExtrude2(Polygon* poly, f32 dist, Polygon* out) {
 	out->maxRadiusSq = d;
 }
 
+/*
+// Creates a polygon bounded on two sides by a pair of lines and on the other two two nested polygons.
+// The one pair of endpoints of the lines need to be inside the inner polygon, and the other two need
+//   to be outside the outer one.  
+// The polygons must be wound in opposite directions
+void polySliceSegmentBetween(Polygon* inner, Polygon* outer, Line3 lines[2], Polygon* out) {
+	
+	// walk the inner polygon and find the first intersection.
+	
+	// walk to the second one.
+	
+	// connect to the outer polygon:
+	//  walk the out poly until the second line is reached.
+	
+	// walk until the first line is reached.
+	
+}
+*/
+
 // technically yes, but actually no. It works ok-sh for a certain class of self-intersecting polygons oftencreated by polyExtrude2.
 void polyUnSelfIntersect(Polygon* poly) {
 	

@@ -1155,12 +1155,16 @@ bool boxContainsPoint3(AABB3 b, Vector3 p);
 AABB3 boxUnion(AABB3 a, AABB3 b);
 Vector3 boxCenter3(const AABB3 b); // calculates the center of the box
 void boxCenter3p(const AABB3* b, Vector3* out); // calculates the center of the box
+Vector2 boxCenter2(const AABB2* b); // calculates the center of the box
+void boxCenter2p(const AABB2* b, Vector2* out); // calculates the center of the box
 Vector2 boxSize2(const AABB2 b); // calculates the size of the box
 Vector3 boxSize3(const AABB3 b); // calculates the size of the box
 void boxSize2p(const AABB2* b, Vector2* out); // calculates the size of the box
 void boxSize3p(const AABB3* b, Vector3* out); // calculates the size of the box
 void boxExpandTo3p(AABB3* b, Vector3* p);
 void boxExpandTo3(AABB3* b, Vector3 p);
+void boxExpandTo2p(AABB2* b, Vector2* p);
+void boxExpandTo2(AABB2* b, Vector2 p);
 int boxClipRay(AABB3* b, Ray3 r, Line3* out); // returns _INTERSECT or _DISJOINT
 
 void makeRay3p(Vector3* origin, Vector3* direction, Ray3* out);

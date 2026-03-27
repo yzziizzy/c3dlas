@@ -363,6 +363,18 @@ Vector3 boxCenter3(const AABB3 b) {
 	};
 }
 
+void boxCenter2p(const AABB2* b, Vector2* out) {
+	out->x = (b->max.x + b->min.x) * .5f;
+	out->y = (b->max.y + b->min.y) * .5f;
+}
+
+Vector2 boxCenter2(const AABB2* b) {
+	return (Vector2) {
+		(b->max.x + b->min.x) * .5f,
+		(b->max.y + b->min.y) * .5f
+	};
+}
+
 
 void boxSize3p(const AABB3* b, Vector3* out) {
 	out->x = b->max.x - b->min.x;
@@ -390,6 +402,21 @@ void boxExpandTo3p(AABB3* b, Vector3* p) {
 void boxExpandTo3(AABB3* b, Vector3 p) {
 	boxExpandTo3p(b, &p);
 }
+
+void boxExpandTo2p(AABB2* b, Vector2* p) {
+	b->min.x = fminf(b->min.x, p->x);
+	b->min.y = fminf(b->min.y, p->y);
+	b->max.x = fmaxf(b->max.x, p->x);
+	b->max.y = fmaxf(b->max.y, p->y);
+}
+
+void boxExpandTo2(AABB2* b, Vector2 p) {
+	b->min.x = fminf(b->min.x, p.x);
+	b->min.y = fminf(b->min.y, p.y);
+	b->max.x = fmaxf(b->max.x, p.x);
+	b->max.y = fmaxf(b->max.y, p.y);
+}
+
 
 
 // 2D versions
@@ -420,11 +447,6 @@ int boxContainsPoint2p(const AABB2* b, const Vector2* p) {
 		&& b->min.y <= p->y && b->max.y >= p->y;
 }
 
-
-void boxCenter2p(const AABB2* b, Vector2* out) {
-	out->x = (b->max.x + b->min.x) / 2.0;
-	out->y = (b->max.y + b->min.y) / 2.0;
-}
 
 Vector2 boxSize2(const AABB2 b) {
 	return (Vector2){
